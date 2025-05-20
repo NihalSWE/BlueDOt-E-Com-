@@ -3,17 +3,15 @@
 
 {% block custom_css %}{% endblock custom_css %}
 
-
 {% block breadcrumb %}
-
 <!-- breadcrumb area start -->
 <section class="tp-breadcrumb-area tp-slider-spacing-inner p-relative z-index-1">
     <div class="tp-breadcrumb-bg-shape">
-        <img class="tp-breadcrumb-bg-shape-1" src="assets/img/breadcrumb/breadcrumb-shape1.png" alt="">
-        <img class="tp-breadcrumb-bg-shape-2" src="assets/img/breadcrumb/breadcrumb-shape2.png" alt="">
-        <img class="tp-breadcrumb-bg-shape-3" src="assets/img/breadcrumb/breadcrumb-shape3.png" alt="">
-        <img class="tp-breadcrumb-bg-shape-4" src="assets/img/breadcrumb/breadcrumb-shape4.png" alt="">
-        <img class="tp-breadcrumb-bg-shape-5" src="assets/img/breadcrumb/breadcrumb-shape5.png" alt="">
+        <img class="tp-breadcrumb-bg-shape-1" src="{% static 'assets/img/breadcrumb/breadcrumb-shape1.png' %}" alt="">
+        <img class="tp-breadcrumb-bg-shape-2" src="{% static 'assets/img/breadcrumb/breadcrumb-shape2.png' %}" alt="">
+        <img class="tp-breadcrumb-bg-shape-3" src="{% static 'assets/img/breadcrumb/breadcrumb-shape3.png' %}" alt="">
+        <img class="tp-breadcrumb-bg-shape-4" src="{% static 'assets/img/breadcrumb/breadcrumb-shape4.png' %}" alt="">
+        <img class="tp-breadcrumb-bg-shape-5" src="{% static 'assets/img/breadcrumb/breadcrumb-shape5.png' %}" alt="">
     </div>
     <div class="container">
         <div class="row align-items-center">
@@ -27,13 +25,9 @@
     </div>
 </section>
 <!-- breadcrumb area end -->
-
-
 {% endblock breadcrumb %}
 
-
-{% block content %}
-            
+{% block content %}            
 <!-- feature area start -->
 <section class="tp-feature-2-area pt-120 pb-90">
     <div class="container">
@@ -101,13 +95,11 @@
 </section>
 <!-- feature area end -->
 
-
-
 <!-- service area start -->
 <section class="tp-service-2-area fix pt-120 pb-90 p-relative z-index-1">
     <div class="tp-service-2-bg-shape">
-        <img class="tp-service-2-bg-shape-1" src="assets/img/service/service-2-bg-shape.png" alt="">
-        <img class="tp-service-2-bg-shape-2" src="assets/img/service/service-2-bg-shape2.png" alt="">
+        <img class="tp-service-2-bg-shape-1" src="{% static 'assets/img/service/service-2-bg-shape.png' %}" alt="">
+        <img class="tp-service-2-bg-shape-2" src="{% static 'assets/img/service/service-2-bg-shape2.png' %}" alt="">
     </div>
     <div class="container">
         <div class="row">
@@ -121,7 +113,7 @@
                 <div class="tp-service-2-wrapper mb-30 wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s">
                     <div class="tp-service-2-icon-box">
                         <div class="tp-service-2-icon">
-                            <span><img src="assets/img/service/service-2-icon1.svg" alt=""></span>
+                            <span><img src="{% static 'assets/img/service/service-2-icon1.svg' %}" alt=""></span>
                         </div>
                         <div class="tp-service-2-number">
                             <span>01</span>
@@ -140,7 +132,7 @@
                 <div class="tp-service-2-wrapper mb-30 wow fadeInUp" data-wow-delay=".5s" data-wow-duration="1s">
                     <div class="tp-service-2-icon-box">
                         <div class="tp-service-2-icon">
-                            <span><img src="assets/img/service/service-2-icon2.svg" alt=""></span>
+                            <span><img src="{% static 'assets/img/service/service-2-icon2.svg' %}" alt=""></span>
                         </div>
                         <div class="tp-service-2-number">
                             <span>02</span>
@@ -159,7 +151,7 @@
                 <div class="tp-service-2-wrapper mb-30 wow fadeInUp" data-wow-delay=".7s" data-wow-duration="1s">
                     <div class="tp-service-2-icon-box">
                         <div class="tp-service-2-icon">
-                            <span><img src="assets/img/service/service-2-icon3.svg" alt=""></span>
+                            <span><img src="{% static 'assets/img/service/service-2-icon3.svg' %}" alt=""></span>
                         </div>
                         <div class="tp-service-2-number">
                             <span>03</span>
@@ -184,7 +176,7 @@
                         </div>
                     </div>
                     <div class="tp-service-2-rt-thumb">
-                        <img src="assets/img/service/service-2-box-shape.png" alt="">
+                        <img src="{% static 'assets/img/service/service-2-box-shape.png' %}" alt="">
                     </div>
                 </div>
             </div>
@@ -192,9 +184,6 @@
     </div>
 </section>
 <!-- service area end -->
-
-
-
 
 <!-- pricing area start -->
 <section class="tp-pricing-2-area pt-120 pb-90">
@@ -216,7 +205,7 @@
                         <span>Collaborate Professionally.</span>
                         <div class="tp-pricing-center d-flex align-items-center justify-content-between">
                             <div class="tp-pricing-botton-icon">
-                                <img src="assets/img/pricing/pricing-icon1.svg" alt="">
+                                <img src="{% static 'assets/img/pricing/pricing-icon1.svg' %}" alt="">
                             </div>
                             <div class="tp-pricing-botton-btn">
                                 <a href="contact.html">Starter</a>
@@ -226,11 +215,11 @@
                     <div class="tp-pricing-bottom">
                         <div class="tp-pricing-list mb-35">
                             <ul>
-                                <li><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> Friendly Support</li>
-                                <li><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> Use on Unlimited Project</li>
-                                <li><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> Mix and Match Color, Size</li>
-                                <li class="color"><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> Full Access Library</li>
-                                <li><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> 24 Hours Support</li>
+                                <li><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> Friendly Support</li>
+                                <li><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> Use on Unlimited Project</li>
+                                <li><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> Mix and Match Color, Size</li>
+                                <li class="color"><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> Full Access Library</li>
+                                <li><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> 24 Hours Support</li>
                             </ul>
                         </div>
                         <div class="tp-pricing-button">
@@ -238,7 +227,7 @@
                         </div>
                     </div>
                     <div class="tp-pricing-shape">
-                        <img src="assets/img/pricing/pricing-box-shape.png" alt="">
+                        <img src="{% static 'assets/img/pricing/pricing-box-shape.png' %}" alt="">
                     </div>
                 </div>
             </div>
@@ -249,7 +238,7 @@
                         <span>Collaborate Professionally.</span>
                         <div class="tp-pricing-center d-flex align-items-center justify-content-between">
                             <div class="tp-pricing-botton-icon">
-                                <img src="assets/img/pricing/pricing-icon2.svg" alt="">
+                                <img src="{% static 'assets/img/pricing/pricing-icon2.svg' %}" alt="">
                             </div>
                             <div class="tp-pricing-botton-btn">
                                 <a href="contact.html">Commercial</a>
@@ -259,11 +248,11 @@
                     <div class="tp-pricing-bottom">
                         <div class="tp-pricing-list mb-35">
                             <ul>
-                                <li><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> Friendly Support</li>
-                                <li><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> Use on Unlimited Project</li>
-                                <li><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> Mix and Match Color, Size</li>
-                                <li class="color"><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> Full Access Library</li>
-                                <li><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> 24 Hours Support</li>
+                                <li><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> Friendly Support</li>
+                                <li><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> Use on Unlimited Project</li>
+                                <li><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> Mix and Match Color, Size</li>
+                                <li class="color"><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> Full Access Library</li>
+                                <li><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> 24 Hours Support</li>
                             </ul>
                         </div>
                         <div class="tp-pricing-button">
@@ -271,7 +260,7 @@
                         </div>
                     </div>
                     <div class="tp-pricing-shape">
-                        <img src="assets/img/pricing/pricing-box-shape.png" alt="">
+                        <img src="{% static 'assets/img/pricing/pricing-box-shape.png' %}" alt="">
                     </div>
                 </div>
             </div>
@@ -282,7 +271,7 @@
                         <span>Collaborate Professionally.</span>
                         <div class="tp-pricing-center d-flex align-items-center justify-content-between">
                             <div class="tp-pricing-botton-icon">
-                                <img src="assets/img/pricing/pricing-icon3.svg" alt="">
+                                <img src="{% static 'assets/img/pricing/pricing-icon3.svg' %}" alt="">
                             </div>
                             <div class="tp-pricing-botton-btn">
                                 <a href="contact.html">Enterprise</a>
@@ -292,11 +281,11 @@
                     <div class="tp-pricing-bottom">
                         <div class="tp-pricing-list mb-35">
                             <ul>
-                                <li><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> Friendly Support</li>
-                                <li><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> Use on Unlimited Project</li>
-                                <li><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> Mix and Match Color, Size</li>
-                                <li class="color"><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> Full Access Library</li>
-                                <li><span><img src="assets/img/pricing/pricing-check.svg" alt=""></span> 24 Hours Support</li>
+                                <li><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> Friendly Support</li>
+                                <li><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> Use on Unlimited Project</li>
+                                <li><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> Mix and Match Color, Size</li>
+                                <li class="color"><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> Full Access Library</li>
+                                <li><span><img src="{% static 'assets/img/pricing/pricing-check.svg' %}" alt=""></span> 24 Hours Support</li>
                             </ul>
                         </div>
                         <div class="tp-pricing-button">
@@ -304,7 +293,7 @@
                         </div>
                     </div>
                     <div class="tp-pricing-shape">
-                        <img src="assets/img/pricing/pricing-box-shape.png" alt="">
+                        <img src="{% static 'assets/img/pricing/pricing-box-shape.png' %}" alt="">
                     </div>
                 </div>
             </div>
@@ -313,8 +302,6 @@
 </section>
 <!-- pricing area end -->
 
-
-
 <!-- subscribe area start -->
 <section class="tp-subscribe-area pt-50 pb-55">
     <div class="container-fluid">
@@ -322,7 +309,7 @@
             <div class="col-xl-8 col-lg-9">
                 <div class="tp-subscribe-section">
                     <h3 class="tp-subscribe-title tp-split-text right">Looking for the Best Print Services?</h3>
-                    <p class="tp-subscribe-paragraph">Try it risk free - We don’t charge cancellation fees</p>
+                    <p class="tp-subscribe-paragraph">Try it risk free - We don't charge cancellation fees</p>
                 </div>
             </div>
             <div class="col-xl-4 col-lg-3">
@@ -334,8 +321,6 @@
     </div>
 </section>
 <!-- subscribe area end -->
-
 {% endblock content %}
 
-    {% block custom_js %}{% endblock custom_js %}
-    
+{% block custom_js %}{% endblock custom_js %}

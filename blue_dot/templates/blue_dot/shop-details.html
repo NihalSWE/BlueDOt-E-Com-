@@ -1,0 +1,182 @@
+{% extends "blue_dot/base.html" %}
+{% load static %}
+
+{% block custom_css %}{% endblock custom_css %}
+
+{% block breadcrumb %}  
+<!-- breadcrumb area start -->
+<section class="tp-breadcrumb-area tp-slider-spacing-inner p-relative z-index-1">
+    <div class="tp-breadcrumb-bg-shape">
+        <img class="tp-breadcrumb-bg-shape-1" src="{% static 'assets/img/breadcrumb/breadcrumb-shape1.png' %}" alt="">
+        <img class="tp-breadcrumb-bg-shape-2" src="{% static 'assets/img/breadcrumb/breadcrumb-shape2.png' %}" alt="">
+        <img class="tp-breadcrumb-bg-shape-3" src="{% static 'assets/img/breadcrumb/breadcrumb-shape3.png' %}" alt="">
+        <img class="tp-breadcrumb-bg-shape-4" src="{% static 'assets/img/breadcrumb/breadcrumb-shape4.png' %}" alt="">
+        <img class="tp-breadcrumb-bg-shape-5" src="{% static 'assets/img/breadcrumb/breadcrumb-shape5.png' %}" alt="">
+    </div>
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-xl-5">
+                <div class="tp-breadcrumb-content">
+                    <h2 class="tp-breadcrumb-title tp-split-text right">Shop Details</h2>
+                    <p class="tp-breadcrumb-body">
+                        <span><a class="home" href="{% url 'home' %}">Home <span class="spacing">_</span> </a></span>Shop Details
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- breadcrumb area end -->
+{% endblock breadcrumb %}
+
+{% block content %}  
+<!-- product details area start -->
+<section class="tp-product-details-area pt-120 pb-120">
+    <div class="container">
+        <div class="row mb-100">
+            <div class="col-xl-6 col-lg-5">
+                <div class="product__details-thumb-tab wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s">
+                    <div class="product__details-thumb tp-costom-wrapper-hover fix w-img p-relative">
+                        <div class="tp-costom-inner-hover fix">
+                            <img src="{% static 'assets/img/shop/product-details-bag-img.png' %}" alt="">
+                        </div>
+                        <div class="product__details-thumb-popup-btn">
+                            <a class="popup-image" href="{% static 'assets/img/shop/product-details-bag-img.jpg' %}">
+                                <i class="flaticon-search"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6 col-lg-7">
+                <div class="product__details-wrapper ml-70">
+                    <h3 class="product__details-title wow fadeInUp">Hoodie PSD Mockup</h3>
+                    <div class="product__details-rating mb-25 d-flex align-items-center">
+                        <div class="product__rating product__rating-2 d-flex wow fadeInUp">
+                            <span><i class="fa-solid fa-star-sharp"></i></span>
+                            <span><i class="fa-solid fa-star-sharp"></i></span>
+                            <span><i class="fa-solid fa-star-sharp"></i></span>
+                            <span><i class="fa-solid fa-star-sharp"></i></span>
+                            <span><i class="fa-solid fa-star-sharp"></i></span>
+                        </div>
+                        <div class="product__details-rating-count wow fadeInUp">
+                            <span>(25 Customer Review)</span>
+                        </div>
+                    </div>
+                    <div class="product__details-price wow fadeInUp">
+                        <span class="product__details-ammount new-ammount">$199.00</span>
+                    </div>
+                    <div class="product__details-paragraph wow fadeInUp">
+                        <p>In today’s online world, a brand’s success lies in combining <br>
+                            technological planning and social strategies to draw <br>
+                            customers in–and keep them coming back</p>
+                    </div>
+                    <div class="product__details-content mb-30 wow fadeInUp">
+                        <h4>Size & Fit</h4>
+                        <span>The model (height 6′) is perfect for you</span>
+                    </div>
+                    <div class="product__details-button-item d-flex mb-35">
+                        <div class="product__details-quantity wow fadeInUp">
+                            <div class="product__details-quantitys p-relative z-index-11">
+                                <input class="tp-cart-input" type="text" value="1">
+                                <span class="tp-cart-minus">
+                                    <i class="fa-solid fa-chevron-up"></i>
+                                </span>
+                                <span class="tp-cart-plus">
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="product__details-btn ml-15">
+                            <a class="tp-btn" href="{% url 'cart' %}"><span>Add to Cart</span></a>
+                        </div>
+                    </div>
+                    <div class="product__details-sku wow fadeInUp">
+                        <h5><span>SKU:</span> 124224</h5>
+                    </div>
+                    <div class="product__details-catagory wow fadeInUp">
+                        <h5><span>Category:</span> Crux Indoor Fast and Easy</h5>
+                    </div>
+                    <div class="product__details-tag wow fadeInUp">
+                        <h5><span>Tag:</span> accessories, business</h5>
+                    </div>
+                    <div class="product__details-socials d-flex align-items-center mt-40 wow fadeInUp">
+                        <span>Share:</span>
+                        <div class="product__details-social">
+                            <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                            <a href="#"><i class="fa-brands fa-pinterest-p"></i></a>
+                            <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-50">
+            <div class="product__details-description wow fadeInUp">
+                <h3 class="product__details-description-title">Our Description</h3>
+                <p class="product__details-description-paragraph">
+                    At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti...
+                </p>
+            </div>
+        </div>
+
+        <div class="row mb-30">
+            <div class="product__details-reveiw wow fadeInUp">
+                <h3 class="product__details-reveiw-title">Client Reviews</h3>
+                <div class="product__details-reveiw-inner d-flex">
+                    <div class="product__details-reveiw-thumb mr-30">
+                        <img src="{% static 'assets/img/shop/product-details-reveiw.png' %}" alt="">
+                    </div>
+                    <div class="product__details-reveiw-content">
+                        <h6>by David Parker <span>/  March 28, 2022</span></h6>
+                        <div class="product__details-reveiw-icon">
+                            <span><i class="fa-solid fa-star-sharp"></i></span>
+                            <span><i class="fa-solid fa-star-sharp"></i></span>
+                            <span><i class="fa-solid fa-star-sharp"></i></span>
+                            <span><i class="fa-solid fa-star-sharp"></i></span>
+                            <span><i class="fa-solid fa-star-sharp-half-stroke"></i></span>
+                        </div>
+                        <p>Elementum tempus egestas sed sed risus pretium quam vulputate dignissim...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="tp-postbox-contact-reply wow fadeInUp">
+                <h3 class="tp-postbox-contact-title mb-35">Add Your Review</h3>
+                <form id="tp-postbox-contact-form" action="{% static 'assets/mail.php' %}" method="POST">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="tp-postbox-contact-input">
+                                <textarea placeholder="Write Your Comment*"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="tp-postbox-contact-input">
+                                <input name="name" type="text" placeholder="Your Name*">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="tp-postbox-contact-input">
+                                <input name="email" type="email" placeholder="Your E-mail*">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="tp-postbox-contact-input-btn">
+                                <button class="tp-btn" type="submit"><span>Submit Your Review</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</section>
+<!-- product details area end -->
+{% endblock content %}
+
+{% block custom_js %}{% endblock custom_js %}

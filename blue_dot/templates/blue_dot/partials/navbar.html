@@ -24,98 +24,34 @@
                         <div class="tp-header-main-menu tp-header-2-main-menu">
                             <nav class="tp-main-menu-content">
                                 <ul>
-                                    <li class="has-dropdown"><a href="index.html">Home</a>
-                                        <div class="tp-submenu submenu has-homemenu">
-                                            <div class="row gx-6 row-cols-1 row-cols-md-2 row-cols-lg-2 row-cols-xl-5">
-                                                <div class="col homemenu">
-                                                    <div class="homemenu-thumb mb-15">
-                                                        <a href="index.html">
-                                                            <img src="assets/img/menu/home1.jpg" alt="">
-                                                        </a>
-                                                    </div>
-                                                    <div class="homemenu-content text-center">
-                                                        <h4 class="homemenu-title">
-                                                            <a href="index.html">Home 01</a>
-                                                        </h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col homemenu">
-                                                    <div class="homemenu-thumb mb-15">
-                                                        <a href="index-2.html">
-                                                            <img src="assets/img/menu/home2.jpg" alt="">
-                                                        </a>
-                                                    </div>
-                                                    <div class="homemenu-content text-center">
-                                                        <h4 class="homemenu-title">
-                                                            <a href="index-2.html">Home 02</a>
-                                                        </h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col homemenu">
-                                                    <div class="homemenu-thumb mb-15">
-                                                        <a href="index-3.html">
-                                                            <img src="assets/img/menu/home3.jpg" alt="">
-                                                        </a>
-                                                    </div>
-                                                    <div class="homemenu-content text-center">
-                                                        <h4 class="homemenu-title">
-                                                            <a href="index-3.html">Home 03</a>
-                                                        </h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col homemenu">
-                                                    <div class="homemenu-thumb mb-15">
-                                                        <a href="index-4.html">
-                                                            <img src="assets/img/menu/home4.jpg" alt="">
-                                                        </a>
-                                                    </div>
-                                                    <div class="homemenu-content text-center">
-                                                        <h4 class="homemenu-title">
-                                                            <a href="index-4.html">Home 04</a>
-                                                        </h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col homemenu">
-                                                    <div class="homemenu-thumb mb-15">
-                                                        <a href="index-5.html">
-                                                            <img src="assets/img/menu/home5.jpg" alt="">
-                                                        </a>
-                                                    </div>
-                                                    <div class="homemenu-content text-center">
-                                                        <h4 class="homemenu-title">
-                                                            <a href="index-5.html">Home 05</a>
-                                                        </h4>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <li class="has-dropdown"><a href="{% url 'home' %}">Home</a>
                                     </li>
-                                    <li class="has-dropdown"><a href="service.html">Services</a>
+                                    <li class="has-dropdown"><a href="{% url 'service' %}">Services</a>
                                         <ul class="submenu tp-submenu">
                                             <li><a href="{% url 'service' %}">Our Service</a></li>
 
                                             <li><a href="{% url 'service_details' %}">Service Details</a></li>
                                         </ul>
                                     </li>
-                                    <li class="has-dropdown"><a href="shop.html">Shop</a>
+                                    <li class="has-dropdown"><a href="{% url 'shop' %}">Shop</a>
                                         <ul class="submenu tp-submenu">
-                                            <li><a href="shop.html">Our Shop</a></li>
-                                            <li><a href="shop-details.html">Shop Details</a></li>
-                                            <li><a href="cart.html">Cart</a></li>
-                                            <li><a href="checkout.html">Checkout</a></li>
+                                            <li><a href="{% url 'shop' %}">Our Shop</a></li>
+                                            <li><a href="{% url 'shop_details' %}">Shop Details</a></li>
+                                            <li><a href="{% url 'cart' %}">Cart</a></li>
+                                            <li><a href="{% url 'checkout' %}">Checkout</a></li>
                                         </ul>
                                     </li>
-                                    <li class="has-dropdown"><a href="blog.html">Blog</a>
+                                    <li class="has-dropdown"><a href="{% url 'blog' %}">Blog</a>
                                         <ul class="submenu tp-submenu">
-                                            <li><a href="blog.html">Blog</a></li>
-                                            <li><a href="blog-sideber.html">Blog Sidebar</a></li>
-                                            <li><a href="blog-details.html">Blog Details</a></li>
+                                            <li><a href="{% url 'blog' %}">Blog</a></li>
+                                            <li><a href="{% url 'blog_sidebar' %}">Blog Sidebar</a></li>
+                                            <li><a href="{% url 'blog_details' %}">Blog Details</a></li>
                                         </ul>
                                     </li>
                                     <li class="has-dropdown"><a href="index.html">Pages</a>
                                         <ul class="submenu tp-submenu">
-                                            <li><a href="about.html">About Us</a></li>
-                                            <li><a href="team.html">Our Team</a></li>
+                                            <li><a href="{% url 'aboutUs' %}">About Us</a></li>
+                                            <li><a href="{% url 'ourteam' %}">Our Team</a></li>
                                             <li><a href="team-details.html">Team Details</a></li>
                                             <li><a href="testimonials.html">Testimonials</a></li>
                                             <li><a href="pricing.html">Pricing</a></li>
@@ -125,7 +61,7 @@
                                             <li><a href="error.html">Error</a></li>
                                         </ul>
                                     </li>
-                                    <li class="has-dropdown"><a href="contact.html">Contact</a></li>
+                                    <li class="has-dropdown"><a href="{% url 'contact' %}">Contact</a></li>
                                 </ul>
                             </nav>
                         </div>

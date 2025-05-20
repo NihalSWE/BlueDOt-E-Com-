@@ -1,0 +1,125 @@
+{% extends "blue_dot/base.html" %}
+{% load static %}
+
+{% block custom_css %}{% endblock custom_css %}
+
+{% block breadcrumb %}
+<!-- breadcrumb area start -->
+<section class="tp-breadcrumb-area tp-slider-spacing-inner p-relative z-index-1">
+    <div class="tp-breadcrumb-bg-shape">
+        <img class="tp-breadcrumb-bg-shape-1" src="{% static 'assets/img/breadcrumb/breadcrumb-shape1.png' %}" alt="">
+        <img class="tp-breadcrumb-bg-shape-2" src="{% static 'assets/img/breadcrumb/breadcrumb-shape2.png' %}" alt="">
+        <img class="tp-breadcrumb-bg-shape-3" src="{% static 'assets/img/breadcrumb/breadcrumb-shape3.png' %}" alt="">
+        <img class="tp-breadcrumb-bg-shape-4" src="{% static 'assets/img/breadcrumb/breadcrumb-shape4.png' %}" alt="">
+        <img class="tp-breadcrumb-bg-shape-5" src="{% static 'assets/img/breadcrumb/breadcrumb-shape5.png' %}" alt="">
+    </div>
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-xl-5">
+                <div class="tp-breadcrumb-content">
+                    <h2 class="tp-breadcrumb-title tp-split-text right">Cart Page</h2>
+                    <p class="tp-breadcrumb-body">
+                        <span><a class="home" href="{% url 'home' %}">Home <span class="spacing">_</span></a></span>
+                        Cart Page
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- breadcrumb area end -->
+{% endblock breadcrumb %}
+
+{% block content %}
+<!-- Cart area start -->
+<section class="cart-area pt-120 pb-120">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <form action="#">
+                    <div class="table-content table-responsive wow fadeInUp">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th class="product-thumbnail">Images</th>
+                                    <th class="cart-product-name">Product</th>
+                                    <th class="product-price">Unit Price</th>
+                                    <th class="product-quantity">Quantity</th>
+                                    <th class="product-subtotal">Total</th>
+                                    <th class="product-remove">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="product-thumbnail">
+                                        <a href="#"><img src="{% static 'assets/img/shop/product-details-sm-2.jpg' %}" alt=""></a>
+                                    </td>
+                                    <td class="product-name"><a href="#">Jogar shoes</a></td>
+                                    <td class="product-price"><span class="amount">$199.00</span></td>
+                                    <td class="product-quantity text-center">
+                                        <div class="tp-shop-quantity">
+                                            <div class="tp-quantity p-relative">
+                                                <div class="qty_button cart-minus tp-cart-minus"><i class="fal fa-minus"></i></div>
+                                                <input type="text" value="1">
+                                                <div class="qty_button cart-plus tp-cart-plus"><i class="fal fa-plus"></i></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="product-subtotal"><span class="amount">$199.00</span></td>
+                                    <td class="product-remove"><a href="#"><i class="fa fa-times"></i></a></td>
+                                </tr>
+                                <tr>
+                                    <td class="product-thumbnail">
+                                        <a href="#"><img src="{% static 'assets/img/shop/product-details-sm-3.jpg' %}" alt=""></a>
+                                    </td>
+                                    <td class="product-name"><a href="#">Alarm clock</a></td>
+                                    <td class="product-price"><span class="amount">$120.00</span></td>
+                                    <td class="product-quantity text-center">
+                                        <div class="tp-shop-quantity">
+                                            <div class="tp-quantity p-relative">
+                                                <div class="qty_button cart-minus tp-cart-minus"><i class="fal fa-minus"></i></div>
+                                                <input type="text" value="1">
+                                                <div class="qty_button cart-plus tp-cart-plus"><i class="fal fa-plus"></i></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="product-subtotal"><span class="amount">$120.00</span></td>
+                                    <td class="product-remove"><a href="#"><i class="fa fa-times"></i></a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="coupon-all wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s">
+                                <div class="coupon d-flex align-items-center justify-content-between">
+                                    <input type="text" class="#coupon-code" placeholder="coupon code">
+                                    <button class="tp-btn" type="submit"><span>Apply</span></button>
+                                </div>
+                                <div class="coupon2">
+                                    <button class="tp-btn theme-bg" name="update_cart" type="submit"><span>Update cart</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-end">
+                        <div class="col-xl-5 col-lg-5 col-md-7">
+                            <div class="cart-page-total wow fadeInUp" data-wow-delay=".5s" data-wow-duration="1s">
+                                <h2>Cart totals</h2>
+                                <ul class="mb-20">
+                                    <li>Subtotal <span>$250.00</span></li>
+                                    <li>Total <span>$250.00</span></li>
+                                </ul>
+                                <a class="tp-btn theme-bg text-center w-100" href="{% url 'checkout' %}"><span>Proceed to checkout</span></a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Cart area end -->
+{% endblock content %}
+
+{% block custom_js %}{% endblock custom_js %}
