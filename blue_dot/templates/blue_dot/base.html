@@ -1,0 +1,294 @@
+<!doctype html>
+<html class="no-js" lang="zxx">
+{% load static %}
+
+
+<!-- Mirrored from html.storebuild.shop/presvila-prv/presvila/index-2.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 20 May 2025 04:04:27 GMT -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Presvila - Printing Company HTML Template</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Place favicon.ico in the root directory -->
+    <link rel="shortcut icon" type="image/x-icon" href="assets/img/logo/favicon.png">
+
+    <!-- CSS here -->
+    <link rel="stylesheet" href="{% static 'assets/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/animate.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/swiper-bundle.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/slick.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/magnific-popup.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/font-awesome-pro.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/flaticon_presvilla.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/spacing.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
+
+    {% block cusom_css %}{% endblock cusom_css %}
+</head>
+
+<body class="tp-magic-cursor">
+    <!--[if lte IE 9]>
+      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+      <![endif]-->
+
+
+
+
+
+    <!-- pre loader area start -->
+    <div class="loader-wrapper">
+        <div class="loader"></div>
+        <div class="loder-section left-section"></div>
+        <div class="loder-section right-section"></div>
+    </div>
+    <!-- pre loader area end -->
+
+
+
+    <!-- back to top start -->
+    <div class="back-to-top-wrapper">
+        <button id="back_to_top" type="button" class="back-to-top-btn">
+            <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11 6L6 1L1 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </button>
+    </div>
+    <!-- back to top end -->
+
+
+
+    <!-- cursor to top start -->
+    <div class="cursor"></div>
+    <div class="cursor2"></div>
+    <!-- cursor to top end -->
+
+
+
+    <!-- Begin magic cursor  
+    ======================== -->
+    <div id="magic-cursor">
+        <div id="ball"></div>
+    </div>
+    <!-- End magic cursor -->
+
+
+
+    <!-- Start Search Popup Section -->
+    <div class="search-popup">
+        <button class="close-search style-two"><span class="flaticon-multiply"><i class="far fa-times-circle"></i></span></button>
+        <button class="close-search"><i class="fa-light fa-arrow-up"></i></button>
+        <form method="post" action="#">
+            <div class="form-group">
+                <input type="search" name="search-field" value="" placeholder="Search Here" required="">
+                <button type="submit"><i class="fal fa-search"></i></button>
+            </div>
+        </form>
+    </div>
+    <!-- Start Search Popup Section -->
+
+
+    <!-- cart mini area start -->
+    <div class="cartmini__area">
+        <div class="cartmini__wrapper d-flex justify-content-between flex-column">
+            <div class="cartmini__top-wrapper ">
+                <div class="cartmini__top p-relative">
+                    <div class="cartmini__title">
+                        <h4>Shopping cart</h4>
+                    </div>
+                    <div class="cartmini__close">
+                        <button type="button" class="cartmini__close-btn cartmini-close-btn"><i class="fal fa-times"></i></button>
+                    </div>
+                </div>
+                <div class="cartmini__widget">
+                    <div class="cartmini__widget-item">
+                        <div class="cartmini__thumb">
+                            <a href="product-details.html">
+                                <img src="{% static 'assets/img/cart/product-1.jpg' %}" alt="">
+                            </a>
+                        </div>
+                        <div class="cartmini__content">
+                            <h5><a href="product-details.html">Level Bolt Smart Lock</a></h5>
+                            <div class="cartmini__price-wrapper">
+                                <span class="cartmini__price">$46.00</span>
+                                <span class="cartmini__quantity">x2</span>
+                            </div>
+                        </div>
+                        <button class="cartmini__del"><i class="fal fa-times"></i></button>
+                    </div>
+                    <div class="cartmini__widget-item">
+                        <div class="cartmini__thumb">
+                            <a href="product-details.html">
+                                <img src="{% static 'assets/img/cart/product-2.jpg' %}" alt="">
+                            </a>
+                        </div>
+                        <div class="cartmini__content">
+                            <h5><a href="product-details.html">Trademil for younger</a></h5>
+                            <div class="cartmini__price-wrapper">
+                                <span class="cartmini__price">$78.00</span>
+                                <span class="cartmini__quantity">x1</span>
+                            </div>
+                        </div>
+                        <button class="cartmini__del"><i class="fal fa-times"></i></button>
+                    </div>
+                    <div class="cartmini__widget-item">
+                        <div class="cartmini__thumb">
+                            <a href="product-details.html">
+                                <img src="{% static 'assets/img/cart/product-3.jpg' %}" alt="">
+                            </a>
+                        </div>
+                        <div class="cartmini__content">
+                            <h5><a href="product-details.html">ViewSonic VP2756-2K</a></h5>
+                            <div class="cartmini__price-wrapper">
+                                <span class="cartmini__price">$98.00</span>
+                                <span class="cartmini__quantity">x3</span>
+                            </div>
+                        </div>
+                        <button class="cartmini__del"><i class="fal fa-times"></i></button>
+                    </div>
+                </div>
+                <!-- for wp -->
+                <!-- if no item in cart -->
+                <div class="cartmini__empty text-center d-none">
+                    <p>Your Cart is empty</p>
+                    <a href="shop.html" class="cartmini-btn">Go to Shop</a>
+                </div>
+            </div>
+            <div class="cartmini__checkout">
+                <div class="cartmini__checkout-title mb-30">
+                    <h4>Subtotal:</h4>
+                    <span>$113.00</span>
+                </div>
+                <div class="cartmini__checkout-btn">
+                    <a href="cart.html" class="cartmini-btn mb-10 w-100"> <span></span> view cart</a>
+                    <a href="checkout.html" class="cartmini-btn-border w-100"> <span></span> checkout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="cartmini-overlay"></div>
+    <!-- cart mini area end -->
+
+
+
+
+    <!-- tp-offcanvus-area-start -->
+    <div class="tpoffcanvas-area">
+        <div class="tpoffcanvas">
+            <div class="tpoffcanvas__close-btn">
+                <button class="close-btn"><i class="fal fa-times"></i></button>
+            </div>
+            <div class="tpoffcanvas__logo">
+                <a href="index.html">
+                    <img src="{% static 'assets/img/logo/logo.png' %}" alt="">
+                </a>
+            </div>
+            <div class="tpoffcanvas__title">
+                <p>Presvila is the partner of choice for many of the world’s leading enterprises.
+                    We help businesses development.</p>
+            </div>
+            <div class="tp-main-menu-mobile d-xl-none"></div>
+            <div class="tpoffcanvas__contact-info">
+                <div class="tpoffcanvas__contact-title">
+                    <h5>Contact us</h5>
+                </div>
+                <ul>
+                    <li>
+                        <i class="fa-solid fa-location-dot"></i>
+                        <a href="https://www.google.com/maps/@23.8223586,90.3661283,15z" target="_blank">Manchester 21, Zurich, CH</a>
+                    </li>
+                    <li>
+                        <i class="fas fa-envelope"></i>
+                        <a href="mailto:techubinfo@mail.com"><span class="__cf_email__">presvilainfo@mail.com</span></a>
+                    </li>
+                    <li>
+                        <i class="fa-solid fa-phone-flip"></i>
+                        <a href="tel:+48555223224">(+00) 678 345 98568</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="tpoffcanvas__input">
+                <div class="tpoffcanvas__input-title">
+                    <h4>Get UPdate</h4>
+                </div>
+                <form action="#">
+                    <div class="p-relative">
+                        <input type="text" placeholder="Enter mail">
+                        <button>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="tpoffcanvas__social">
+                <div class="social-icon">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-pinterest-p"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="body-overlay"></div>
+    <!-- tp-offcanvus-area-end -->
+
+
+
+    {% include "blue_dot/partials/navbar.html" %}
+
+    <div id="smooth-wrapper">
+        <div id="smooth-content">
+
+            <main>
+                {% block breadcrumb %}{% endblock breadcrumb %}
+
+                {% block content %}{% endblock content %}
+
+
+            </main>
+
+
+            {% include "blue_dot/partials/footer.html" %}
+            
+        </div>
+    </div>
+
+
+
+
+
+    <!-- JS here -->
+    <script src="{% static 'assets/js/vendor/jquery.js' %}"></script>
+    <script src="{% static 'assets/js/vendor/waypoints.js' %}"></script>
+    <script src="{% static 'assets/js/bootstrap-bundle.js' %}"></script>
+
+    <script src="{% static 'assets/js/gsap/gsap.js' %}"></script>
+    <script src="{% static 'assets/js/gsap/gsap-scroll-to-plugin.js' %}"></script>
+    <script src="{% static 'assets/js/gsap/gsap-scroll-smoother.js' %}"></script>
+    <script src="{% static 'assets/js/gsap/gsap-scroll-trigger.js' %}"></script>
+    <script src="{% static 'assets/js/gsap/gsap-split-text.js' %}"></script>
+
+    <script src="{% static 'assets/js/countdown.js' %}"></script>
+    <script src="{% static 'assets/js/swiper-bundle.js' %}"></script>
+    <script src="{% static 'assets/js/slick.js' %}"></script>
+    <script src="{% static 'assets/js/range-slider.js' %}"></script>
+    <script src="{% static 'assets/js/magnific-popup.js' %}"></script>
+    <script src="{% static 'assets/js/nice-select.js' %}"></script>
+    <script src="{% static 'assets/js/purecounter.js' %}"></script>
+    <script src="{% static 'assets/js/wow.js' %}"></script>
+    <script src="{% static 'assets/js/vanilla-tilt.min.js' %}"></script>
+    <script src="{% static 'assets/js/isotope-pkgd.js' %}"></script>
+    <script src="{% static 'assets/js/imagesloaded-pkgd.js' %}"></script>
+    <script src="{% static 'assets/js/ajax-form.js' %}"></script>
+    <script src="{% static 'assets/js/slider-active.js' %}"></script>
+    <script src="{% static 'assets/js/main.js' %}"></script>
+    <script src="{% static 'assets/js/tp-cursor.js' %}"></script>
+
+    {% block custom_js %}{% endblock custom_js %}
+</body>
+
+
+<!-- Mirrored from html.storebuild.shop/presvila-prv/presvila/index-2.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 20 May 2025 04:04:44 GMT -->
+</html>

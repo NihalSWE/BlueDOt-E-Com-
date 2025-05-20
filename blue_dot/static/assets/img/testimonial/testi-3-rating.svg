@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="86" height="13" viewBox="0 0 86 13">
+  <defs>
+    <style>
+      .cls-1 {
+        filter: url(#filter);
+      }
+    </style>
+    <filter id="filter" filterUnits="userSpaceOnUse">
+      <feFlood result="flood" flood-color="#ffa800"/>
+      <feComposite result="composite" operator="in" in2="SourceGraphic"/>
+      <feBlend result="blend" in2="SourceGraphic"/>
+    </filter>
+    <image id="image" width="14" height="13" xlink:href="data:img/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAANCAYAAACZ3F9/AAAA50lEQVQokY3SIUtEURAF4E9RwSRiUVBkq6DbTRZ/gN2kQYOyZbv/wSSCbLdsM1s0mYwWsWgSjWJwZWQeXPTdxQMDc+855w7vzJsY7Zyo4BQj9NroqYppC8fZD3H9WzBZMR5U+taJ81mb2C7uo9/FDd7x1hhDuI9VLKGD2cK4gHM84gVPuAhjF3u1hBLx0FpW4C6+cZAJ/hehHcTEjyLyQ8xUHvjEWaMtU+3jYczU4ELzg9IYy54bYwwuNH+MK1gszl9ZDYJbbjOuYzr7exxlRR8IbqMRlz/AM65wmyG85v1lhhb7jj2Cb4qBJ7/JLSlNAAAAAElFTkSuQmCC"/>
+  </defs>
+  <g id="testi-rating.svg" class="cls-1">
+    <use id="star-solid" xlink:href="#image"/>
+    <use id="star-solid_copy" data-name="star-solid copy" x="18" xlink:href="#image"/>
+    <use id="star-solid_copy_2" data-name="star-solid copy 2" x="36" xlink:href="#image"/>
+    <use id="star-solid_copy_3" data-name="star-solid copy 3" x="54" xlink:href="#image"/>
+    <use id="star-solid_copy_4" data-name="star-solid copy 4" x="72" xlink:href="#image"/>
+  </g>
+</svg>
