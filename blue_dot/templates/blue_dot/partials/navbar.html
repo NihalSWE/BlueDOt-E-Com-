@@ -2,7 +2,7 @@
 <!-- header area start -->
     <header class="tp-header-height p-relative z-index-11">
         <div class="tp-header-2-top d-none d-xl-block">
-            <div class="container-fluid">
+            {% comment %} <div class="container-fluid">
                 <div class="row align-items-center justify-content-center">
                     <div class="col-xl-8">
                         <div class="tp-header-2-top-text text-center">
@@ -10,7 +10,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> {% endcomment %}
         </div>
         <div id="header-sticky" class="tp-header-bottom tp-header-2-bottom">
             <div class="container-fluid">
@@ -52,13 +52,13 @@
                                         <ul class="submenu tp-submenu">
                                             <li><a href="{% url 'aboutUs' %}">About Us</a></li>
                                             <li><a href="{% url 'ourteam' %}">Our Team</a></li>
-                                            <li><a href="team-details.html">Team Details</a></li>
-                                            <li><a href="testimonials.html">Testimonials</a></li>
-                                            <li><a href="pricing.html">Pricing</a></li>
-                                            <li><a href="project.html">Our Project</a></li>
-                                            <li><a href="project-details.html">Project Details</a></li>
-                                            <li><a href="faq.html">Our Faq</a></li>
-                                            <li><a href="error.html">Error</a></li>
+                                            <li><a href="{% url 'team_details' %}">Team Details</a></li>
+                                            <li><a href="{% url 'testimonial' %}">Testimonials</a></li>
+                                            <li><a href="{% url 'pricing' %}">Pricing</a></li>
+                                            <li><a href="{% url 'project' %}">Our Project</a></li>
+                                            <li><a href="{% url 'project_details' %}">Project Details</a></li>
+                                            <li><a href="{% url 'faq' %}">Our Faq</a></li>
+                                            <li><a href="{% url 'error' %}">Error</a></li>
                                         </ul>
                                     </li>
                                     <li class="has-dropdown"><a href="{% url 'contact' %}">Contact</a></li>
@@ -81,7 +81,7 @@
 
                             <!-- Header Button -->
                             <div class="tp-header-bottom-button tp-header-2-bottom-button mr-30">
-                                <a class="tp-header-btn tp-header-2-btn" href="contact.html"><span>Get a Quete</span></a>
+                                <a class="tp-header-btn tp-header-2-btn" href="{% url 'contact' %}"><span>Get a Quete</span></a>
                             </div>
 
                             <!-- Header shop -->
@@ -94,7 +94,7 @@
 
                             <!-- Header menu Button -->
                             <div class="tp-header-bottom-toggle tp-header-2-bottom-toggle p-relative">
-                                <button class="tp-menu-bar"><img src="assets/img/header/toggle.svg" alt=""></button>
+                                <button class="tp-menu-bar"><img src="{% static 'assets/img/header/toggle.svg'%}" alt=""></button>
                             </div>
 
                         </div>

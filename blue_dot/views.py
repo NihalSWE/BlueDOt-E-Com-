@@ -45,3 +45,24 @@ def aboutUs(request):
 
 def ourteam(request):
     return render(request, 'blue_dot/team.html')
+
+def team_details(request):
+    return render(request, 'blue_dot/team-details.html')
+
+def testimonial(request):
+    return render(request, 'blue_dot/testimonials.html')
+
+def pricing(request):
+    return render(request, 'blue_dot/pricing.html')
+
+def project(request):
+    return render(request, 'blue_dot/project.html')
+
+def project_details(request):
+    return render(request, 'blue_dot/project-details.html')
+
+def faq(request):
+    return render(request, 'blue_dot/faq.html')
+
+def error(request):
+    return render(request, 'blue_dot/error.html')
