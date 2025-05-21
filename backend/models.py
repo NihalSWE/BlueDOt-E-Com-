@@ -160,7 +160,7 @@ class Material(models.Model):
         return self.measurement_unit.measurement_type.name
     
     
-
+  
 class ProductMaterial(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     material = models.ForeignKey(Material, on_delete=models.CASCADE)

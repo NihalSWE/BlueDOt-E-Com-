@@ -14,7 +14,7 @@
                 <!-- slide item 1 -->
                 <div class="swiper-slide">
                     <div class="tp-slider-2-height">
-                        <div class="tp-slider-2-bg tp-slider-2-overlay p-relative" data-background="assets/img/slider/slider-2-bg.jpg"></div>
+                        <div class="tp-slider-2-bg tp-slider-2-overlay p-relative" data-background="{% static 'assets/img/slider/slider-2-bg.jpg'%}"></div>
                         <div class="container">
                             <div class="row align-items-center justify-content-center">
                                 <div class="col-xl-8 col-lg-10 col-md-11 col-sm-12">
@@ -54,7 +54,7 @@
                 <!-- slide item 2 -->
                 <div class="swiper-slide">
                     <div class="tp-slider-2-height">
-                        <div class="tp-slider-2-bg tp-slider-2-overlay p-relative" data-background="assets/img/slider/slider-2-bg2.jpg"></div>
+                        <div class="tp-slider-2-bg tp-slider-2-overlay p-relative" data-background="{% static 'assets/img/slider/slider-2-bg2.jpg'%}"></div>
                         <div class="container">
                             <div class="row align-items-center justify-content-center">
                                 <div class="col-xl-8 col-lg-10 col-md-11 col-sm-12">
@@ -64,7 +64,7 @@
                                             <h1 class="tp-slider-2-title">Quality Printing at Your Service</h1>
                                         </div>
                                         <div class="tp-slider-2-btn-box z-index-11 p-relative">
-                                            <a class="tp-btn" href="contact.html"><span>Start Your Projects</span></a>
+                                            <a class="tp-btn" href="{% url 'contact' %}"><span>Start Your Projects</span></a>
                                         </div>
                                         <div class="tp-slider-2-circle"></div>
                                         <div class="tp-slider-2-circle-2"></div>
@@ -93,7 +93,7 @@
                 <!-- slide item 3 -->
                 <div class="swiper-slide">
                     <div class="tp-slider-2-height">
-                        <div class="tp-slider-2-bg tp-slider-2-overlay p-relative" data-background="assets/img/slider/slider-2-bg3.jpg"></div>
+                        <div class="tp-slider-2-bg tp-slider-2-overlay p-relative" data-background="{% static 'assets/img/slider/slider-2-bg3.jpg'%}"></div>
                         <div class="container">
                             <div class="row align-items-center justify-content-center">
                                 <div class="col-xl-8 col-lg-10 col-md-12 col-sm-12">
@@ -283,44 +283,44 @@
                             <div class="tp-product-2-wrapper tp-costom-wrapper-hover fix swiper-slide">
                                 <div class="tp-product-2-thumb fix mb-15">
                                     <div class="tp-costom-inner-hover">
-                                        <a href="shop-details.html"><img src="{% static 'assets/img/product/product-2-img1.png' %}" alt=""></a>
+                                        <a href="{% url 'shop_details' %}"><img src="{% static 'assets/img/product/product-2-img1.png' %}" alt=""></a>
                                     </div>
                                 </div>
                                 <div class="tp-product-2-content text-center">
-                                    <h4 class="tp-product-2-title"><a href="shop-details.html">Hoodie Design</a></h4>
+                                    <h4 class="tp-product-2-title"><a href="{% url 'shop_details' %}">Hoodie Design</a></h4>
                                 </div>
                             </div>
                             <!-- Slide 2 -->
                             <div class="tp-product-2-wrapper tp-costom-wrapper-hover fix swiper-slide">
                                 <div class="tp-product-2-thumb fix mb-15">
                                     <div class="tp-costom-inner-hover">
-                                        <a href="shop-details.html"><img src="{% static 'assets/img/product/product-2-img2.png' %}" alt=""></a>
+                                        <a href="{% url 'shop_details' %}"><img src="{% static 'assets/img/product/product-2-img2.png' %}" alt=""></a>
                                     </div>
                                 </div>
                                 <div class="tp-product-2-content text-center">
-                                    <h4 class="tp-product-2-title"><a href="shop-details.html">Product Printing</a></h4>
+                                    <h4 class="tp-product-2-title"><a href="{% url 'shop_details' %}">Product Printing</a></h4>
                                 </div>
                             </div>
                             <!-- Slide 3 -->
                             <div class="tp-product-2-wrapper tp-costom-wrapper-hover fix swiper-slide">
                                 <div class="tp-product-2-thumb fix mb-15">
                                     <div class="tp-costom-inner-hover">
-                                        <a href="shop-details.html"><img src="{% static 'assets/img/product/product-2-img3.png' %}" alt=""></a>
+                                        <a href="{% url 'shop_details' %}"><img src="{% static 'assets/img/product/product-2-img3.png' %}" alt=""></a>
                                     </div>
                                 </div>
                                 <div class="tp-product-2-content text-center">
-                                    <h4 class="tp-product-2-title"><a href="shop-details.html">Package Design</a></h4>
+                                    <h4 class="tp-product-2-title"><a href="{% url 'shop_details' %}">Package Design</a></h4>
                                 </div>
                             </div>
                             <!-- Slide 4 -->
                             <div class="tp-product-2-wrapper tp-costom-wrapper-hover fix swiper-slide">
                                 <div class="tp-product-2-thumb fix mb-15">
                                     <div class="tp-costom-inner-hover">
-                                        <a href="shop-details.html"><img src="{% static 'assets/img/product/product-2-img4.png' %}" alt=""></a>
+                                        <a href="{% url 'shop_details' %}"><img src="{% static 'assets/img/product/product-2-img4.png' %}" alt=""></a>
                                     </div>
                                 </div>
                                 <div class="tp-product-2-content text-center">
-                                    <h4 class="tp-product-2-title"><a href="shop-details.html">Printing Design</a></h4>
+                                    <h4 class="tp-product-2-title"><a href="{% url 'shop_details' %}">Printing Design</a></h4>
                                 </div>
                             </div>
                         </div>
@@ -367,10 +367,10 @@
                         </div>
                     </div>
                     <div class="tp-service-2-content">
-                        <h4 class="tp-service-2-title"><a href="service-details.html">Printing Services</a></h4>
+                        <h4 class="tp-service-2-title"><a href="{% url 'service_details' %}">Printing Services</a></h4>
                         <p class="tp-service-2-paragraph">Through a unique combination of construction and design disciplines expertise, Concor and delivers world class</p>
                         <div class="tp-service-2-button">
-                            <a class="tp-service-2-btn" href="service-details.html">Read More</a>
+                            <a class="tp-service-2-btn" href="{% url 'service_details' %}">Read More</a>
                         </div>
                     </div>
                 </div>
@@ -386,10 +386,10 @@
                         </div>
                     </div>
                     <div class="tp-service-2-content">
-                        <h4 class="tp-service-2-title"><a href="service-details.html">Design Service</a></h4>
+                        <h4 class="tp-service-2-title"><a href="{% url 'service_details' %}">Design Service</a></h4>
                         <p class="tp-service-2-paragraph">Through a unique combination of construction and design disciplines expertise, Concor and delivers world class</p>
                         <div class="tp-service-2-button">
-                            <a class="tp-service-2-btn" href="service-details.html">Read More</a>
+                            <a class="tp-service-2-btn" href="{% url 'service_details' %}">Read More</a>
                         </div>
                     </div>
                 </div>
@@ -398,17 +398,17 @@
                 <div class="tp-service-2-wrapper mb-30 wow fadeInUp" data-wow-delay=".7s" data-wow-duration="1s">
                     <div class="tp-service-2-icon-box">
                         <div class="tp-service-2-icon">
-                            <span><img src="assets/img/service/service-2-icon3.svg" alt=""></span>
+                            <span><img src="{% static 'assets/img/service/service-2-icon3.svg'%}" alt=""></span>
                         </div>
                         <div class="tp-service-2-number">
                             <span>03</span>
                         </div>
                     </div>
                     <div class="tp-service-2-content">
-                        <h4 class="tp-service-2-title"><a href="service-details.html">Promotional Product</a></h4>
+                        <h4 class="tp-service-2-title"><a href="{% url 'service_details' %}">Promotional Product</a></h4>
                         <p class="tp-service-2-paragraph">Through a unique combination of construction and design disciplines expertise, Concor and delivers world class</p>
                         <div class="tp-service-2-button">
-                            <a class="tp-service-2-btn" href="service-details.html">Read More</a>
+                            <a class="tp-service-2-btn" href="{% url 'service_details' %}">Read More</a>
                         </div>
                     </div>
                 </div>
@@ -419,7 +419,7 @@
                         <h4 class="tp-service-2-rt-title">Find Something <br>
                             Speacial</h4>
                         <div class="tp-service-2-ri-button">
-                            <a class="tp-btn-border" href="service-details.html"><span>See all Service</span></a>
+                            <a class="tp-btn-border" href="{% url 'service_details' %}"><span>See all Service</span></a>
                         </div>
                     </div>
                     <div class="tp-service-2-rt-thumb">
@@ -434,7 +434,7 @@
 
 
 <!-- counter area start -->
-<section class="tp-counter-2-area pt-125 pb-85" data-background="assets/img/counter/counter-2-bg.jpg">
+<section class="tp-counter-2-area pt-125 pb-85" data-background="{% static 'assets/img/counter/counter-2-bg.jpg'%}">
     <div class="container">
         <div class="row">
             <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6">
@@ -574,7 +574,7 @@
                                                             <h3 class="tp-product-title">T-Shirt
                                                                 Printing</h3>
                                                             <div class="tp-product-btn">
-                                                                <a class="tp-btn-border" href="shop-details.html"><span>Shop Now</span></a>
+                                                                <a class="tp-btn-border" href="{% url 'shop_details' %}"><span>Shop Now</span></a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -608,7 +608,7 @@
                                                             <h3 class="tp-product-title">T-Shirt
                                                                 Printing</h3>
                                                             <div class="tp-product-btn">
-                                                                <a class="tp-btn-border" href="cart.html"><span>Shop Now</span></a>
+                                                                <a class="tp-btn-border" href="{% url 'cart' %}"><span>Shop Now</span></a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -636,7 +636,7 @@
                                                             <h3 class="tp-product-title">Book Cover
                                                                 Design</h3>
                                                             <div class="tp-product-btn">
-                                                                <a class="tp-btn-border" href="cart.html"><span>Shop Now</span></a>
+                                                                <a class="tp-btn-border" href="{% url 'cart' %}"><span>Shop Now</span></a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -669,7 +669,7 @@
                                                             <h6 class="tp-product-sub-title">LATEST DESIGn</h6>
                                                             <h3 class="tp-product-title">Shoping Bag</h3>
                                                             <div class="tp-product-btn">
-                                                                <a class="tp-btn-border" href="cart.html"><span>Shop Now</span></a>
+                                                                <a class="tp-btn-border" href="{% url 'cart' %}"><span>Shop Now</span></a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -697,7 +697,7 @@
                                                             <h3 class="tp-product-title">Book
                                                                 Design</h3>
                                                             <div class="tp-product-btn">
-                                                                <a class="tp-btn-border" href="cart.html"><span>Shop Now</span></a>
+                                                                <a class="tp-btn-border" href="{% url 'cart' %}"><span>Shop Now</span></a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1099,7 +1099,7 @@
                             </ul>
                         </div>
                         <div class="tp-pricing-button">
-                            <a class="tp-btn" href="contact.html"><span>Choose a Plan</span></a>
+                            <a class="tp-btn" href="{% url 'checkout' %}"><span>Choose a Plan</span></a>
                         </div>
                     </div>
                     <div class="tp-pricing-shape">
@@ -1117,7 +1117,7 @@
                                 <img src="{% static 'assets/img/pricing/pricing-icon2.svg' %}" alt="">
                             </div>
                             <div class="tp-pricing-botton-btn">
-                                <a href="contact.html">Commercial</a>
+                                <a href="{% url 'checkout' %}">Commercial</a>
                             </div>
                         </div>
                     </div>
@@ -1132,7 +1132,7 @@
                             </ul>
                         </div>
                         <div class="tp-pricing-button">
-                            <a class="tp-btn" href="contact.html"><span>Choose a Plan</span></a>
+                            <a class="tp-btn" href="{% url 'checkout' %}"><span>Choose a Plan</span></a>
                         </div>
                     </div>
                     <div class="tp-pricing-shape">
@@ -1165,7 +1165,7 @@
                             </ul>
                         </div>
                         <div class="tp-pricing-button">
-                            <a class="tp-btn" href="contact.html"><span>Choose a Plan</span></a>
+                            <a class="tp-btn" href="{% url 'checkout' %}"><span>Choose a Plan</span></a>
                         </div>
                     </div>
                     <div class="tp-pricing-shape">
@@ -1197,21 +1197,21 @@
             <div class="col-xl-4 col-lg-6 col-md-6">
                 <div class="tp-blog-2-wrapper p-relative z-index-11 fix wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s">
                     <div class="tp-blog-2-thumb not-hide-cursor" data-cursor="View<br>Demo">
-                        <a class="cursor-hide" href="blog-details.html"><img src="{% static 'assets/img/blog/blog-2-img1.jpg' %}" alt=""></a>
+                        <a class="cursor-hide" href="{% url 'blog_details' %}"><img src="{% static 'assets/img/blog/blog-2-img1.jpg' %}" alt=""></a>
                         <div class="tp-blog-2-date">
                             <span>20 <br> Feb</span>
                         </div>
                     </div>
                     <div class="tp-blog-2-content">
                         <h5 class="tp-blog-2-sub-title"><img src="{% static 'assets/img/blog/blog-2-subtitle-icon.svg' %}" alt=""> Statup</h5>
-                        <h4 class="tp-blog-2-title"><a href="blog-details.html">Crafting Digital Identity the
+                        <h4 class="tp-blog-2-title"><a href="{% url 'blog_details' %}">Crafting Digital Identity the
                                 Art of Agency Website</a></h4>
                         <div class="tp-blog-2-content-bottom">
                             <div class="tp-blog-2-comment">
                                 <h6><span><i class="fa-regular fa-message-middle"></i></span> 02 Comments</h6>
                             </div>
                             <div class="tp-blog-2-icon">
-                                <span><a href="blog-details.html"><i class="flaticon-next"></i></a></span>
+                                <span><a href="{% url 'blog_details' %}"><i class="flaticon-next"></i></a></span>
                             </div>
                         </div>
                     </div>
@@ -1220,14 +1220,14 @@
             <div class="col-xl-4 col-lg-6 col-md-6">
                 <div class="tp-blog-2-wrapper p-relative z-index-11 fix wow fadeInUp" data-wow-delay=".5s" data-wow-duration="1s">
                     <div class="tp-blog-2-thumb not-hide-cursor" data-cursor="View<br>Demo">
-                        <a class="cursor-hide" href="blog-details.html"><img src="{% static 'assets/img/blog/blog-2-img2.jpg' %}" alt=""></a>
+                        <a class="cursor-hide" href="{% url 'blog_details' %}"><img src="{% static 'assets/img/blog/blog-2-img2.jpg' %}" alt=""></a>
                         <div class="tp-blog-2-date">
                             <span>20 <br> April</span>
                         </div>
                     </div>
                     <div class="tp-blog-2-content">
                         <h5 class="tp-blog-2-sub-title"><img src="{% static 'assets/img/blog/blog-2-subtitle-icon.svg' %}" alt=""> Consulting</h5>
-                        <h4 class="tp-blog-2-title"><a href="blog-details.html">How to Manage Busines’s
+                        <h4 class="tp-blog-2-title"><a href="{% url 'blog_details' %}">How to Manage Busines’s
                                 Online Reputation</a></h4>
 
                         <div class="tp-blog-2-content-bottom">
@@ -1235,7 +1235,7 @@
                                 <h6><span><i class="fa-regular fa-message-middle"></i></span> 02 Comments</h6>
                             </div>
                             <div class="tp-blog-2-icon">
-                                <span><a href="blog-details.html"><i class="flaticon-next"></i></a></span>
+                                <span><a href="{% url 'blog_details' %}"><i class="flaticon-next"></i></a></span>
                             </div>
                         </div>
                     </div>
@@ -1244,14 +1244,14 @@
             <div class="col-xl-4 col-lg-6 col-md-6">
                 <div class="tp-blog-2-wrapper p-relative z-index-11 fix wow fadeInUp" data-wow-delay=".7s" data-wow-duration="1s">
                     <div class="tp-blog-2-thumb not-hide-cursor" data-cursor="View<br>Demo">
-                        <a class="cursor-hide" href="blog-details.html"><img src="{% static 'assets/img/blog/blog-2-img3.jpg' %}" alt=""></a>
+                        <a class="cursor-hide" href="{% url 'blog_details' %}"><img src="{% static 'assets/img/blog/blog-2-img3.jpg' %}" alt=""></a>
                         <div class="tp-blog-2-date">
                             <span>20 <br> Feb</span>
                         </div>
                     </div>
                     <div class="tp-blog-2-content">
                         <h5 class="tp-blog-2-sub-title"><img src="{% static 'assets/img/blog/blog-2-subtitle-icon.svg' %}" alt=""> Statup</h5>
-                        <h4 class="tp-blog-2-title"><a href="blog-details.html">Top Crypto Exchange Time
+                        <h4 class="tp-blog-2-title"><a href="{% url 'blog_details' %}">Top Crypto Exchange Time
                                 Influencers in China</a></h4>
 
                         <div class="tp-blog-2-content-bottom">
@@ -1259,7 +1259,7 @@
                                 <h6><span><i class="fa-regular fa-message-middle"></i></span> 02 Comments</h6>
                             </div>
                             <div class="tp-blog-2-icon">
-                                <span><a href="blog-details.html"><i class="flaticon-next"></i></a></span>
+                                <span><a href="{% url 'blog_details' %}"><i class="flaticon-next"></i></a></span>
                             </div>
                         </div>
                     </div>
@@ -1285,7 +1285,7 @@
                     <h3 class="tp-cta-2-title tp-split-text right">Ready to Create Some
                         Custome Products?</h3>
                     <div class="tp-cta-2-btn">
-                        <a class="tp-btn" href="contact.html"><span>Contact Us</span></a>
+                        <a class="tp-btn" href="{% url 'contact' %}"><span>Contact Us</span></a>
                     </div>
                 </div>
             </div>
