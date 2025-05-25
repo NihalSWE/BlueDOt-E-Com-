@@ -1,0 +1,453 @@
+{% extends "backend/base.html" %} {% load static %} {% block custom_css %}
+{%endblock custom_css %} {% block content %}
+<!-- Content wrapper -->
+<div class="content-wrapper">
+  <!-- Content -->
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <!-- customers List Table -->
+    <div class="card">
+      <div class="card-datatable table-responsive">
+        <div
+          id="DataTables_Table_0_wrapper"
+          class="dt-container dt-bootstrap5 dt-empty-footer"
+        >
+          <div class="row m-3 my-0 ms-0 me-2 justify-content-between">
+            <div
+              class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-0"
+            >
+              <div class="dt-search">
+                <input
+                  type="search"
+                  class="form-control form-control-sm"
+                  id="dt-search-0"
+                  placeholder="Search Order"
+                  aria-controls="DataTables_Table_0"
+                /><label for="dt-search-0"></label>
+              </div>
+            </div>
+            <div
+              class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto gap-md-2 gap-0 mt-0"
+            >
+              <div class="dt-length mt-0 mt-md-5">
+                <select
+                  name="DataTables_Table_0_length"
+                  aria-controls="DataTables_Table_0"
+                  class="form-select form-select-sm"
+                  id="dt-length-0"
+                >
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option></select
+                ><label for="dt-length-0"></label>
+              </div>
+              <div class="dt-buttons btn-group flex-wrap gap-4 mb-md-0 mb-5">
+                <div class="btn-group">
+                  <button
+                    class="btn buttons-collection btn-outline-secondary dropdown-toggle waves-effect"
+                    tabindex="0"
+                    aria-controls="DataTables_Table_0"
+                    type="button"
+                    aria-haspopup="dialog"
+                    aria-expanded="false"
+                  >
+                    <span
+                      ><span class="d-flex align-items-center"
+                        ><i
+                          class="icon-base ri ri-upload-2-line icon-16px me-sm-2"
+                        ></i>
+                        <span class="d-none d-sm-inline-block"
+                          >Export</span
+                        ></span
+                      ></span
+                    >
+                  </button>
+                </div>
+                <button
+                  class="btn create-new btn-primary"
+                  tabindex="0"
+                  aria-controls="DataTables_Table_0"
+                  type="button"
+                  data-bs-toggle="offcanvas"
+                  data-bs-target="#offcanvasEcommerceCustomerAdd"
+                >
+                  <span
+                    ><span class="d-flex align-items-center gap-1"
+                      ><i class="icon-base ri ri-add-line icon-xs"></i>
+                      <span class="d-none d-sm-inline-block"
+                        >Add Customer</span
+                      ></span
+                    ></span
+                  >
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="justify-content-between dt-layout-table">
+            <div
+              class="d-md-flex justify-content-between align-items-center dt-layout-full table-responsive"
+            >
+              <table
+                class="datatables-customers table dataTable dtr-column"
+                id="DataTables_Table_0"
+                aria-describedby="DataTables_Table_0_info"
+              >
+                <colgroup>
+                  <col data-dt-column="0" />
+                  <col data-dt-column="1" />
+                  <col data-dt-column="2" />
+                  <col data-dt-column="3" />
+                  <col data-dt-column="4" />
+                  <col data-dt-column="5" />
+                  <col data-dt-column="6" />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th
+                      data-dt-column="0"
+                      class="control dt-orderable-none"
+                      rowspan="1"
+                      colspan="1"
+                      aria-label=""
+                    >
+                      <span class="dt-column-title"></span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="1"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-select dt-orderable-none"
+                      aria-label=""
+                    >
+                      <span class="dt-column-title"></span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="2"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-asc dt-orderable-desc dt-ordering-desc"
+                      aria-sort="descending"
+                      aria-label="Customer: Activate to remove sorting"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button">Customer</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      class="text-nowrap dt-orderable-asc dt-orderable-desc"
+                      data-dt-column="3"
+                      rowspan="1"
+                      colspan="1"
+                      aria-label="Customer Id: Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button"
+                        >Customer Id</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="4"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-asc dt-orderable-desc"
+                      aria-label="Country: Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button">Country</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="5"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-asc dt-orderable-desc"
+                      aria-label="Order: Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button">Order</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      class="text-nowrap dt-orderable-asc dt-orderable-desc"
+                      data-dt-column="6"
+                      rowspan="1"
+                      colspan="1"
+                      aria-label="Total Spent: Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button"
+                        >Total Spent</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan="7" class="dt-empty">Loading...</td>
+                  </tr>
+                </tbody>
+                <tfoot></tfoot>
+              </table>
+            </div>
+          </div>
+          <div class="row mx-3 justify-content-between">
+            <div
+              class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-0"
+            >
+              <div
+                class="dt-info"
+                aria-live="polite"
+                id="DataTables_Table_0_info"
+                role="status"
+              >
+                Showing 0 to 0 of 0 entries
+              </div>
+            </div>
+            <div
+              class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto gap-md-2 gap-0 mt-0"
+            >
+              <div class="dt-paging"><nav aria-label="pagination"></nav></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Offcanvas to add new customer -->
+      <div
+        class="offcanvas offcanvas-end"
+        tabindex="-1"
+        id="offcanvasEcommerceCustomerAdd"
+        aria-labelledby="offcanvasEcommerceCustomerAddLabel"
+      >
+        <div class="offcanvas-header border-bottom">
+          <h5 id="offcanvasEcommerceCustomerAddLabel" class="offcanvas-title">
+            Add Customer
+          </h5>
+          <button
+            type="button"
+            class="btn-close text-reset"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="offcanvas-body mx-0 flex-grow-0">
+          <form
+            class="ecommerce-customer-add pt-0 fv-plugins-bootstrap5 fv-plugins-framework"
+            id="eCommerceCustomerAddForm"
+            onsubmit="return false"
+            novalidate="novalidate"
+          >
+            <div class="ecommerce-customer-add-basic mb-5">
+              <h6 class="mb-5">Basic Information</h6>
+              <div
+                class="form-floating form-floating-outline mb-5 form-control-validation fv-plugins-icon-container"
+              >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="ecommerce-customer-add-name"
+                  placeholder="John Doe"
+                  name="customerName"
+                  aria-label="John Doe"
+                />
+                <label for="ecommerce-customer-add-name">Name*</label>
+                <div
+                  class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"
+                ></div>
+              </div>
+              <div
+                class="form-floating form-floating-outline mb-5 form-control-validation fv-plugins-icon-container"
+              >
+                <input
+                  type="text"
+                  id="ecommerce-customer-add-email"
+                  class="form-control"
+                  placeholder="john.doe@example.com"
+                  aria-label="john.doe@example.com"
+                  name="customerEmail"
+                />
+                <label for="ecommerce-customer-add-email">Email*</label>
+                <div
+                  class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"
+                ></div>
+              </div>
+              <div class="form-floating form-floating-outline">
+                <input
+                  type="text"
+                  id="ecommerce-customer-add-contact"
+                  class="form-control phone-mask"
+                  placeholder="+(123) 456-7890"
+                  aria-label="+(123) 456-7890"
+                  name="customerContact"
+                />
+                <label for="ecommerce-customer-add-contact">Mobile</label>
+              </div>
+            </div>
+            <div class="ecommerce-customer-add-shiping mb-5">
+              <h6 class="mb-5">Shipping Information</h6>
+              <div class="form-floating form-floating-outline mb-5">
+                <input
+                  type="text"
+                  id="ecommerce-customer-add-address"
+                  class="form-control"
+                  placeholder="45 Roker Terrace"
+                  aria-label="45 Roker Terrace"
+                  name="customerAddress1"
+                />
+                <label for="ecommerce-customer-add-address"
+                  >Address Line 1</label
+                >
+              </div>
+              <div class="form-floating form-floating-outline mb-5">
+                <input
+                  type="text"
+                  id="ecommerce-customer-add-address-2"
+                  class="form-control"
+                  placeholder="Address 2"
+                  aria-label="address2"
+                  name="customerAddress2"
+                />
+                <label for="ecommerce-customer-add-address-2"
+                  >Address Line 2</label
+                >
+              </div>
+              <div class="form-floating form-floating-outline mb-5">
+                <input
+                  type="text"
+                  id="ecommerce-customer-add-town"
+                  class="form-control"
+                  placeholder="New York"
+                  aria-label="New York"
+                  name="customerTown"
+                />
+                <label for="ecommerce-customer-add-town">Town</label>
+              </div>
+              <div class="form-floating form-floating-outline mb-5">
+                <input
+                  type="text"
+                  id="ecommerce-customer-add-state"
+                  class="form-control"
+                  placeholder="Southern tip"
+                  aria-label="Southern tip"
+                  name="customerState"
+                />
+                <label for="ecommerce-customer-add-state"
+                  >State / Province</label
+                >
+              </div>
+              <div class="form-floating form-floating-outline mb-5">
+                <input
+                  type="text"
+                  id="ecommerce-customer-add-post-code"
+                  class="form-control"
+                  placeholder="734990"
+                  aria-label="734990"
+                  name="pin"
+                  pattern="[0-9]{8}"
+                  maxlength="8"
+                />
+                <label for="ecommerce-customer-add-post-code">Post Code</label>
+              </div>
+              <div
+                class="form-floating form-floating-outline form-floating-select2"
+              >
+                <select
+                  id="ecommerce-customer-add-country"
+                  class="select2 form-select select2-hidden-accessible"
+                  data-select2-id="ecommerce-customer-add-country"
+                  tabindex="-1"
+                  aria-hidden="true"
+                >
+                  <option value="" data-select2-id="2">Select</option>
+                  <option value="Australia">Australia</option>
+                  <option value="Bangladesh">Bangladesh</option>
+                  <option value="Belarus">Belarus</option>
+                  <option value="Brazil">Brazil</option>
+                  <option value="Canada">Canada</option>
+                  <option value="China">China</option>
+                  <option value="France">France</option>
+                  <option value="Germany">Germany</option>
+                  <option value="India">India</option>
+                  <option value="Indonesia">Indonesia</option>
+                  <option value="Israel">Israel</option>
+                  <option value="Italy">Italy</option>
+                  <option value="Japan">Japan</option>
+                  <option value="Korea">Korea, Republic of</option>
+                  <option value="Mexico">Mexico</option>
+                  <option value="Philippines">Philippines</option>
+                  <option value="Russia">Russian Federation</option>
+                  <option value="South Africa">South Africa</option>
+                  <option value="Thailand">Thailand</option>
+                  <option value="Turkey">Turkey</option>
+                  <option value="Ukraine">Ukraine</option>
+                  <option value="United Arab Emirates">
+                    United Arab Emirates
+                  </option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="United States">United States</option></select
+                ><span
+                  class="select2 select2-container select2-container--default"
+                  dir="ltr"
+                  data-select2-id="1"
+                  style="width: 360px"
+                  ><span class="selection"
+                    ><span
+                      class="select2-selection select2-selection--single"
+                      role="combobox"
+                      aria-haspopup="true"
+                      aria-expanded="false"
+                      tabindex="0"
+                      aria-disabled="false"
+                      aria-labelledby="select2-ecommerce-customer-add-country-container"
+                      ><span
+                        class="select2-selection__rendered"
+                        id="select2-ecommerce-customer-add-country-container"
+                        role="textbox"
+                        aria-readonly="true"
+                        ><span class="select2-selection__placeholder"
+                          >United States
+                        </span></span
+                      ><span
+                        class="select2-selection__arrow"
+                        role="presentation"
+                        ><b role="presentation"></b></span></span></span
+                  ><span class="dropdown-wrapper" aria-hidden="true"></span
+                ></span>
+                <label for="ecommerce-customer-add-country">Country</label>
+              </div>
+            </div>
+
+            <div class="d-sm-flex mb-5">
+              <div class="me-auto mb-2 mb-md-0">
+                <h6 class="mb-1">Use as a billing address?</h6>
+                <small>If you need more info, please check budget.</small>
+              </div>
+              <div class="form-check form-switch my-auto me-n2">
+                <input type="checkbox" class="form-check-input" />
+              </div>
+            </div>
+            <div>
+              <button
+                type="submit"
+                class="btn btn-primary me-3 data-submit waves-effect waves-light"
+              >
+                Add
+              </button>
+              <button
+                type="reset"
+                class="btn btn-outline-danger waves-effect"
+                data-bs-dismiss="offcanvas"
+              >
+                Discard
+              </button>
+            </div>
+            <input type="hidden" />
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- / Content -->
+  {% endblock content %} {% block custom_js %} {% endblock custom_js %}
+</div>

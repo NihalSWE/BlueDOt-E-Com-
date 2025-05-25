@@ -1,0 +1,298 @@
+{% extends "backend/base.html" %} {% load static %} {% block custom_css %}
+{%endblock custom_css %} {% block content %}
+<!-- Content wrapper -->
+<div class="content-wrapper">
+  <!-- Content -->
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Invoice List Widget -->
+
+    <div class="card mb-6">
+      <div class="card-widget-separator-wrapper">
+        <div class="card-body card-widget-separator">
+          <div class="row gy-4 gy-sm-1">
+            <div class="col-sm-6 col-lg-3">
+              <div
+                class="d-flex justify-content-between align-items-start card-widget-1 border-end pb-4 pb-sm-0"
+              >
+                <div>
+                  <h4 class="mb-0">24</h4>
+                  <p class="mb-0">Clients</p>
+                </div>
+                <div class="avatar me-sm-6">
+                  <span class="avatar-initial rounded-3">
+                    <i
+                      class="icon-base ri ri-user-line text-heading icon-26px"
+                    ></i>
+                  </span>
+                </div>
+              </div>
+              <hr class="d-none d-sm-block d-lg-none me-6" />
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div
+                class="d-flex justify-content-between align-items-start card-widget-2 border-end pb-4 pb-sm-0"
+              >
+                <div>
+                  <h4 class="mb-0">165</h4>
+                  <p class="mb-0">Invoices</p>
+                </div>
+                <div class="avatar me-lg-6">
+                  <span class="avatar-initial rounded-3">
+                    <i
+                      class="icon-base ri ri-pages-line text-heading icon-26px"
+                    ></i>
+                  </span>
+                </div>
+              </div>
+              <hr class="d-none d-sm-block d-lg-none" />
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div
+                class="d-flex justify-content-between align-items-start border-end pb-4 pb-sm-0 card-widget-3"
+              >
+                <div>
+                  <h4 class="mb-0">$2.46k</h4>
+                  <p class="mb-0">Paid</p>
+                </div>
+                <div class="avatar me-sm-6">
+                  <span class="avatar-initial rounded-3">
+                    <i
+                      class="icon-base ri ri-wallet-line text-heading icon-26px"
+                    ></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h4 class="mb-0">$876</h4>
+                  <p class="mb-0">Unpaid</p>
+                </div>
+                <div class="avatar">
+                  <span class="avatar-initial rounded-3">
+                    <i
+                      class="icon-base ri ri-money-dollar-circle-line text-heading icon-26px"
+                    ></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoice List Table -->
+    <div class="card">
+      <div class="card-datatable table-responsive">
+        <div
+          id="DataTables_Table_0_wrapper"
+          class="dt-container dt-bootstrap5 dt-empty-footer"
+        >
+          <div class="row mx-3 justify-content-between">
+            <div
+              class="align-items-center dt-layout-start col-md-auto me-auto px-3 pe-md-0 mt-0 d-flex justify-content-md-between justify-content-center mt-md-0 mt-5"
+            >
+              <div
+                class="dt-length d-flex align-items-center mx-2 my-md-5 my-0"
+              >
+                <label for="dt-length-0">Show</label
+                ><select
+                  name="DataTables_Table_0_length"
+                  aria-controls="DataTables_Table_0"
+                  class="form-select form-select-sm"
+                  id="dt-length-0"
+                >
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+              <div class="dt-buttons btn-group d-block mb-0 w-auto">
+                <a
+                  href="{% url 'invoice_add' %}"
+                  class="btn btn-primary"
+                  tabindex="0"
+                  role="button"
+                >
+                  <span>
+                    <i class="icon-base ri ri-add-line icon-16px me-md-2"></i>
+                    <span class="d-md-inline-block d-none">Create Invoice</span>
+                  </span>
+                </a>
+              </div>
+              
+            </div>
+            <div
+              class="d-md-flex align-items-center dt-layout-end col-md-auto justify-content-md-between justify-content-center d-flex flex-wrap gap-sm-4 mb-sm-0 mb-5 mt-0 pe-md-3 ps-0"
+            >
+              <div class="dt-search me-sm-0 me-4">
+                <input
+                  type="search"
+                  class="form-control"
+                  id="dt-search-0"
+                  placeholder="Search Invoice"
+                  aria-controls="DataTables_Table_0"
+                /><label for="dt-search-0"></label>
+              </div>
+            </div>
+          </div>
+          <div class="justify-content-between dt-layout-table">
+            <div
+              class="d-md-flex justify-content-between align-items-center dt-layout-full table-responsive"
+            >
+              <table
+                class="invoice-list-table table dataTable dtr-column"
+                id="DataTables_Table_0"
+                aria-describedby="DataTables_Table_0_info"
+              >
+                <colgroup>
+                  <col data-dt-column="0" />
+                  <col data-dt-column="1" />
+                  <col data-dt-column="2" />
+                  <col data-dt-column="3" />
+                  <col data-dt-column="4" />
+                  <col data-dt-column="5" />
+                  <col data-dt-column="6" />
+                  <col data-dt-column="7" />
+                  <col data-dt-column="9" />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th
+                      data-dt-column="0"
+                      class="control dt-orderable-asc dt-orderable-desc"
+                      rowspan="1"
+                      colspan="1"
+                      aria-label=": Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button"></span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="1"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-select dt-orderable-none"
+                      aria-label=""
+                    >
+                      <span class="dt-column-title"></span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="2"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-asc dt-orderable-desc dt-ordering-desc"
+                      aria-sort="descending"
+                      aria-label="#ID: Activate to remove sorting"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button">#ID</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="3"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-asc dt-orderable-desc"
+                      aria-label="#: Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button">#</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="4"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-asc dt-orderable-desc"
+                      aria-label="Client: Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button">Client</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="5"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-asc dt-orderable-desc"
+                      aria-label="Total: Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button">Total</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      class="text-truncate dt-orderable-asc dt-orderable-desc"
+                      data-dt-column="6"
+                      rowspan="1"
+                      colspan="1"
+                      aria-label="Issued Date: Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button"
+                        >Issued Date</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="7"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-none"
+                      aria-label="Balance"
+                    >
+                      <span class="dt-column-title">Balance</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      class="cell-fit dt-orderable-none"
+                      data-dt-column="9"
+                      rowspan="1"
+                      colspan="1"
+                      aria-label="Actions"
+                    >
+                      <span class="dt-column-title">Actions</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan="9" class="dt-empty">Loading...</td>
+                  </tr>
+                </tbody>
+                <tfoot></tfoot>
+              </table>
+            </div>
+          </div>
+          <div class="row mx-3 justify-content-between">
+            <div
+              class="align-items-center dt-layout-start col-md-auto me-auto px-3 pe-md-0 mt-0 d-flex justify-content-md-between justify-content-center mt-md-0 mt-5"
+            >
+              <div
+                class="dt-info"
+                aria-live="polite"
+                id="DataTables_Table_0_info"
+                role="status"
+              >
+                Showing 0 to 0 of 0 entries
+              </div>
+            </div>
+            <div
+              class="d-md-flex align-items-center dt-layout-end col-md-auto justify-content-md-between justify-content-center d-flex flex-wrap gap-sm-4 mb-sm-0 mb-5 mt-0 pe-md-3 ps-0"
+            >
+              <div class="dt-paging"><nav aria-label="pagination"></nav></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- / Content -->
+  {% endblock content %} {% block custom_js %} {% endblock custom_js %}
+</div>

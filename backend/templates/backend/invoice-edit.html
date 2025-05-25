@@ -1,0 +1,525 @@
+{% extends "backend/base.html" %} {% load static %} {% block custom_css %}
+{%endblock custom_css %} {% block content %}
+          <!-- Content wrapper -->
+          <div class="content-wrapper">
+            <!-- Content -->
+            <div class="container-xxl flex-grow-1 container-p-y">
+              <div class="row invoice-edit">
+                <!-- Invoice Edit-->
+                <div class="col-lg-9 col-12 mb-lg-0 mb-6">
+                  <div class="card invoice-preview-card p-sm-12 p-6">
+                    <div class="card-body invoice-preview-header rounded p-6 px-3 text-heading">
+                      <div class="row mx-0 px-3">
+                        <div class="col-md-7 mb-md-0 mb-6 ps-0">
+                          <div class="d-flex svg-illustration align-items-center gap-3 mb-6">
+                            <span class="app-brand-logo demo">
+                              <span class="text-primary">
+                                <svg
+                                  width="32"
+                                  height="18"
+                                  viewBox="0 0 38 20"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg">
+                                  <path
+                                    d="M30.0944 2.22569C29.0511 0.444187 26.7508 -0.172113 24.9566 0.849138C23.1623 1.87039 22.5536 4.14247 23.5969 5.92397L30.5368 17.7743C31.5801 19.5558 33.8804 20.1721 35.6746 19.1509C37.4689 18.1296 38.0776 15.8575 37.0343 14.076L30.0944 2.22569Z"
+                                    fill="currentColor" />
+                                  <path
+                                    d="M30.171 2.22569C29.1277 0.444187 26.8274 -0.172113 25.0332 0.849138C23.2389 1.87039 22.6302 4.14247 23.6735 5.92397L30.6134 17.7743C31.6567 19.5558 33.957 20.1721 35.7512 19.1509C37.5455 18.1296 38.1542 15.8575 37.1109 14.076L30.171 2.22569Z"
+                                    fill="url(#paint0_linear_2989_100980)"
+                                    fill-opacity="0.4" />
+                                  <path
+                                    d="M22.9676 2.22569C24.0109 0.444187 26.3112 -0.172113 28.1054 0.849138C29.8996 1.87039 30.5084 4.14247 29.4651 5.92397L22.5251 17.7743C21.4818 19.5558 19.1816 20.1721 17.3873 19.1509C15.5931 18.1296 14.9843 15.8575 16.0276 14.076L22.9676 2.22569Z"
+                                    fill="currentColor" />
+                                  <path
+                                    d="M14.9558 2.22569C13.9125 0.444187 11.6122 -0.172113 9.818 0.849138C8.02377 1.87039 7.41502 4.14247 8.45833 5.92397L15.3983 17.7743C16.4416 19.5558 18.7418 20.1721 20.5361 19.1509C22.3303 18.1296 22.9391 15.8575 21.8958 14.076L14.9558 2.22569Z"
+                                    fill="currentColor" />
+                                  <path
+                                    d="M14.9558 2.22569C13.9125 0.444187 11.6122 -0.172113 9.818 0.849138C8.02377 1.87039 7.41502 4.14247 8.45833 5.92397L15.3983 17.7743C16.4416 19.5558 18.7418 20.1721 20.5361 19.1509C22.3303 18.1296 22.9391 15.8575 21.8958 14.076L14.9558 2.22569Z"
+                                    fill="url(#paint1_linear_2989_100980)"
+                                    fill-opacity="0.4" />
+                                  <path
+                                    d="M7.82901 2.22569C8.87231 0.444187 11.1726 -0.172113 12.9668 0.849138C14.7611 1.87039 15.3698 4.14247 14.3265 5.92397L7.38656 17.7743C6.34325 19.5558 4.04298 20.1721 2.24875 19.1509C0.454514 18.1296 -0.154233 15.8575 0.88907 14.076L7.82901 2.22569Z"
+                                    fill="currentColor" />
+                                  <defs>
+                                    <linearGradient
+                                      id="paint0_linear_2989_100980"
+                                      x1="5.36642"
+                                      y1="0.849138"
+                                      x2="10.532"
+                                      y2="24.104"
+                                      gradientUnits="userSpaceOnUse">
+                                      <stop offset="0" stop-opacity="1" />
+                                      <stop offset="1" stop-opacity="0" />
+                                    </linearGradient>
+                                    <linearGradient
+                                      id="paint1_linear_2989_100980"
+                                      x1="5.19475"
+                                      y1="0.849139"
+                                      x2="10.3357"
+                                      y2="24.1155"
+                                      gradientUnits="userSpaceOnUse">
+                                      <stop offset="0" stop-opacity="1" />
+                                      <stop offset="1" stop-opacity="0" />
+                                    </linearGradient>
+                                  </defs>
+                                </svg>
+                              </span>
+                            </span>
+                            <span class="mb-0 app-brand-text fw-semibold">Materialize</span>
+                          </div>
+                          <p class="mb-1">Office 149, 450 South Brand Brooklyn</p>
+                          <p class="mb-1">San Diego County, CA 91905, USA</p>
+                          <p class="mb-0">+1 (123) 456 7891, +44 (876) 543 2198</p>
+                        </div>
+                        <div class="col-md-5 col-8 pe-0 ps-0 ps-md-2">
+                          <dl class="row mb-0 gx-4">
+                            <dt class="col-sm-5 mb-2 d-md-flex align-items-center justify-content-start">
+                              <span class="h5 text-capitalize mb-0 text-nowrap">Invoice</span>
+                            </dt>
+                            <dd class="col-sm-7">
+                              <div class="input-group input-group-sm input-group-merge disabled">
+                                <span class="input-group-text">#</span>
+                                <input
+                                  type="text"
+                                  class="form-control"
+                                  disabled
+                                  placeholder="74909"
+                                  value="74909"
+                                  id="invoiceId" />
+                              </div>
+                            </dd>
+                            <dt class="col-sm-5 mb-2 d-md-flex align-items-center justify-content-start">
+                              <span class="fw-normal text-nowrap">Date Issued:</span>
+                            </dt>
+                            <dd class="col-sm-7">
+                              <input
+                                type="text"
+                                class="form-control form-control-sm invoice-date"
+                                placeholder="YYYY-MM-DD" />
+                            </dd>
+                            <dt class="col-sm-5 d-md-flex align-items-center justify-content-start">
+                              <span class="fw-normal">Due Date:</span>
+                            </dt>
+                            <dd class="col-sm-7 mb-0">
+                              <input
+                                type="text"
+                                class="form-control form-control-sm due-date"
+                                placeholder="YYYY-MM-DD" />
+                            </dd>
+                          </dl>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="card-body px-0">
+                      <div class="row my-1">
+                        <div class="col-md-6 col-sm-5 col-12 mb-sm-0 mb-6">
+                          <h6>Invoice To:</h6>
+                          <div class="row">
+                            <div class="col-lg-6 col-md-8 col-12">
+                              <select class="form-select mb-4 w-auto">
+                                <option value="Thomas shelby">Thomas shelby</option>
+                                <option value="Wesley Burland">Wesley Burland</option>
+                                <option value="Vladamir Koschek">Vladamir Koschek</option>
+                                <option value="Tyne Widmore">Tyne Widmore</option>
+                              </select>
+                            </div>
+                          </div>
+                          <p class="mb-1">Shelby Company Limited</p>
+                          <p class="mb-1">Small Heath, B10 0HF, UK</p>
+                          <p class="mb-1">718-986-6062</p>
+                          <p class="mb-0">peakyFBlinders@gmail.com</p>
+                        </div>
+                        <div class="col-md-6 col-sm-7">
+                          <h6>Bill To:</h6>
+                          <table>
+                            <tbody>
+                              <tr>
+                                <td class="pe-4">Total Due:</td>
+                                <td>$12,110.55</td>
+                              </tr>
+                              <tr>
+                                <td class="pe-4">Bank name:</td>
+                                <td>American Bank</td>
+                              </tr>
+                              <tr>
+                                <td class="pe-4">Country:</td>
+                                <td>United States</td>
+                              </tr>
+                              <tr>
+                                <td class="pe-4">IBAN:</td>
+                                <td>ETD95476213874685</td>
+                              </tr>
+                              <tr>
+                                <td class="pe-4">SWIFT code:</td>
+                                <td>BR91905</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                    <hr class="mb-6 mt-1" />
+                    <div class="card-body pt-0 px-0">
+                      <form class="source-item">
+                        <div class="mb-4" data-repeater-list="group-a">
+                          <div class="repeater-wrapper pt-0 pt-md-9" data-repeater-item>
+                            <div class="d-flex border rounded position-relative pe-0">
+                              <div class="row w-100 p-5 gx-5">
+                                <div class="col-md-7 col-12 mb-md-0 mb-3">
+                                  <h6 class="mb-2 repeater-title fw-medium">Item</h6>
+                                  <select class="form-select item-details mb-4">
+                                    <option value="App Design">App Design</option>
+                                    <option value="App Customization" selected>App Design</option>
+                                    <option value="ABC Template">ABC Template</option>
+                                    <option value="App Development">App Development</option>
+                                  </select>
+                                  <textarea class="form-control" rows="2">Customization & Bug Fixes</textarea>
+                                </div>
+                                <div class="col-md-2 col-12 mb-md-0 mb-5">
+                                  <h6 class="h6 repeater-title">Cost</h6>
+                                  <input
+                                    type="text"
+                                    class="form-control invoice-item-price mb-5"
+                                    value="24"
+                                    placeholder="24"
+                                    min="12" />
+                                  <div class="d-flex flex-column gap-2 text-heading">
+                                    <span>Discount:</span>
+                                    <span>
+                                      <span class="discount me-2">0%</span>
+                                      <span
+                                        class="tax-1 me-2"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Tax 1"
+                                        >0%</span
+                                      >
+                                      <span class="tax-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Tax 2"
+                                        >0%</span
+                                      >
+                                    </span>
+                                  </div>
+                                </div>
+                                <div class="col-md-2 col-12 mb-md-0 mb-4">
+                                  <h6 class="h6 repeater-title">Qty</h6>
+                                  <input
+                                    type="text"
+                                    class="form-control invoice-item-qty"
+                                    value="1"
+                                    placeholder="1"
+                                    min="1"
+                                    max="50" />
+                                </div>
+                                <div class="col-md-1 col-12 pe-0">
+                                  <h6 class="h6 repeater-title">Price</h6>
+                                  <p class="mb-0 mt-2 text-heading">$24.00</p>
+                                </div>
+                              </div>
+                              <div
+                                class="d-flex flex-column align-items-center justify-content-between border-start p-2">
+                                <i class="icon-base ri ri-close-line cursor-pointer icon-24px" data-repeater-delete></i>
+                                <div class="dropdown">
+                                  <i
+                                    class="icon-base ri ri-settings-3-line cursor-pointer more-options-dropdown icon-24px"
+                                    role="button"
+                                    id="dropdownMenuButton"
+                                    data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside"
+                                    aria-expanded="false">
+                                  </i>
+                                  <div
+                                    class="dropdown-menu dropdown-menu-end w-px-300 p-4"
+                                    aria-labelledby="dropdownMenuButton">
+                                    <div class="row g-3">
+                                      <div class="col-12">
+                                        <label for="discountInput" class="form-label">Discount(%)</label>
+                                        <input
+                                          type="number"
+                                          class="form-control"
+                                          id="discountInput"
+                                          min="0"
+                                          max="100" />
+                                      </div>
+                                      <div class="col-md-6">
+                                        <label for="taxInput1" class="form-label">Tax 1</label>
+                                        <select name="tax-1-input" id="taxInput1" class="form-select tax-select">
+                                          <option value="0%" selected>0%</option>
+                                          <option value="1%">1%</option>
+                                          <option value="10%">10%</option>
+                                          <option value="18%">18%</option>
+                                          <option value="40%">40%</option>
+                                        </select>
+                                      </div>
+                                      <div class="col-md-6">
+                                        <label for="taxInput2" class="form-label">Tax 2</label>
+                                        <select name="tax-2-input" id="taxInput2" class="form-select tax-select">
+                                          <option value="0%" selected>0%</option>
+                                          <option value="1%">1%</option>
+                                          <option value="10%">10%</option>
+                                          <option value="18%">18%</option>
+                                          <option value="40%">40%</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                    <div class="dropdown-divider my-4"></div>
+                                    <button type="button" class="btn btn-outline-primary btn-apply-changes">
+                                      Apply
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-12">
+                            <button type="button" class="btn btn-primary btn-sm" data-repeater-create>
+                              <i class="icon-base ri ri-add-line icon-14px me-1"></i> Add Item
+                            </button>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                    <hr class="my-1" />
+                    <div class="card-body px-0">
+                      <div class="row">
+                        <div class="col-md-6 mb-md-0 mb-3">
+                          <div class="d-flex align-items-center mb-4">
+                            <label for="salesperson" class="me-2 h6 mb-2">Salesperson:</label>
+                            <input type="text" class="form-control" id="salesperson" placeholder="Tommy Shelby" />
+                          </div>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="invoiceMsg"
+                            placeholder="Thanks for your business" />
+                        </div>
+                        <div class="col-md-6 d-flex justify-content-md-end mt-2">
+                          <div class="invoice-calculations">
+                            <div class="d-flex justify-content-between mb-1">
+                              <span class="w-px-100">Subtotal:</span>
+                              <h6 class="mb-0">$5000.25</h6>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                              <span class="w-px-100">Discount:</span>
+                              <h6 class="mb-0">$00.00</h6>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                              <span class="w-px-100">Tax:</span>
+                              <h6 class="mb-0">$100.00</h6>
+                            </div>
+                            <hr class="my-2" />
+                            <div class="d-flex justify-content-between">
+                              <span class="w-px-100">Total:</span>
+                              <h6 class="mb-0">$5100.25</h6>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <hr class="my-1" />
+                    <div class="card-body px-0">
+                      <div class="row">
+                        <div class="col-12">
+                          <div>
+                            <label for="note" class="h6 mb-1 fw-normal">Note:</label>
+                            <textarea class="form-control" rows="2" id="note">
+It was a pleasure working with you and your team. We hope you will keep us in mind for future freelance projects. Thank You!</textarea
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- /Invoice Edit-->
+
+                <!-- Invoice Actions -->
+                <div class="col-lg-3 col-12 invoice-actions">
+                  <div class="card mb-6">
+                    <div class="card-body">
+                      <button
+                        class="btn btn-primary d-grid w-100 mb-4"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#sendInvoiceOffcanvas">
+                        <span class="d-flex align-items-center justify-content-center text-nowrap"
+                          ><i class="icon-base ri ri-send-plane-line icon-16px scaleX-n1-rtl me-2"></i>Send
+                          Invoice</span
+                        >
+                      </button>
+                      <div class="d-flex">
+                        <a href="{% url 'invoice_preview' %}" class="btn btn-outline-secondary w-100 me-4 mb-4"
+                          >Preview</a
+                        >
+                        <button type="button" class="btn btn-outline-secondary w-100 mb-4">Save</button>
+                      </div>
+                      <button
+                        class="btn btn-success d-grid w-100"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#addPaymentOffcanvas">
+                        <span class="d-flex align-items-center justify-content-center text-nowrap"
+                          ><i class="icon-base ri ri-money-dollar-circle-line icon-16px scaleX-n1-rtl me-2"></i>Add
+                          Payment</span
+                        >
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="form-floating form-floating-outline mb-6">
+                      <select class="form-select mb-4" id="select-payment-edit">
+                        <option value="Accept payments via">Accept payments via</option>
+                        <option value="Bank Account">Bank Account</option>
+                        <option value="Paypal">Paypal</option>
+                        <option value="Card">Credit/Debit Card</option>
+                        <option value="UPI Transfer">UPI Transfer</option>
+                      </select>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4">
+                      <label for="payment-terms">Payment Terms</label>
+                      <div class="form-check form-switch me-n2 mb-0">
+                        <input type="checkbox" class="form-check-input" id="payment-terms" checked />
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4">
+                      <label for="client-notes">Client Notes</label>
+                      <div class="form-check form-switch me-n2 mb-0">
+                        <input type="checkbox" class="form-check-input" id="client-notes" checked />
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                      <label for="payment-stub">Payment Stub</label>
+                      <div class="form-check form-switch me-n2 mb-0">
+                        <input type="checkbox" class="form-check-input" id="payment-stub" checked />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- /Invoice Actions -->
+              </div>
+
+              <!-- Offcanvas -->
+              <!-- Send Invoice Sidebar -->
+              <div class="offcanvas offcanvas-end" id="sendInvoiceOffcanvas" aria-hidden="true">
+                <div class="offcanvas-header border-bottom">
+                  <h5 class="offcanvas-title">Send Invoice</h5>
+                  <button
+                    type="button"
+                    class="btn-close text-reset"
+                    data-bs-dismiss="offcanvas"
+                    aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body flex-grow-1">
+                  <form>
+                    <div class="form-floating form-floating-outline mb-5">
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="invoice-from"
+                        value="shelbyComapny@email.com"
+                        placeholder="company@email.com" />
+                      <label for="invoice-from">From</label>
+                    </div>
+                    <div class="form-floating form-floating-outline mb-5">
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="invoice-to"
+                        value="qConsolidated@email.com"
+                        placeholder="company@email.com" />
+                      <label for="invoice-to">To</label>
+                    </div>
+                    <div class="form-floating form-floating-outline mb-5">
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="invoice-subject"
+                        value="Invoice of purchased Admin Templates"
+                        placeholder="Invoice regarding goods" />
+                      <label for="invoice-subject">Subject</label>
+                    </div>
+                    <div class="form-floating form-floating-outline mb-5">
+                      <textarea class="form-control" name="invoice-message" id="invoice-message" style="height: 190px">
+          Dear Queen Consolidated, Thank you for your business, always a pleasure to work with you! We have generated a new invoice in the amount of $95.59 We would appreciate payment of this invoice by 05/11/2021</textarea
+                      >
+                      <label for="invoice-message">Message</label>
+                    </div>
+                    <div class="mb-5">
+                      <span class="badge bg-label-primary rounded-pill">
+                        <i class="icon-base ri ri-links-line icon-14px me-1"></i>
+                        <span class="align-middle">Invoice Attached</span>
+                      </span>
+                    </div>
+                    <div class="mb-4 d-flex flex-wrap">
+                      <button type="button" class="btn btn-primary me-4" data-bs-dismiss="offcanvas">Send</button>
+                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="offcanvas">
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              <!-- /Send Invoice Sidebar -->
+
+              <!-- Add Payment Sidebar -->
+              <div class="offcanvas offcanvas-end" id="addPaymentOffcanvas" aria-hidden="true">
+                <div class="offcanvas-header border-bottom">
+                  <h5 class="offcanvas-title">Add Payment</h5>
+                  <button
+                    type="button"
+                    class="btn-close text-reset"
+                    data-bs-dismiss="offcanvas"
+                    aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body flex-grow-1">
+                  <div class="d-flex justify-content-between bg-lighter p-2 mb-5">
+                    <p class="mb-0">Invoice Balance:</p>
+                    <p class="fw-medium mb-0">$5000.00</p>
+                  </div>
+                  <form>
+                    <div class="input-group input-group-merge mb-5">
+                      <span class="input-group-text">$</span>
+                      <div class="form-floating form-floating-outline">
+                        <input
+                          type="text"
+                          id="invoiceAmount"
+                          name="invoiceAmount"
+                          class="form-control invoice-amount"
+                          placeholder="100" />
+                        <label for="invoiceAmount">Payment Amount</label>
+                      </div>
+                    </div>
+                    <div class="form-floating form-floating-outline mb-5">
+                      <input id="payment-date" class="form-control invoice-date" type="text" />
+                      <label for="payment-date">Payment Date</label>
+                    </div>
+                    <div class="form-floating form-floating-outline mb-5">
+                      <select class="form-select" id="payment-method">
+                        <option value="" selected disabled>Select payment method</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Debit Card">Debit Card</option>
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="Paypal">Paypal</option>
+                      </select>
+                      <label for="payment-method">Payment Method</label>
+                    </div>
+                    <div class="form-floating form-floating-outline mb-5">
+                      <textarea class="form-control" id="payment-note" style="height: 62px"></textarea>
+                      <label for="payment-note">Internal Payment Note</label>
+                    </div>
+                    <div class="d-flex flex-wrap">
+                      <button type="button" class="btn btn-primary me-4" data-bs-dismiss="offcanvas">Send</button>
+                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="offcanvas">
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              <!-- /Add Payment Sidebar -->
+
+              <!-- /Offcanvas -->
+            </div>
+            <!-- / Content -->
+            {% endblock content %} {% block custom_js %} {% endblock custom_js %}

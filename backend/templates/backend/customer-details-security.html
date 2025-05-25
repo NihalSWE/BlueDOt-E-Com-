@@ -1,0 +1,597 @@
+{% extends "backend/base.html" %} {% load static %} {% block custom_css %}
+{%endblock custom_css %} {% block content %}
+<!-- Content wrapper -->
+<div class="content-wrapper">
+  <!-- Content -->
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <div
+      class="d-flex flex-column flex-sm-row align-items-center justify-content-sm-between mb-6 text-center text-sm-start gap-2"
+    >
+      <div class="mb-2 mb-sm-0">
+        <h4 class="mb-1">Customer ID #634759</h4>
+        <p class="mb-0">Aug 17, 2020, 5:48 (ET)</p>
+      </div>
+      <button type="button" class="btn btn-outline-danger delete-customer">
+        Delete Customer
+      </button>
+    </div>
+
+    <div class="row">
+      <!-- Customer-detail Sidebar -->
+      <div class="col-xl-4 col-lg-5 col-md-5 order-1 order-md-0">
+        <!-- Customer-detail Card -->
+        <div class="card mb-6">
+          <div class="card-body pt-12">
+            <div class="customer-avatar-section">
+              <div class="d-flex align-items-center flex-column">
+                <img
+                  class="img-fluid rounded-3 mb-4"
+                  src="../../assets/img/avatars/1.png"
+                  height="120"
+                  width="120"
+                  alt="User avatar"
+                />
+                <div class="customer-info text-center mb-6">
+                  <h5 class="mb-0">Lorine Hischke</h5>
+                  <span>Customer ID #634759</span>
+                </div>
+              </div>
+            </div>
+            <div
+              class="d-flex justify-content-around flex-wrap mb-6 gap-4 gap-md-3 gap-lg-4"
+            >
+              <div class="d-flex align-items-center gap-4 me-5">
+                <div class="avatar">
+                  <div class="avatar-initial rounded-3 bg-label-primary">
+                    <i class="icon-base ri ri-shopping-cart-line icon-24px"></i>
+                  </div>
+                </div>
+                <div>
+                  <h5 class="mb-0">184</h5>
+                  <span>Orders</span>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-4">
+                <div class="avatar">
+                  <div class="avatar-initial rounded-3 bg-label-primary">
+                    <i
+                      class="icon-base ri ri-money-dollar-circle-line icon-24px"
+                    ></i>
+                  </div>
+                </div>
+                <div>
+                  <h5 class="mb-0">$12,378</h5>
+                  <span>Spent</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-container">
+              <h5 class="border-bottom text-capitalize pb-4 mt-6 mb-4">
+                Details
+              </h5>
+              <ul class="list-unstyled mb-6">
+                <li class="mb-2">
+                  <span class="h6 me-1">Username:</span>
+                  <span>lorine.hischke</span>
+                </li>
+                <li class="mb-2">
+                  <span class="h6 me-1">Email:</span>
+                  <span>vafgot@vultukir.org</span>
+                </li>
+                <li class="mb-2">
+                  <span class="h6 me-1">Status:</span>
+                  <span class="badge bg-label-success rounded-pill"
+                    >Active</span
+                  >
+                </li>
+                <li class="mb-2">
+                  <span class="h6 me-1">Contact:</span>
+                  <span>(123) 456-7890</span>
+                </li>
+
+                <li class="mb-2">
+                  <span class="h6 me-1">Country:</span>
+                  <span>USA</span>
+                </li>
+              </ul>
+              <div class="d-flex justify-content-center">
+                <a
+                  href="javascript:;"
+                  class="btn btn-primary w-100"
+                  data-bs-target="#editUser"
+                  data-bs-toggle="modal"
+                  >Edit Details</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /Customer-detail Card -->
+      </div>
+      <!--/ Customer Sidebar -->
+
+      <!-- Customer Content -->
+      <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
+        <!-- Customer Pills -->
+        <div class="nav-align-top">
+          <ul
+            class="nav nav-pills flex-column flex-md-row mb-6 row-gap-2 flex-wrap"
+          >
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'customer_overview' %}"
+                ><i class="icon-base ri ri-group-line icon-sm me-2"></i
+                >Overview</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="{% url 'security' %}"
+                ><i class="icon-base ri ri-lock-2-line icon-sm me-2"></i
+                >Security</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'billing' %}"
+                ><i class="icon-base ri ri-map-pin-line icon-sm me-2"></i
+                >Address & Billing</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'notification' %}"
+                ><i class="icon-base ri ri-notification-4-line icon-sm me-2"></i
+                >Notifications</a
+              >
+            </li>
+          </ul>
+        </div>
+        <!--/ Customer Pills -->
+        <!-- Change Password -->
+        <div class="card mb-6">
+          <h5 class="card-header">Change Password</h5>
+          <div class="card-body">
+            <form id="formChangePassword" method="GET" onsubmit="return false">
+              <div class="alert alert-warning alert-dismissible" role="alert">
+                <h5 class="alert-heading mb-1">
+                  Ensure that these requirements are met
+                </h5>
+                <span>Minimum 8 characters long, uppercase & symbol</span>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="alert"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="row gx-5">
+                <div
+                  class="mb-3 col-12 col-sm-6 form-password-toggle form-control-validation"
+                >
+                  <div class="input-group input-group-merge">
+                    <div class="form-floating form-floating-outline">
+                      <input
+                        class="form-control"
+                        type="password"
+                        id="newPassword"
+                        name="newPassword"
+                        placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                      />
+                      <label for="newPassword">New Password</label>
+                    </div>
+                    <span class="input-group-text cursor-pointer"
+                      ><i class="icon-base ri ri-eye-off-line icon-20px"></i
+                    ></span>
+                  </div>
+                </div>
+                <div
+                  class="mb-3 col-12 col-sm-6 form-password-toggle form-control-validation"
+                >
+                  <div class="input-group input-group-merge">
+                    <div class="form-floating form-floating-outline">
+                      <input
+                        class="form-control"
+                        type="password"
+                        name="confirmPassword"
+                        id="confirmPassword"
+                        placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                      />
+                      <label for="confirmPassword">Confirm New Password</label>
+                    </div>
+                    <span class="input-group-text cursor-pointer"
+                      ><i class="icon-base ri ri-eye-off-line icon-20px"></i
+                    ></span>
+                  </div>
+                </div>
+                <div>
+                  <button type="submit" class="btn btn-primary me-2">
+                    Change Password
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <!--/ Change Password -->
+
+        <!-- Two-steps verification -->
+        <div class="card mb-6">
+          <div class="card-header">
+            <h5 class="mb-0">Two-steps verification</h5>
+            <span class="card-subtitle mt-0"
+              >Keep your account secure with authentication step.</span
+            >
+          </div>
+          <div class="card-body">
+            <h6 class="mb-1">SMS</h6>
+            <div class="mb-4">
+              <div class="d-flex w-100 action-icons">
+                <input
+                  id="defaultInput"
+                  class="form-control form-control-sm me-5"
+                  type="text"
+                  placeholder="+1(968) 945-8832"
+                />
+                <a
+                  href="javascript:;"
+                  class="btn btn-icon btn-outline-secondary me-2"
+                  data-bs-target="#enableOTP"
+                  data-bs-toggle="modal"
+                  ><i class="icon-base ri ri-edit-box-line icon-22px"></i
+                ></a>
+                <a
+                  href="javascript:;"
+                  class="btn btn-icon btn-outline-secondary"
+                  ><i class="icon-base ri ri-user-add-line icon-22px"></i
+                ></a>
+              </div>
+            </div>
+            <p class="mb-0">
+              Two-factor authentication adds an additional layer of security to
+              your account by requiring more than just a password to log in.
+              <a href="javascript:void(0);" class="text-primary">Learn more.</a>
+            </p>
+          </div>
+        </div>
+        <!--/ Two-steps verification -->
+
+        <!-- Recent Devices -->
+        <div class="card mb-6">
+          <h5 class="card-header">Recent Devices</h5>
+          <div class="table-responsive">
+            <table class="table table-border-bottom-0">
+              <thead>
+                <tr>
+                  <th class="text-truncate">Browser</th>
+                  <th class="text-truncate">Device</th>
+                  <th class="text-truncate">Location</th>
+                  <th class="text-truncate">Recent Activities</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="text-truncate">
+                    <img
+                      src="../../assets/img/icons/brands/chrome.png"
+                      alt="Chrome"
+                      class="me-4"
+                      width="22"
+                      height="22"
+                    /><span class="text-heading">Chrome on Windows</span>
+                  </td>
+                  <td class="text-truncate">HP Spectre 360</td>
+                  <td class="text-truncate">Switzerland</td>
+                  <td class="text-truncate">10, July 2021 20:07</td>
+                </tr>
+                <tr>
+                  <td class="text-truncate">
+                    <img
+                      src="../../assets/img/icons/brands/chrome.png"
+                      alt="Chrome"
+                      class="me-4"
+                      width="22"
+                      height="22"
+                    /><span class="text-heading">Chrome on iPhone</span>
+                  </td>
+                  <td class="text-truncate">iPhone 12x</td>
+                  <td class="text-truncate">Australia</td>
+                  <td class="text-truncate">13, July 2021 10:10</td>
+                </tr>
+                <tr>
+                  <td class="text-truncate">
+                    <img
+                      src="../../assets/img/icons/brands/chrome.png"
+                      alt="Chrome"
+                      class="me-4"
+                      width="22"
+                      height="22"
+                    /><span class="text-heading">Chrome on Android</span>
+                  </td>
+                  <td class="text-truncate">Oneplus 9 Pro</td>
+                  <td class="text-truncate">Dubai</td>
+                  <td class="text-truncate">14, July 2021 15:15</td>
+                </tr>
+                <tr>
+                  <td class="text-truncate">
+                    <img
+                      src="../../assets/img/icons/brands/chrome.png"
+                      alt="Chrome"
+                      class="me-4"
+                      width="22"
+                      height="22"
+                    /><span class="text-heading">Chrome on MacOS</span>
+                  </td>
+                  <td class="text-truncate">Apple iMac</td>
+                  <td class="text-truncate">India</td>
+                  <td class="text-truncate">16, July 2021 16:17</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!--/ Recent Devices -->
+      </div>
+      <!--/ Customer Content -->
+    </div>
+
+    <!-- Modal -->
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUser" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-simple modal-edit-user">
+        <div class="modal-content">
+          <div class="modal-body p-0">
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+            <div class="text-center mb-6">
+              <h4 class="mb-2">Edit User Information</h4>
+              <p class="mb-6">
+                Updating user details will receive a privacy audit.
+              </p>
+            </div>
+            <form id="editUserForm" class="row g-5" onsubmit="return false">
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalEditUserFirstName"
+                    name="modalEditUserFirstName"
+                    class="form-control"
+                    value="Oliver"
+                    placeholder="Oliver"
+                  />
+                  <label for="modalEditUserFirstName">First Name</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalEditUserLastName"
+                    name="modalEditUserLastName"
+                    class="form-control"
+                    value="Queen"
+                    placeholder="Queen"
+                  />
+                  <label for="modalEditUserLastName">Last Name</label>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalEditUserName"
+                    name="modalEditUserName"
+                    class="form-control"
+                    value="oliver.queen"
+                    placeholder="oliver.queen"
+                  />
+                  <label for="modalEditUserName">Username</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalEditUserEmail"
+                    name="modalEditUserEmail"
+                    class="form-control"
+                    value="oliverqueen@gmail.com"
+                    placeholder="oliverqueen@gmail.com"
+                  />
+                  <label for="modalEditUserEmail">Email</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <select
+                    id="modalEditUserStatus"
+                    name="modalEditUserStatus"
+                    class="form-select"
+                    aria-label="Default select example"
+                  >
+                    <option value="1" selected>Active</option>
+                    <option value="2">Inactive</option>
+                    <option value="3">Suspended</option>
+                  </select>
+                  <label for="modalEditUserStatus">Status</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalEditTaxID"
+                    name="modalEditTaxID"
+                    class="form-control modal-edit-tax-id"
+                    placeholder="123 456 7890"
+                  />
+                  <label for="modalEditTaxID">Tax ID</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="input-group input-group-merge">
+                  <span class="input-group-text">US (+1)</span>
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalEditUserPhone"
+                      name="modalEditUserPhone"
+                      class="form-control phone-number-mask"
+                      value="+1 609 933 4422"
+                      placeholder="+1 609 933 4422"
+                    />
+                    <label for="modalEditUserPhone">Phone Number</label>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    id="modalEditUserLanguage"
+                    name="modalEditUserLanguage"
+                    class="form-control h-auto"
+                    placeholder="select technologies"
+                    value="English"
+                  />
+                  <label for="modalEditUserLanguage"
+                    >Custom List Suggestions</label
+                  >
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <select
+                    id="modalEditUserCountry"
+                    name="modalEditUserCountry"
+                    class="select2 form-select"
+                    data-allow-clear="true"
+                  >
+                    <option value="">Select</option>
+                    <option value="Australia">Australia</option>
+                    <option value="Bangladesh">Bangladesh</option>
+                    <option value="Belarus">Belarus</option>
+                    <option value="Brazil">Brazil</option>
+                    <option value="Canada">Canada</option>
+                    <option value="China">China</option>
+                    <option value="France">France</option>
+                    <option value="Germany">Germany</option>
+                    <option value="India" selected>India</option>
+                    <option value="Indonesia">Indonesia</option>
+                    <option value="Israel">Israel</option>
+                    <option value="Italy">Italy</option>
+                    <option value="Japan">Japan</option>
+                    <option value="Korea">Korea, Republic of</option>
+                    <option value="Mexico">Mexico</option>
+                    <option value="Philippines">Philippines</option>
+                    <option value="Russia">Russian Federation</option>
+                    <option value="South Africa">South Africa</option>
+                    <option value="Thailand">Thailand</option>
+                    <option value="Turkey">Turkey</option>
+                    <option value="Ukraine">Ukraine</option>
+                    <option value="United Arab Emirates">
+                      United Arab Emirates
+                    </option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="United States">United States</option>
+                  </select>
+                  <label for="modalEditUserCountry">Country</label>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="editBillingAddress"
+                  />
+                  <label for="editBillingAddress" class="text-heading"
+                    >Use as a billing address?</label
+                  >
+                </div>
+              </div>
+              <div class="col-12 text-center">
+                <button type="submit" class="btn btn-primary me-3">
+                  Submit
+                </button>
+                <button
+                  type="reset"
+                  class="btn btn-outline-secondary"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--/ Edit User Modal -->
+
+    <!-- Enable OTP Modal -->
+    <div class="modal fade" id="enableOTP" tabindex="-1" aria-hidden="true">
+      <div
+        class="modal-dialog modal-simple modal-enable-otp modal-dialog-centered"
+      >
+        <div class="modal-content">
+          <div class="modal-body p-0">
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+            <div class="text-center mb-6">
+              <h4 class="mb-2">Enable One Time Password</h4>
+              <p>Verify Your Mobile Number for SMS</p>
+            </div>
+            <p class="mb-5">
+              Enter your mobile phone number with country code and we will send
+              you a verification code.
+            </p>
+            <form id="enableOTPForm" class="row g-5" onsubmit="return false">
+              <div class="col-12 form-control-validation">
+                <div class="input-group input-group-merge">
+                  <span class="input-group-text">US (+1)</span>
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalEnableOTPPhone"
+                      name="modalEnableOTPPhone"
+                      class="form-control phone-number-otp-mask"
+                      placeholder="202 555 0111"
+                    />
+                    <label for="modalEnableOTPPhone">Phone Number</label>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="col-12 d-flex flex-wrap justify-content-center gap-4 row-gap-4"
+              >
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <button
+                  type="reset"
+                  class="btn btn-outline-secondary"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--/ Enable OTP Modal -->
+
+    <!-- /Modal -->
+  </div>
+  <!-- / Content -->
+
+  
+</div>
+{% endblock content %} {% block custom_js %} {% endblock custom_js %}

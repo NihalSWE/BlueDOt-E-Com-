@@ -1,0 +1,299 @@
+{% extends "backend/base.html" %} {% load static %} {% block custom_css %}
+{%endblock custom_css %} {% block content %}
+<!-- Content wrapper -->
+<div class="content-wrapper">
+  <!-- Content -->
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <!-- Order List Widget -->
+
+    <div class="card mb-6">
+      <div class="card-widget-separator-wrapper">
+        <div class="card-body card-widget-separator">
+          <div class="row gy-4 gy-sm-1">
+            <div class="col-sm-6 col-lg-3">
+              <div
+                class="d-flex justify-content-between align-items-start card-widget-1 border-end pb-4 pb-sm-0"
+              >
+                <div>
+                  <h4 class="mb-0">56</h4>
+                  <p class="mb-0">Pending Payment</p>
+                </div>
+                <div class="avatar me-sm-6">
+                  <span class="avatar-initial rounded-3 text-heading">
+                    <i class="icon-base ri ri-calendar-2-line icon-26px"></i>
+                  </span>
+                </div>
+              </div>
+              <hr class="d-none d-sm-block d-lg-none me-6" />
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div
+                class="d-flex justify-content-between align-items-start card-widget-2 border-end pb-4 pb-sm-0"
+              >
+                <div>
+                  <h4 class="mb-0">12,689</h4>
+                  <p class="mb-0">Completed</p>
+                </div>
+                <div class="avatar me-lg-6">
+                  <span class="avatar-initial rounded-3 text-heading">
+                    <i class="icon-base ri ri-check-double-line icon-26px"></i>
+                  </span>
+                </div>
+              </div>
+              <hr class="d-none d-sm-block d-lg-none" />
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div
+                class="d-flex justify-content-between align-items-start border-end pb-4 pb-sm-0 card-widget-3"
+              >
+                <div>
+                  <h4 class="mb-0">124</h4>
+                  <p class="mb-0">Refunded</p>
+                </div>
+                <div class="avatar me-sm-6">
+                  <span class="avatar-initial rounded-3 text-heading">
+                    <i class="icon-base ri ri-wallet-3-line icon-26px"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h4 class="mb-0">32</h4>
+                  <p class="mb-0">Failed</p>
+                </div>
+                <div class="avatar">
+                  <span class="avatar-initial rounded-3 text-heading">
+                    <i class="icon-base ri ri-error-warning-line icon-26px"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order List Table -->
+    <div class="card">
+      <div class="card-datatable table-responsive">
+        <div
+          id="DataTables_Table_0_wrapper"
+          class="dt-container dt-bootstrap5 dt-empty-footer"
+        >
+          <div class="row mx-2 my-0 justify-content-between">
+            <div
+              class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-0"
+            >
+              <div class="dt-search">
+                <input
+                  type="search"
+                  class="form-control form-control-sm ms-0"
+                  id="dt-search-0"
+                  placeholder="Search Order"
+                  aria-controls="DataTables_Table_0"
+                /><label for="dt-search-0"></label>
+              </div>
+            </div>
+            <div
+              class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto gap-md-2 gap-0 mt-0"
+            >
+              <div class="dt-length mt-md-5 mt-0">
+                <select
+                  name="DataTables_Table_0_length"
+                  aria-controls="DataTables_Table_0"
+                  class="form-select form-select-sm"
+                  id="dt-length-0"
+                >
+                  <option value="7">7</option>
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option></select
+                ><label for="dt-length-0"></label>
+              </div>
+              <div
+                class="dt-buttons btn-group flex-wrap justify-content-center mb-md-0 mb-5"
+              >
+                <div class="btn-group">
+                  <button
+                    class="btn buttons-collection btn-outline-secondary dropdown-toggle waves-effect"
+                    tabindex="0"
+                    aria-controls="DataTables_Table_0"
+                    type="button"
+                    aria-haspopup="dialog"
+                    aria-expanded="false"
+                  >
+                    <span
+                      ><span class="d-flex align-items-center"
+                        ><i
+                          class="icon-base ri ri-upload-2-line icon-16px me-sm-2"
+                        ></i>
+                        <span class="d-none d-sm-inline-block"
+                          >Export</span
+                        ></span
+                      ></span
+                    >
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="justify-content-between dt-layout-table">
+            <div
+              class="d-md-flex justify-content-between align-items-center dt-layout-full table-responsive"
+            >
+              <table
+                class="datatables-order table dataTable dtr-column"
+                id="DataTables_Table_0"
+                aria-describedby="DataTables_Table_0_info"
+              >
+                <colgroup>
+                  <col data-dt-column="0" />
+                  <col data-dt-column="1" />
+                  <col data-dt-column="2" />
+                  <col data-dt-column="3" />
+                  <col data-dt-column="4" />
+                  <col data-dt-column="5" />
+                  <col data-dt-column="6" />
+                  <col data-dt-column="7" />
+                  <col data-dt-column="8" />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th
+                      data-dt-column="0"
+                      class="control dt-orderable-none"
+                      rowspan="1"
+                      colspan="1"
+                      aria-label=""
+                    >
+                      <span class="dt-column-title"></span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="1"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-select dt-orderable-none"
+                      aria-label=""
+                    >
+                      <span class="dt-column-title"></span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="2"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-asc dt-orderable-desc"
+                      aria-label="order: Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button">order</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="3"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-asc dt-orderable-desc dt-ordering-asc"
+                      aria-sort="ascending"
+                      aria-label="date: Activate to invert sorting"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button">date</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="4"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-asc dt-orderable-desc"
+                      aria-label="customers: Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button"
+                        >customers</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="5"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-asc dt-orderable-desc"
+                      aria-label="payment: Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button">payment</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="6"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-asc dt-orderable-desc"
+                      aria-label="status: Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button">status</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="7"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-asc dt-orderable-desc"
+                      aria-label="method: Activate to sort"
+                      tabindex="0"
+                    >
+                      <span class="dt-column-title" role="button">method</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                    <th
+                      data-dt-column="8"
+                      rowspan="1"
+                      colspan="1"
+                      class="dt-orderable-none"
+                      aria-label="Actions"
+                    >
+                      <span class="dt-column-title">Actions</span
+                      ><span class="dt-column-order"></span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan="9" class="dt-empty">Loading...</td>
+                  </tr>
+                </tbody>
+                <tfoot></tfoot>
+              </table>
+            </div>
+          </div>
+          <div class="row mx-3 justify-content-between">
+            <div
+              class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-0"
+            >
+              <div
+                class="dt-info"
+                aria-live="polite"
+                id="DataTables_Table_0_info"
+                role="status"
+              >
+                Showing 0 to 0 of 0 entries
+              </div>
+            </div>
+            <div
+              class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto gap-md-2 gap-0 mt-0"
+            >
+              <div class="dt-paging"><nav aria-label="pagination"></nav></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- / Content -->
+  {% endblock content %} {% block custom_js %} {% endblock custom_js %}
+</div>

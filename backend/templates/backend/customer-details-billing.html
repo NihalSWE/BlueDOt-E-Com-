@@ -1,0 +1,1565 @@
+{% extends "backend/base.html" %} {% load static %} {% block custom_css %}
+{%endblock custom_css %} {% block content %}
+<!-- Content wrapper -->
+<div class="content-wrapper">
+  <!-- Content -->
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <div
+      class="d-flex flex-column flex-sm-row align-items-center justify-content-sm-between mb-6 text-center text-sm-start gap-2"
+    >
+      <div class="mb-2 mb-sm-0">
+        <h4 class="mb-1">Customer ID #634759</h4>
+        <p class="mb-0">Aug 17, 2020, 5:48 (ET)</p>
+      </div>
+      <button type="button" class="btn btn-outline-danger delete-customer">
+        Delete Customer
+      </button>
+    </div>
+
+    <div class="row">
+      <!-- Customer-detail Sidebar -->
+      <div class="col-xl-4 col-lg-5 col-md-5 order-1 order-md-0">
+        <!-- Customer-detail Card -->
+        <div class="card mb-6">
+          <div class="card-body pt-12">
+            <div class="customer-avatar-section">
+              <div class="d-flex align-items-center flex-column">
+                <img
+                  class="img-fluid rounded-3 mb-4"
+                  src="../../assets/img/avatars/1.png"
+                  height="120"
+                  width="120"
+                  alt="User avatar"
+                />
+                <div class="customer-info text-center mb-6">
+                  <h5 class="mb-0">Lorine Hischke</h5>
+                  <span>Customer ID #634759</span>
+                </div>
+              </div>
+            </div>
+            <div
+              class="d-flex justify-content-around flex-wrap mb-6 gap-4 gap-md-3 gap-lg-4"
+            >
+              <div class="d-flex align-items-center gap-4 me-5">
+                <div class="avatar">
+                  <div class="avatar-initial rounded bg-label-primary">
+                    <i class="icon-base ri ri-shopping-cart-line icon-24px"></i>
+                  </div>
+                </div>
+                <div>
+                  <h5 class="mb-0">184</h5>
+                  <span>Orders</span>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-4">
+                <div class="avatar">
+                  <div class="avatar-initial rounded bg-label-primary">
+                    <i
+                      class="icon-base ri ri-money-dollar-circle-line icon-24px"
+                    ></i>
+                  </div>
+                </div>
+                <div>
+                  <h5 class="mb-0">$12,378</h5>
+                  <span>Spent</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-container">
+              <h5 class="border-bottom text-capitalize pb-4 mt-6 mb-4">
+                Details
+              </h5>
+              <ul class="list-unstyled mb-6">
+                <li class="mb-2">
+                  <span class="h6 me-1">Username:</span>
+                  <span>lorine.hischke</span>
+                </li>
+                <li class="mb-2">
+                  <span class="h6 me-1">Email:</span>
+                  <span>vafgot@vultukir.org</span>
+                </li>
+                <li class="mb-2">
+                  <span class="h6 me-1">Status:</span>
+                  <span class="badge bg-label-success rounded-pill"
+                    >Active</span
+                  >
+                </li>
+                <li class="mb-2">
+                  <span class="h6 me-1">Contact:</span>
+                  <span>(123) 456-7890</span>
+                </li>
+
+                <li class="mb-2">
+                  <span class="h6 me-1">Country:</span>
+                  <span>USA</span>
+                </li>
+              </ul>
+              <div class="d-flex justify-content-center">
+                <a
+                  href="javascript:;"
+                  class="btn btn-primary w-100"
+                  data-bs-target="#editUser"
+                  data-bs-toggle="modal"
+                  >Edit Details</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /Customer-detail Card -->
+
+      </div>
+      <!--/ Customer Sidebar -->
+
+      <!-- Customer Content -->
+      <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
+        <!-- Customer Pills -->
+        <div class="nav-align-top">
+          <ul
+            class="nav nav-pills flex-column flex-md-row mb-6 row-gap-2 flex-wrap"
+          >
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="{% url 'customer_overview' %}"
+                ><i class="icon-base ri ri-group-line icon-sm me-2"></i
+                >Overview</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="{% url 'security' %}"
+                ><i class="icon-base ri ri-lock-2-line icon-sm me-2"></i
+                >Security</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="{% url 'billing' %}"
+                ><i class="icon-base ri ri-map-pin-line icon-sm me-2"></i
+                >Address & Billing</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="{% url 'notification' %}"
+                ><i class="icon-base ri ri-notification-4-line icon-sm me-2"></i
+                >Notifications</a
+              >
+            </li>
+          </ul>
+        </div>
+        <!--/ Customer Pills -->
+
+        <!-- Address accordion -->
+
+        <div class="card card-action mb-6">
+          <div class="card-header align-items-center flex-wrap gap-2">
+            <h5 class="card-action-title mb-0">Address Book</h5>
+            <div class="card-action-element">
+              <button
+                class="btn btn-sm btn-outline-primary"
+                type="button"
+                data-bs-toggle="modal"
+                data-bs-target="#addNewAddress"
+              >
+                Add new address
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div
+              class="accordion accordion-arrow-left"
+              id="ecommerceBillingAccordionAddress"
+            >
+              <div class="accordion-item border-bottom">
+                <div
+                  class="accordion-header d-flex justify-content-between align-items-center flex-wrap flex-sm-nowrap row-gap-4"
+                  id="headingHome"
+                >
+                  <a
+                    class="accordion-button collapsed px-2"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#ecommerceBillingAddressHome"
+                    aria-expanded="false"
+                    aria-controls="headingHome"
+                    role="button"
+                  >
+                    <span>
+                      <span class="d-flex gap-2 mb-1 align-items-baseline">
+                        <span class="h6 mb-0">Home</span>
+                        <span class="badge bg-label-success rounded-pill"
+                          >Default Address</span
+                        >
+                      </span>
+                      <span class="mb-0 text-body fw-normal"
+                        >23 Shatinon Mekalan</span
+                      >
+                    </span>
+                  </a>
+                  <div
+                    class="d-flex gap-4 p-4 p-sm-2 py-sm-0 pt-0 ms-4 ms-sm-0"
+                  >
+                    <a href="javascript:void(0);"
+                      ><i
+                        class="icon-base ri ri-edit-box-line icon-22px text-body"
+                      ></i
+                    ></a>
+                    <a href="javascript:void(0);"
+                      ><i
+                        class="icon-base ri ri-delete-bin-7-line icon-22px text-body"
+                      ></i
+                    ></a>
+                    <button
+                      class="btn p-0"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      role="button"
+                    >
+                      <i
+                        class="icon-base ri ri-more-2-line icon-22px text-body"
+                      ></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li>
+                        <a class="dropdown-item" href="javascript:void(0);"
+                          >Set as default address</a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div
+                  id="ecommerceBillingAddressHome"
+                  class="accordion-collapse collapse"
+                  data-bs-parent="#ecommerceBillingAccordionAddress"
+                >
+                  <div class="accordion-body ps-6 ms-6">
+                    <h6 class="mb-1">Violet Mendoza</h6>
+                    <p class="mb-1">23 Shatinon Mekalan,</p>
+                    <p class="mb-1">Melbourne, VIC 3000,</p>
+                    <p class="mb-1">LondonUK</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-item border-bottom active">
+                <div
+                  class="accordion-header d-flex justify-content-between align-items-center flex-wrap flex-sm-nowrap row-gap-4"
+                  id="headingOffice"
+                >
+                  <a
+                    class="accordion-button px-2"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#ecommerceBillingAddressOffice"
+                    aria-expanded="true"
+                    aria-controls="headingOffice"
+                    role="button"
+                  >
+                    <span class="d-flex flex-column">
+                      <span class="h6 mb-1">Office</span>
+                      <span class="mb-0 text-body fw-normal"
+                        >45 Roker Terrace</span
+                      >
+                    </span>
+                  </a>
+                  <div
+                    class="d-flex gap-4 p-4 p-sm-2 py-sm-0 pt-0 ms-4 ms-sm-0"
+                  >
+                    <a href="javascript:void(0);"
+                      ><i
+                        class="icon-base ri ri-edit-box-line icon-22px text-body"
+                      ></i
+                    ></a>
+                    <a href="javascript:void(0);"
+                      ><i
+                        class="icon-base ri ri-delete-bin-7-line icon-22px text-body"
+                      ></i
+                    ></a>
+                    <button
+                      class="btn p-0"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      role="button"
+                    >
+                      <i
+                        class="icon-base ri ri-more-2-line icon-22px text-body"
+                      ></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li>
+                        <a class="dropdown-item" href="javascript:void(0);"
+                          >Set as default address</a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div
+                  id="ecommerceBillingAddressOffice"
+                  class="accordion-collapse collapse show"
+                  aria-labelledby="headingOffice"
+                  data-bs-parent="#ecommerceBillingAccordionAddress"
+                >
+                  <div class="accordion-body ps-6 ms-6">
+                    <h6 class="mb-1">Violet Mendoza</h6>
+                    <p class="mb-1">45 Roker Terrace,</p>
+                    <p class="mb-1">Latheronwheel,</p>
+                    <p class="mb-1">KW5 8NW</p>
+                    <p class="mb-1">LondonUK</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-item">
+                <div
+                  class="accordion-header d-flex justify-content-between align-items-center flex-wrap flex-sm-nowrap row-gap-4"
+                  id="headingFamily"
+                >
+                  <a
+                    class="accordion-button collapsed px-2"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#ecommerceBillingAddressFamily"
+                    aria-expanded="false"
+                    aria-controls="headingFamily"
+                    role="button"
+                  >
+                    <span class="d-flex flex-column">
+                      <span class="h6 mb-1">Family</span>
+                      <span class="mb-0 text-body fw-normal"
+                        >512 Water Plant</span
+                      >
+                    </span>
+                  </a>
+                  <div
+                    class="d-flex gap-4 p-4 p-sm-2 py-sm-0 pt-0 ms-4 ms-sm-0"
+                  >
+                    <a href="javascript:void(0);"
+                      ><i
+                        class="icon-base ri ri-edit-box-line icon-22px text-body"
+                      ></i
+                    ></a>
+                    <a href="javascript:void(0);"
+                      ><i
+                        class="icon-base ri ri-delete-bin-7-line icon-22px text-body"
+                      ></i
+                    ></a>
+                    <button
+                      class="btn p-0"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      role="button"
+                    >
+                      <i
+                        class="icon-base ri ri-more-2-line icon-22px text-body"
+                      ></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li>
+                        <a class="dropdown-item" href="javascript:void(0);"
+                          >Set as default address</a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div
+                  id="ecommerceBillingAddressFamily"
+                  class="accordion-collapse collapse"
+                  aria-labelledby="headingFamily"
+                  data-bs-parent="#ecommerceBillingAccordionAddress"
+                >
+                  <div class="accordion-body ps-6 ms-6">
+                    <h6 class="mb-1">Violet Mendoza</h6>
+                    <p class="mb-1">512 Water Plant,</p>
+                    <p class="mb-1">Melbourne, NY 10036,</p>
+                    <p class="mb-1">New York,</p>
+                    <p class="mb-1">United States</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--/ Address accordion -->
+
+        <!-- Payment accordion -->
+        <div class="card card-action mb-6">
+          <div class="card-header align-items-center flex-wrap gap-2">
+            <h5 class="card-action-title mb-0">Payment Methods</h5>
+            <div class="card-action-element">
+              <button
+                class="btn btn-sm btn-outline-primary"
+                type="button"
+                data-bs-toggle="modal"
+                data-bs-target="#addNewCCModal"
+              >
+                Add payment methods
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div
+              class="accordion accordion-arrow-left"
+              id="ecommerceBillingAccordionPayment"
+            >
+              <div class="accordion-item border-bottom">
+                <div
+                  class="accordion-header d-flex justify-content-between align-items-center flex-wrap flex-sm-nowrap row-gap-4"
+                  id="headingPaymentMaster"
+                >
+                  <a
+                    class="accordion-button collapsed px-2"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#ecommerceBillingPaymentMaster"
+                    aria-expanded="false"
+                    aria-controls="headingPaymentMaster"
+                    role="button"
+                  >
+                    <span
+                      class="accordion-button-information d-flex align-items-center gap-4"
+                    >
+                      <span class="accordion-button-image">
+                        <img
+                          src="../../assets/img/icons/payments/master-light.png"
+                          class="img-fluid w-px-50 h-px-30"
+                          alt="master-card"
+                          data-app-light-img="icons/payments/master-light.png"
+                          data-app-dark-img="icons/payments/master-dark.png"
+                        />
+                      </span>
+                      <span class="d-flex flex-column">
+                        <span class="h6 mb-1">Mastercard</span>
+                        <span class="mb-0 text-body fw-normal"
+                          >Expires Apr 2028</span
+                        >
+                      </span>
+                    </span>
+                  </a>
+                  <div
+                    class="d-flex gap-4 p-4 p-sm-2 py-sm-0 pt-0 ms-4 ms-sm-0"
+                  >
+                    <a
+                      href="javascript:void(0);"
+                      data-bs-toggle="modal"
+                      data-bs-target="#editCCModal"
+                      ><i
+                        class="icon-base ri ri-edit-box-line icon-22px text-body"
+                      ></i
+                    ></a>
+                    <a href="javascript:void(0);"
+                      ><i
+                        class="icon-base ri ri-delete-bin-7-line icon-22px text-body"
+                      ></i
+                    ></a>
+                    <button
+                      class="btn p-0"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      role="button"
+                    >
+                      <i
+                        class="icon-base ri ri-more-2-line icon-22px text-body"
+                      ></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li>
+                        <a class="dropdown-item" href="javascript:void(0);"
+                          >Set as Primary</a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div
+                  id="ecommerceBillingPaymentMaster"
+                  class="accordion-collapse collapse"
+                  data-bs-parent="#ecommerceBillingAccordionPayment"
+                >
+                  <div
+                    class="accordion-body d-flex align-items-baseline flex-wrap flex-xl-nowrap flex-sm-nowrap flex-md-wrap ms-6 ps-4 table-responsive"
+                  >
+                    <table
+                      class="table table-sm table-borderless text-nowrap small"
+                    >
+                      <tr>
+                        <td class="w-50">Name</td>
+                        <td class="text-heading fw-medium small">
+                          Violet Mendoza
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Number</td>
+                        <td class="text-heading fw-medium small">**** 5155</td>
+                      </tr>
+                      <tr>
+                        <td>Expires</td>
+                        <td class="text-heading fw-medium small">02/2022</td>
+                      </tr>
+                      <tr>
+                        <td>Type</td>
+                        <td class="text-heading fw-medium small">
+                          Visa credit card
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Issuer</td>
+                        <td class="text-heading fw-medium small">VICBANK</td>
+                      </tr>
+                      <tr>
+                        <td>ID</td>
+                        <td class="text-heading fw-medium small">
+                          id_w2r84jdy723
+                        </td>
+                      </tr>
+                    </table>
+                    <table class="table table-sm table-borderless text-nowrap">
+                      <tr>
+                        <td class="w-50">Billing Phone</td>
+                        <td class="text-heading fw-medium small">USA</td>
+                      </tr>
+                      <tr>
+                        <td>Number</td>
+                        <td class="text-heading fw-medium small">
+                          +7634 983 637
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Email</td>
+                        <td class="text-heading fw-medium small">
+                          vafgot@vultukir.org
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Origin</td>
+                        <td class="text-heading fw-medium small">
+                          United States
+                          <i class="fis fi fi-us rounded-circle me-2 fs-5"></i>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>CVC check</td>
+                        <td class="text-heading fw-medium small">
+                          Passed
+                          <span
+                            class="badge bg-label-success rounded-circle p-0"
+                            ><i class="ri-check-line"></i
+                          ></span>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-item border-bottom active">
+                <div
+                  class="accordion-header d-flex justify-content-between align-items-center flex-wrap flex-sm-nowrap row-gap-4"
+                  id="headingPaymentExpress"
+                >
+                  <a
+                    class="accordion-button px-2"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#ecommerceBillingPaymentExpress"
+                    aria-expanded="true"
+                    aria-controls="headingPaymentExpress"
+                    role="button"
+                  >
+                    <span
+                      class="accordion-button-information d-flex align-items-center gap-4"
+                    >
+                      <span class="accordion-button-image">
+                        <img
+                          src="../../assets/img/icons/payments/ae-light.png"
+                          class="img-fluid w-px-50 h-px-30"
+                          alt="american-express-card"
+                          data-app-light-img="icons/payments/ae-light.png"
+                          data-app-dark-img="icons/payments/ae-dark.png"
+                        />
+                      </span>
+                      <span>
+                        <span
+                          class="d-flex column-gap-2 flex-wrap align-items-baseline mb-1 row-gap-1"
+                        >
+                          <span class="h6 mb-0 text-nowrap"
+                            >American Express</span
+                          >
+                          <span class="badge bg-label-success rounded-pill"
+                            >Primary</span
+                          >
+                        </span>
+                        <span class="mb-0 text-body fw-normal"
+                          >45 Roker Terrace</span
+                        >
+                      </span>
+                    </span>
+                  </a>
+                  <div
+                    class="d-flex gap-4 p-4 p-sm-2 py-sm-0 pt-0 ms-4 ms-sm-0"
+                  >
+                    <a
+                      href="javascript:void(0);"
+                      data-bs-toggle="modal"
+                      data-bs-target="#editCCModal"
+                      ><i
+                        class="icon-base ri ri-edit-box-line icon-22px text-body"
+                      ></i
+                    ></a>
+                    <a href="javascript:void(0);"
+                      ><i
+                        class="icon-base ri ri-delete-bin-7-line icon-22px text-body"
+                      ></i
+                    ></a>
+                    <button
+                      class="btn p-0"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      role="button"
+                    >
+                      <i
+                        class="icon-base ri ri-more-2-line icon-22px text-body"
+                      ></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li>
+                        <a class="dropdown-item" href="javascript:void(0);"
+                          >Set as Primary</a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div
+                  id="ecommerceBillingPaymentExpress"
+                  class="accordion-collapse collapse show"
+                  aria-labelledby="headingPaymentExpress"
+                  data-bs-parent="#ecommerceBillingAccordionPayment"
+                >
+                  <div
+                    class="accordion-body d-flex align-items-baseline flex-wrap flex-xl-nowrap flex-sm-nowrap flex-md-wrap ms-6 ps-4 table-responsive"
+                  >
+                    <table
+                      class="table table-sm table-borderless text-nowrap small"
+                    >
+                      <tr>
+                        <td class="w-50">Name</td>
+                        <td class="text-heading fw-medium small">
+                          Violet Mendoza
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Number</td>
+                        <td class="text-heading fw-medium small">**** 5155</td>
+                      </tr>
+                      <tr>
+                        <td>Expires</td>
+                        <td class="text-heading fw-medium small">02/2022</td>
+                      </tr>
+                      <tr>
+                        <td>Type</td>
+                        <td class="text-heading fw-medium small">
+                          Visa credit card
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Issuer</td>
+                        <td class="text-heading fw-medium small">VICBANK</td>
+                      </tr>
+                      <tr>
+                        <td>ID</td>
+                        <td class="text-heading fw-medium small">
+                          id_w2r84jdy723
+                        </td>
+                      </tr>
+                    </table>
+                    <table class="table table-sm table-borderless text-nowrap">
+                      <tr>
+                        <td class="w-50">Billing Phone</td>
+                        <td class="text-heading fw-medium small">USA</td>
+                      </tr>
+                      <tr>
+                        <td>Number</td>
+                        <td class="text-heading fw-medium small">
+                          +7634 983 637
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Email</td>
+                        <td class="text-heading fw-medium small">
+                          vafgot@vultukir.org
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Origin</td>
+                        <td class="text-heading fw-medium small">
+                          United States
+                          <i class="fis fi fi-us rounded-circle me-2 fs-5"></i>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>CVC check</td>
+                        <td class="text-heading fw-medium small">
+                          Passed
+                          <span
+                            class="badge bg-label-success rounded-circle p-0"
+                            ><i class="ri-check-line"></i
+                          ></span>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-item">
+                <div
+                  class="accordion-header d-flex justify-content-between align-items-center flex-wrap flex-sm-nowrap row-gap-4"
+                  id="headingPaymentVisa"
+                >
+                  <a
+                    class="accordion-button collapsed px-2"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#ecommerceBillingPaymentVisa"
+                    aria-expanded="false"
+                    aria-controls="headingPaymentVisa"
+                    role="button"
+                  >
+                    <span
+                      class="accordion-button-information d-flex align-items-center gap-4"
+                    >
+                      <span class="accordion-button-image">
+                        <img
+                          src="../../assets/img/icons/payments/visa-light.png"
+                          class="img-fluid w-px-50 h-px-30"
+                          alt="visa-card"
+                          data-app-light-img="icons/payments/visa-light.png"
+                          data-app-dark-img="icons/payments/visa-dark.png"
+                        />
+                      </span>
+                      <span class="d-flex flex-column">
+                        <span class="h6 mb-1">Visa</span>
+                        <span class="mb-0 text-body fw-normal"
+                          >512 Water Plant</span
+                        >
+                      </span>
+                    </span>
+                  </a>
+                  <div
+                    class="d-flex gap-4 p-4 p-sm-2 py-sm-0 pt-0 ms-4 ms-sm-0"
+                  >
+                    <a
+                      href="javascript:void(0);"
+                      data-bs-toggle="modal"
+                      data-bs-target="#editCCModal"
+                      ><i
+                        class="icon-base ri ri-edit-box-line icon-22px text-body"
+                      ></i
+                    ></a>
+                    <a href="javascript:void(0);"
+                      ><i
+                        class="icon-base ri ri-delete-bin-7-line icon-22px text-body"
+                      ></i
+                    ></a>
+                    <button
+                      class="btn p-0"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      role="button"
+                    >
+                      <i
+                        class="icon-base ri ri-more-2-line icon-22px text-body"
+                      ></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li>
+                        <a class="dropdown-item" href="javascript:void(0);"
+                          >Set as Primary</a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div
+                  id="ecommerceBillingPaymentVisa"
+                  class="accordion-collapse collapse"
+                  aria-labelledby="headingPaymentVisa"
+                  data-bs-parent="#ecommerceBillingAccordionPayment"
+                >
+                  <div
+                    class="accordion-body d-flex align-items-baseline flex-wrap flex-xl-nowrap flex-sm-nowrap flex-md-wrap ms-6 ps-4 table-responsive"
+                  >
+                    <table
+                      class="table table-sm table-borderless text-nowrap small"
+                    >
+                      <tr>
+                        <td class="w-50">Name</td>
+                        <td class="text-heading fw-medium small">
+                          Violet Mendoza
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Number</td>
+                        <td class="text-heading fw-medium small">**** 5155</td>
+                      </tr>
+                      <tr>
+                        <td>Expires</td>
+                        <td class="text-heading fw-medium small">02/2022</td>
+                      </tr>
+                      <tr>
+                        <td>Type</td>
+                        <td class="text-heading fw-medium small">
+                          Visa credit card
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Issuer</td>
+                        <td class="text-heading fw-medium small">VICBANK</td>
+                      </tr>
+                      <tr>
+                        <td>ID</td>
+                        <td class="text-heading fw-medium small">
+                          id_w2r84jdy723
+                        </td>
+                      </tr>
+                    </table>
+                    <table class="table table-sm table-borderless text-nowrap">
+                      <tr>
+                        <td class="w-50">Billing Phone</td>
+                        <td class="text-heading fw-medium small">USA</td>
+                      </tr>
+                      <tr>
+                        <td>Number</td>
+                        <td class="text-heading fw-medium small">
+                          +7634 983 637
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Email</td>
+                        <td class="text-heading fw-medium small">
+                          vafgot@vultukir.org
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Origin</td>
+                        <td class="text-heading fw-medium small">
+                          United States
+                          <i class="fis fi fi-us rounded-circle me-2 fs-5"></i>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>CVC check</td>
+                        <td class="text-heading fw-medium small">
+                          Passed
+                          <span
+                            class="badge bg-label-success rounded-circle p-0"
+                            ><i class="icon-base ri ri-check-line"></i
+                          ></span>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--/ Payment accordion -->
+      </div>
+      <!--/ Customer Content -->
+    </div>
+
+    <!-- Modal -->
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUser" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-simple modal-edit-user">
+        <div class="modal-content">
+          <div class="modal-body p-0">
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+            <div class="text-center mb-6">
+              <h4 class="mb-2">Edit User Information</h4>
+              <p class="mb-6">
+                Updating user details will receive a privacy audit.
+              </p>
+            </div>
+            <form id="editUserForm" class="row g-5" onsubmit="return false">
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalEditUserFirstName"
+                    name="modalEditUserFirstName"
+                    class="form-control"
+                    value="Oliver"
+                    placeholder="Oliver"
+                  />
+                  <label for="modalEditUserFirstName">First Name</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalEditUserLastName"
+                    name="modalEditUserLastName"
+                    class="form-control"
+                    value="Queen"
+                    placeholder="Queen"
+                  />
+                  <label for="modalEditUserLastName">Last Name</label>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalEditUserName"
+                    name="modalEditUserName"
+                    class="form-control"
+                    value="oliver.queen"
+                    placeholder="oliver.queen"
+                  />
+                  <label for="modalEditUserName">Username</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalEditUserEmail"
+                    name="modalEditUserEmail"
+                    class="form-control"
+                    value="oliverqueen@gmail.com"
+                    placeholder="oliverqueen@gmail.com"
+                  />
+                  <label for="modalEditUserEmail">Email</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <select
+                    id="modalEditUserStatus"
+                    name="modalEditUserStatus"
+                    class="form-select"
+                    aria-label="Default select example"
+                  >
+                    <option value="1" selected>Active</option>
+                    <option value="2">Inactive</option>
+                    <option value="3">Suspended</option>
+                  </select>
+                  <label for="modalEditUserStatus">Status</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalEditTaxID"
+                    name="modalEditTaxID"
+                    class="form-control modal-edit-tax-id"
+                    placeholder="123 456 7890"
+                  />
+                  <label for="modalEditTaxID">Tax ID</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="input-group input-group-merge">
+                  <span class="input-group-text">US (+1)</span>
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalEditUserPhone"
+                      name="modalEditUserPhone"
+                      class="form-control phone-number-mask"
+                      value="+1 609 933 4422"
+                      placeholder="+1 609 933 4422"
+                    />
+                    <label for="modalEditUserPhone">Phone Number</label>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    id="modalEditUserLanguage"
+                    name="modalEditUserLanguage"
+                    class="form-control h-auto"
+                    placeholder="select technologies"
+                    value="English"
+                  />
+                  <label for="modalEditUserLanguage"
+                    >Custom List Suggestions</label
+                  >
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <select
+                    id="modalEditUserCountry"
+                    name="modalEditUserCountry"
+                    class="select2 form-select"
+                    data-allow-clear="true"
+                  >
+                    <option value="">Select</option>
+                    <option value="Australia">Australia</option>
+                    <option value="Bangladesh">Bangladesh</option>
+                    <option value="Belarus">Belarus</option>
+                    <option value="Brazil">Brazil</option>
+                    <option value="Canada">Canada</option>
+                    <option value="China">China</option>
+                    <option value="France">France</option>
+                    <option value="Germany">Germany</option>
+                    <option value="India" selected>India</option>
+                    <option value="Indonesia">Indonesia</option>
+                    <option value="Israel">Israel</option>
+                    <option value="Italy">Italy</option>
+                    <option value="Japan">Japan</option>
+                    <option value="Korea">Korea, Republic of</option>
+                    <option value="Mexico">Mexico</option>
+                    <option value="Philippines">Philippines</option>
+                    <option value="Russia">Russian Federation</option>
+                    <option value="South Africa">South Africa</option>
+                    <option value="Thailand">Thailand</option>
+                    <option value="Turkey">Turkey</option>
+                    <option value="Ukraine">Ukraine</option>
+                    <option value="United Arab Emirates">
+                      United Arab Emirates
+                    </option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="United States">United States</option>
+                  </select>
+                  <label for="modalEditUserCountry">Country</label>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="editBillingAddress"
+                  />
+                  <label for="editBillingAddress" class="text-heading"
+                    >Use as a billing address?</label
+                  >
+                </div>
+              </div>
+              <div class="col-12 text-center">
+                <button type="submit" class="btn btn-primary me-3">
+                  Submit
+                </button>
+                <button
+                  type="reset"
+                  class="btn btn-outline-secondary"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--/ Edit User Modal -->
+
+    <!-- Add New Credit Card Modal -->
+    <div class="modal fade" id="editCCModal" tabindex="-1" aria-hidden="true">
+      <div
+        class="modal-dialog modal-dialog-centered modal-simple modal-add-new-cc"
+      >
+        <div class="modal-content p-4 p-md-12">
+          <div class="modal-body p-md-0">
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+            <div class="text-center mb-6">
+              <h3 class="mb-2 pb-1">Edit Card</h3>
+              <p>Edit your saved card details</p>
+            </div>
+            <form id="editCCForm" class="row g-4" onsubmit="return false">
+              <div class="col-12 form-control-validation">
+                <div class="input-group input-group-merge">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      id="modalEditCard"
+                      name="modalEditCard"
+                      class="form-control credit-card-mask-edit"
+                      type="text"
+                      placeholder="4356 3215 6548 7898"
+                      value="4356 3215 6548 7898"
+                      aria-describedby="modalEditCard2"
+                    />
+                    <label for="modalEditCard">Card Number</label>
+                  </div>
+                  <span
+                    class="input-group-text cursor-pointer"
+                    id="modalEditCard2"
+                  >
+                    <span class="card-type-edit"
+                      ><img
+                        src="../../assets/img/icons/payments/visa-cc.png"
+                        height="18"
+                        alt="credit-card img"
+                    /></span>
+                  </span>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalEditName"
+                    class="form-control"
+                    placeholder="John Doe"
+                    value="John Doe"
+                  />
+                  <label for="modalEditName">Name</label>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalEditExpiryDate"
+                    class="form-control expiry-date-mask-edit"
+                    placeholder="MM/YY"
+                    value="08/28"
+                  />
+                  <label for="modalEditExpiryDate">Exp. Date</label>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="input-group input-group-merge">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalEditCvv"
+                      class="form-control cvv-code-mask-edit"
+                      maxlength="3"
+                      placeholder="654"
+                      value="XXX"
+                    />
+                    <label for="modalEditCvv">CVV Code</label>
+                  </div>
+                  <span
+                    class="input-group-text cursor-pointer"
+                    id="modalEditCvv2"
+                    ><i
+                      class="icon-base ri ri-question-line text-body-secondary"
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      title="Card Verification Value"
+                    ></i
+                  ></span>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="editPrimaryCard"
+                  />
+                  <label for="editPrimaryCard">Set as primary card</label>
+                </div>
+              </div>
+              <div class="col-12 text-center">
+                <button type="submit" class="btn btn-primary me-sm-4 me-1">
+                  Submit
+                </button>
+                <button
+                  type="reset"
+                  class="btn btn-outline-secondary"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--/ Add New Credit Card Modal -->
+
+    <!-- Add New Address Modal -->
+    <div class="modal fade" id="addNewAddress" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-simple modal-add-new-address">
+        <div class="modal-content">
+          <div class="modal-body p-0">
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+            <div class="text-center mb-6">
+              <h4 class="address-title mb-2">Add New Address</h4>
+              <p class="address-subtitle">
+                Add new address for express delivery
+              </p>
+            </div>
+            <form
+              id="addNewAddressForm"
+              class="row g-5"
+              onsubmit="return false"
+            >
+              <div class="col-12 form-control-validation">
+                <div class="row g-5">
+                  <div class="col-md mb-md-0">
+                    <div class="form-check custom-option custom-option-basic">
+                      <label
+                        class="form-check-label custom-option-content"
+                        for="customRadioHome"
+                      >
+                        <input
+                          name="customRadioTemp"
+                          class="form-check-input"
+                          type="radio"
+                          value=""
+                          id="customRadioHome"
+                          checked
+                        />
+                        <span class="custom-option-header">
+                          <span class="h6 mb-0 d-flex align-items-center"
+                            ><i
+                              class="icon-base ri ri-home-smile-2-line icon-20px me-1"
+                            ></i
+                            >Home</span
+                          >
+                        </span>
+                        <span class="custom-option-body">
+                          <small>Delivery time (9am – 9pm)</small>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-md mb-md-0">
+                    <div class="form-check custom-option custom-option-basic">
+                      <label
+                        class="form-check-label custom-option-content"
+                        for="customRadioOffice"
+                      >
+                        <input
+                          name="customRadioTemp"
+                          class="form-check-input"
+                          type="radio"
+                          value=""
+                          id="customRadioOffice"
+                        />
+                        <span class="custom-option-header">
+                          <span class="h6 mb-0 d-flex align-items-center"
+                            ><i
+                              class="icon-base ri ri-building-line icon-20px me-1"
+                            ></i
+                            >Office</span
+                          >
+                        </span>
+                        <span class="custom-option-body">
+                          <small>Delivery time (9am – 5pm) </small>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 form-control-validation col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalAddressFirstName"
+                    name="modalAddressFirstName"
+                    class="form-control"
+                    placeholder="John"
+                  />
+                  <label for="modalAddressFirstName">First Name</label>
+                </div>
+              </div>
+              <div class="col-12 form-control-validation col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalAddressLastName"
+                    name="modalAddressLastName"
+                    class="form-control"
+                    placeholder="Doe"
+                  />
+                  <label for="modalAddressLastName">Last Name</label>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-floating form-floating-outline">
+                  <select
+                    id="modalAddressCountry"
+                    name="modalAddressCountry"
+                    class="select2 form-select"
+                    data-allow-clear="true"
+                  >
+                    <option value="">Select</option>
+                    <option value="Australia">Australia</option>
+                    <option value="Bangladesh">Bangladesh</option>
+                    <option value="Belarus">Belarus</option>
+                    <option value="Brazil">Brazil</option>
+                    <option value="Canada">Canada</option>
+                    <option value="China">China</option>
+                    <option value="France">France</option>
+                    <option value="Germany">Germany</option>
+                    <option value="India">India</option>
+                    <option value="Indonesia">Indonesia</option>
+                    <option value="Israel">Israel</option>
+                    <option value="Italy">Italy</option>
+                    <option value="Japan">Japan</option>
+                    <option value="Korea">Korea, Republic of</option>
+                    <option value="Mexico">Mexico</option>
+                    <option value="Philippines">Philippines</option>
+                    <option value="Russia">Russian Federation</option>
+                    <option value="South Africa">South Africa</option>
+                    <option value="Thailand">Thailand</option>
+                    <option value="Turkey">Turkey</option>
+                    <option value="Ukraine">Ukraine</option>
+                    <option value="United Arab Emirates">
+                      United Arab Emirates
+                    </option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="United States">United States</option>
+                  </select>
+                  <label for="modalAddressCountry">Country</label>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalAddressAddress1"
+                    name="modalAddressAddress1"
+                    class="form-control"
+                    placeholder="12, Business Park"
+                  />
+                  <label for="modalAddressAddress1">Address Line 1</label>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalAddressAddress2"
+                    name="modalAddressAddress2"
+                    class="form-control"
+                    placeholder="Mall Road"
+                  />
+                  <label for="modalAddressAddress2">Address Line 2</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalAddressLandmark"
+                    name="modalAddressLandmark"
+                    class="form-control"
+                    placeholder="Nr. Hard Rock Cafe"
+                  />
+                  <label for="modalAddressLandmark">Landmark</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalAddressCity"
+                    name="modalAddressCity"
+                    class="form-control"
+                    placeholder="Los Angeles"
+                  />
+                  <label for="modalAddressCity">City</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalAddressState"
+                    name="modalAddressState"
+                    class="form-control"
+                    placeholder="California"
+                  />
+                  <label for="modalAddressLandmark">State</label>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalAddressZipCode"
+                    name="modalAddressZipCode"
+                    class="form-control"
+                    placeholder="99950"
+                  />
+                  <label for="modalAddressZipCode">Zip Code</label>
+                </div>
+              </div>
+              <div class="col-12 mt-6">
+                <div class="form-check form-switch">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="billingAddress"
+                  />
+                  <label for="billingAddress">Use as a billing address?</label>
+                </div>
+              </div>
+              <div
+                class="col-12 mt-6 d-flex flex-wrap justify-content-center gap-4 row-gap-4"
+              >
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <button
+                  type="reset"
+                  class="btn btn-outline-secondary"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--/ Add New Address Modal -->
+
+    <!-- Add New Credit Card Modal -->
+    <div class="modal fade" id="addNewCCModal" tabindex="-1" aria-hidden="true">
+      <div
+        class="modal-dialog modal-dialog-centered1 modal-simple modal-add-new-cc"
+      >
+        <div class="modal-content">
+          <div class="modal-body p-0">
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+            <div class="text-center mb-6">
+              <h4 class="mb-2">Add New Card</h4>
+              <p>Add new card to complete payment</p>
+            </div>
+            <form id="addNewCCForm" class="row g-5" onsubmit="return false">
+              <div class="col-12 form-control-validation">
+                <div class="input-group input-group-merge">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      id="modalAddCard"
+                      name="modalAddCard"
+                      class="form-control credit-card-mask"
+                      type="text"
+                      placeholder="1356 3215 6548 7898"
+                      aria-describedby="modalAddCard2"
+                    />
+                    <label for="modalAddCard">Card Number</label>
+                  </div>
+                  <span
+                    class="input-group-text cursor-pointer p-1"
+                    id="modalAddCard2"
+                    ><span class="card-type"></span
+                  ></span>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalAddCardName"
+                    class="form-control"
+                    placeholder="John Doe"
+                  />
+                  <label for="modalAddCardName">Name</label>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="form-floating form-floating-outline">
+                  <input
+                    type="text"
+                    id="modalAddCardExpiryDate"
+                    class="form-control expiry-date-mask"
+                    placeholder="MM/YY"
+                  />
+                  <label for="modalAddCardExpiryDate">Expiry</label>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="input-group input-group-merge">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalAddCardCvv"
+                      class="form-control cvv-code-mask"
+                      maxlength="3"
+                      placeholder="654"
+                    />
+                    <label for="modalAddCardCvv" class="pe-1_5">CVV</label>
+                  </div>
+                  <span
+                    class="input-group-text cursor-pointer ps-0"
+                    id="modalAddCardCvv2"
+                    ><i
+                      class="icon-base ri ri-question-line"
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      title="Card Verification Value"
+                    ></i
+                  ></span>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="futureAddress"
+                  />
+                  <label for="futureAddress" class="text-heading"
+                    >Save card for future billing?</label
+                  >
+                </div>
+              </div>
+              <div
+                class="col-12 d-flex flex-wrap justify-content-center gap-4 row-gap-4"
+              >
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <button
+                  type="reset"
+                  class="btn btn-outline-secondary btn-reset"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--/ Add New Credit Card Modal -->
+
+
+
+    <!-- /Modal -->
+  </div>
+  <!-- / Content -->
+
+  {% endblock content %} {% block custom_js %} {% endblock custom_js %}
+</div>

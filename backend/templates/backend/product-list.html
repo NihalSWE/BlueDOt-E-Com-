@@ -1,0 +1,340 @@
+{% extends "backend/base.html" %} {% load static %}
+ {% block custom_css %} {%endblock custom_css %}
+ 
+ {% block content %}
+<!-- Product List Widget -->
+<div class="card mb-6">
+  <div class="card-widget-separator-wrapper">
+    <div class="card-body card-widget-separator">
+      <div class="row gy-4 gy-sm-1">
+        <div class="col-sm-6 col-lg-3">
+          <div
+            class="d-flex justify-content-between align-items-start card-widget-1 border-end pb-4 pb-sm-0"
+          >
+            <div>
+              <p class="mb-1">In-store Sales</p>
+              <h4 class="mb-1">$5,345.43</h4>
+              <p class="mb-0">
+                <span class="me-2">5k orders</span
+                ><span class="badge rounded-pill bg-label-success">+5.7%</span>
+              </p>
+            </div>
+            <div class="avatar me-sm-6">
+              <span class="avatar-initial rounded-3 text-heading">
+                <i class="icon-base ri ri-home-6-line icon-28px"></i>
+              </span>
+            </div>
+          </div>
+          <hr class="d-none d-sm-block d-lg-none me-6" />
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div
+            class="d-flex justify-content-between align-items-start card-widget-2 border-end pb-4 pb-sm-0"
+          >
+            <div>
+              <p class="mb-1">Website Sales</p>
+              <h4 class="mb-1">$674,347.12</h4>
+              <p class="mb-0">
+                <span class="me-2">21k orders</span
+                ><span class="badge rounded-pill bg-label-success">+12.4%</span>
+              </p>
+            </div>
+            <div class="avatar me-lg-6">
+              <span class="avatar-initial rounded-3 text-heading">
+                <i class="icon-base ri ri-computer-line icon-28px"></i>
+              </span>
+            </div>
+          </div>
+          <hr class="d-none d-sm-block d-lg-none" />
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div
+            class="d-flex justify-content-between align-items-start border-end pb-4 pb-sm-0 card-widget-3"
+          >
+            <div>
+              <p class="mb-1">Discount</p>
+              <h4 class="mb-1">$14,235.12</h4>
+              <p class="mb-0">6k orders</p>
+            </div>
+            <div class="avatar me-sm-6">
+              <span class="avatar-initial rounded-3 text-heading">
+                <i class="icon-base ri ri-gift-line icon-28px"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="mb-1">Affiliate</p>
+              <h4 class="mb-1">$8,345.23</h4>
+              <p class="mb-0">
+                <span class="me-2">150 orders</span
+                ><span class="badge rounded-pill bg-label-danger">-3.5%</span>
+              </p>
+            </div>
+            <div class="avatar">
+              <span class="avatar-initial rounded-3 text-heading">
+                <i
+                  class="icon-base ri ri-money-dollar-circle-line icon-28px"
+                ></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Product List Table -->
+<div class="card">
+  <div class="card-header border-bottom">
+    <h5 class="card-title mb-4">Filter</h5>
+    <div
+      class="d-flex justify-content-between align-items-center row gap-5 gx-6 gap-md-0"
+    >
+      <div class="col-md-4 product_status"></div>
+      <div class="col-md-4 product_category"></div>
+      <div class="col-md-4 product_stock"></div>
+    </div>
+  </div>
+  <div class="card-datatable table-responsive">
+    <div
+      id="DataTables_Table_0_wrapper"
+      class="dt-container dt-bootstrap5 dt-empty-footer"
+    >
+      <div class="row m-3 mx-2 my-0 justify-content-between">
+        <div
+          class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-0"
+        >
+          <div class="dt-search mb-0 mb-md-5">
+            <input
+              type="search"
+              class="form-control form-control-sm ms-0"
+              id="dt-search-0"
+              placeholder="Search"
+              aria-controls="DataTables_Table_0"
+            /><label for="dt-search-0"></label>
+          </div>
+        </div>
+        <div
+          class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto gap-md-2 gap-0 mt-0"
+        >
+          <div class="dt-length">
+            <select
+              name="DataTables_Table_0_length"
+              aria-controls="DataTables_Table_0"
+              class="form-select form-select-sm"
+              id="dt-length-0"
+            >
+              <option value="7">7</option>
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option></select
+            ><label for="dt-length-0"></label>
+          </div>
+          <div class="dt-buttons btn-group flex-wrap mb-md-0 mb-5">
+            <div class="btn-group">
+              <button
+                class="btn buttons-collection btn-outline-secondary dropdown-toggle me-4 waves-effect"
+                tabindex="0"
+                aria-controls="DataTables_Table_0"
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded="false"
+              >
+                <span
+                  ><span class="d-flex align-items-center"
+                    ><i
+                      class="icon-base ri ri-upload-2-line icon-16px me-sm-1"
+                    ></i>
+                    <span class="d-none d-sm-inline-block">Export</span></span
+                  ></span
+                >
+              </button>
+            </div>
+            <button
+              class="btn add-new btn-primary"
+              tabindex="0"
+              aria-controls="DataTables_Table_0"
+              type="button"
+            >
+              <span
+                ><i class="icon-base ri ri-add-line me-0 me-sm-1 icon-16px"></i
+                ><span class="d-none d-sm-inline-block">Add Product</span></span
+              >
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="justify-content-between dt-layout-table">
+        <div
+          class="d-md-flex justify-content-between align-items-center dt-layout-full table-responsive"
+        >
+          <table
+            class="datatables-products table dataTable dtr-column"
+            id="DataTables_Table_0"
+            aria-describedby="DataTables_Table_0_info"
+          >
+            <colgroup>
+              <col data-dt-column="0" />
+              <col data-dt-column="1" />
+              <col data-dt-column="2" />
+              <col data-dt-column="3" />
+              <col data-dt-column="4" />
+              <col data-dt-column="5" />
+              <col data-dt-column="6" />
+              <col data-dt-column="7" />
+              <col data-dt-column="8" />
+              <col data-dt-column="9" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th
+                  data-dt-column="0"
+                  class="control dt-orderable-none"
+                  rowspan="1"
+                  colspan="1"
+                  aria-label=""
+                >
+                  <span class="dt-column-title"></span
+                  ><span class="dt-column-order"></span>
+                </th>
+                <th
+                  data-dt-column="1"
+                  rowspan="1"
+                  colspan="1"
+                  class="dt-select dt-orderable-none"
+                  aria-label=""
+                >
+                  <span class="dt-column-title"></span
+                  ><span class="dt-column-order"></span>
+                </th>
+                <th
+                  data-dt-column="2"
+                  rowspan="1"
+                  colspan="1"
+                  class="dt-orderable-asc dt-orderable-desc dt-ordering-asc"
+                  aria-sort="ascending"
+                  aria-label="product: Activate to invert sorting"
+                  tabindex="0"
+                >
+                  <span class="dt-column-title" role="button">product</span
+                  ><span class="dt-column-order"></span>
+                </th>
+                <th
+                  data-dt-column="3"
+                  rowspan="1"
+                  colspan="1"
+                  class="dt-orderable-asc dt-orderable-desc"
+                  aria-label="category: Activate to sort"
+                  tabindex="0"
+                >
+                  <span class="dt-column-title" role="button">category</span
+                  ><span class="dt-column-order"></span>
+                </th>
+                <th
+                  data-dt-column="4"
+                  rowspan="1"
+                  colspan="1"
+                  class="dt-orderable-none"
+                  aria-label="stock"
+                >
+                  <span class="dt-column-title">stock</span
+                  ><span class="dt-column-order"></span>
+                </th>
+                <th
+                  data-dt-column="5"
+                  rowspan="1"
+                  colspan="1"
+                  class="dt-orderable-asc dt-orderable-desc"
+                  aria-label="sku: Activate to sort"
+                  tabindex="0"
+                >
+                  <span class="dt-column-title" role="button">sku</span
+                  ><span class="dt-column-order"></span>
+                </th>
+                <th
+                  data-dt-column="6"
+                  rowspan="1"
+                  colspan="1"
+                  class="dt-orderable-asc dt-orderable-desc"
+                  aria-label="price: Activate to sort"
+                  tabindex="0"
+                >
+                  <span class="dt-column-title" role="button">price</span
+                  ><span class="dt-column-order"></span>
+                </th>
+                <th
+                  data-dt-column="7"
+                  rowspan="1"
+                  colspan="1"
+                  class="dt-orderable-asc dt-orderable-desc"
+                  aria-label="qty: Activate to sort"
+                  tabindex="0"
+                >
+                  <span class="dt-column-title" role="button">qty</span
+                  ><span class="dt-column-order"></span>
+                </th>
+                <th
+                  data-dt-column="8"
+                  rowspan="1"
+                  colspan="1"
+                  class="dt-orderable-asc dt-orderable-desc"
+                  aria-label="status: Activate to sort"
+                  tabindex="0"
+                >
+                  <span class="dt-column-title" role="button">status</span
+                  ><span class="dt-column-order"></span>
+                </th>
+                <th
+                  data-dt-column="9"
+                  rowspan="1"
+                  colspan="1"
+                  class="dt-orderable-none"
+                  aria-label="Actions"
+                >
+                  <span class="dt-column-title">Actions</span
+                  ><span class="dt-column-order"></span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="10" class="dt-empty">Loading...</td>
+              </tr>
+            </tbody>
+            <tfoot></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="row mx-3 justify-content-between">
+        <div
+          class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-0"
+        >
+          <div
+            class="dt-info"
+            aria-live="polite"
+            id="DataTables_Table_0_info"
+            role="status"
+          >
+            Showing 0 to 0 of 0 entries
+          </div>
+        </div>
+        <div
+          class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto gap-md-2 gap-0 mt-0"
+        >
+          <div class="dt-paging"><nav aria-label="pagination"></nav></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- / Content -->
+{% endblock content %} 
+
+
+{% block custom_js %} {% endblock custom_js %}
