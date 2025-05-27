@@ -8,6 +8,15 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.deshboard, name='dashboard'),
+    path('home',views.home,name='admin-home'),
+    path('contactUs',views.contactUs,name='contactUs'),
+    path('contactUs_location',views.contactUs_location,name='contactUs_location'),
+    path('contactUs_msg',views.contactUs_msg,name='contactUs_msg'),
+    
+    path('aboutUs_banner',views.aboutUs_banner,name='aboutUs_banner'),
+    
+    
+    
     path('product_list/',views.product_list,name='product_list'),
     path('add_product/',views.add_product,name='add_product'),
     path('category_list',views.category_list,name='category_list'),

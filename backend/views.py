@@ -1,10 +1,160 @@
-from django.shortcuts import render
-
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import *
+from .forms import *
+from django.contrib import messages
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
 
 def deshboard(request):
     return render(request, 'backend/index.html')
+
+def home(request):
+    # Get all sliders ordered by creation date (newest first)
+    sliders = HomeSlider.objects.all().order_by('-created_at')
+    
+    # Handle form submissions (for admin functionality)
+    if request.method == "POST":
+        # Edit existing slider
+        if 'edit_id' in request.POST:
+            try:
+                slider = get_object_or_404(HomeSlider, id=request.POST['edit_id'])
+                form = HomeSliderForm(request.POST, request.FILES, instance=slider)
+                if form.is_valid():
+                    form.save()
+                    messages.success(request, "Slider updated successfully!")
+                else:
+                    messages.error(request, "Error updating slider. Please check the form.")
+            except Exception as e:
+                messages.error(request, f"Error updating slider: {str(e)}")
+        
+        # Delete slider
+        elif 'delete_id' in request.POST:
+            try:
+                slider = get_object_or_404(HomeSlider, id=request.POST['delete_id'])
+                slider.delete()
+                messages.success(request, "Slider deleted successfully!")
+            except Exception as e:
+                messages.error(request, f"Error deleting slider: {str(e)}")
+        
+        # Create new slider
+        else:
+            form = HomeSliderForm(request.POST, request.FILES)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "New slider added successfully!")
+            else:
+                messages.error(request, "Error adding new slider. Please check the form.")
+        
+        return redirect('home')
+    
+    # For GET requests or if no form submission
+    form = HomeSliderForm()
+    
+    context = {
+        'sliders': sliders,
+        'form': form,
+    }
+    
+    return render(request, 'backend/home.html', context)
+
+
+def aboutUs_banner(request):
+    banner = AboutUsBanner.objects.last()
+    if not banner:
+        banner = AboutUsBanner.objects.create()
+
+    if request.method == 'POST':
+        form = AboutUsBannerForm(request.POST, request.FILES, instance=banner)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'About Us banner updated successfully!')
+            return redirect('aboutUs_banner')
+    else:
+        form = AboutUsBannerForm(instance=banner)
+
+    return render(request, 'backend/aboutUs_banner.html', {
+        'form': form,
+        'banner': banner
+    })
+
+
+
+
+
+
+
+def contactUs(request):
+    banner = ContactUsBanner.objects.last()  # Get the most recently added banner
+
+    if not banner:
+        banner = ContactUsBanner.objects.create()  # Create one if none exists
+
+    if request.method == 'POST':
+        form = ContactUsBannerForm(request.POST, request.FILES, instance=banner)
+        if form.is_valid():
+            form.save()
+            return redirect('contactUs')
+    else:
+        form = ContactUsBannerForm(instance=banner)
+
+    return render(request, 'backend/contactus.html', {'form': form, 'banner': banner})
+
+def contactUs_location(request):
+    locations = ContactLocation.objects.all()
+
+    # Handle AJAX POST requests for add/edit/delete
+    if request.method == "POST" and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        action = request.POST.get('action')
+
+        if action == "add":
+            form = ContactLocationForm(request.POST, request.FILES)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({"success": True, "message": "Location added successfully."})
+            else:
+                return JsonResponse({"success": False, "errors": form.errors})
+
+        elif action == "edit":
+            loc_id = request.POST.get('id')
+            location = get_object_or_404(ContactLocation, id=loc_id)
+            form = ContactLocationForm(request.POST, request.FILES, instance=location)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({"success": True, "message": "Location updated successfully."})
+            else:
+                return JsonResponse({"success": False, "errors": form.errors})
+
+        elif action == "delete":
+            loc_id = request.POST.get('id')
+            location = get_object_or_404(ContactLocation, id=loc_id)
+            location.delete()
+            return JsonResponse({"success": True, "message": "Location deleted successfully."})
+
+        else:
+            return JsonResponse({"success": False, "message": "Invalid action."})
+
+    # GET request - just render page
+    return render(request, 'backend/contactus_location.html', {"locations": locations})
+
+def contactUs_msg(request):
+    if request.headers.get("x-requested-with") == "XMLHttpRequest" and request.GET.get("msg_id"):
+        msg_id = request.GET.get("msg_id")
+        msg = get_object_or_404(ContactMessage, pk=msg_id)
+        return JsonResponse({
+            "name": msg.name,
+            "email": msg.email,
+            "number": msg.number,
+            "website": msg.website or "-",
+            "message": msg.message,
+            "created_at": msg.created_at.strftime("%Y-%m-%d %H:%M"),
+        })
+
+    messages = ContactMessage.objects.order_by("-created_at")
+    return render(request, "backend/contactus_msg.html", {"messages": messages})
+
+
 
 def product_list(request):
     return render(request, 'backend/product-list.html')

@@ -1,12 +1,15 @@
 from django.shortcuts import render
+from backend.models import *
+from django.shortcuts import render, redirect
+from django.contrib import messages
 
 # Create your views here.
 
 
 
 def home(request):
-    
-    return render(request, 'blue_dot/index.html')
+    sliders = HomeSlider.objects.all()  # fetch all sliders
+    return render(request, 'blue_dot/index.html', {'sliders': sliders})
 
 
 def service(request):
@@ -38,10 +41,33 @@ def blog_sidebar(request):
     return render(request, 'blue_dot/blog-sideber.html')
 
 def contact(request):
-    return render(request, 'blue_dot/contact.html')
+    banner = ContactUsBanner.objects.first()
+    locations = ContactLocation.objects.all()
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        number = request.POST.get('number', '').strip()
+        website = request.POST.get('website', '').strip()
+        message_text = request.POST.get('message', '').strip()
+
+        if name and email and number:
+            ContactMessage.objects.create(
+                name=name,
+                email=email,
+                number=number,
+                website=website or None,
+                message=message_text or ''
+            )
+            messages.success(request, "Your message has been sent successfully.")
+            return redirect('contact')  # or show a thank you page
+        else:
+            messages.error(request, "Name, Email, and Number are required.")
+
+    return render(request, 'blue_dot/contact.html', {'banner': banner, 'locations': locations,})
 
 def aboutUs(request):
-    return render(request, 'blue_dot/about.html')
+    banner = AboutUsBanner.objects.first()
+    return render(request, 'blue_dot/about.html', {'banner': banner})
 
 def ourteam(request):
     return render(request, 'blue_dot/team.html')

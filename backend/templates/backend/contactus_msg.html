@@ -1,0 +1,221 @@
+{% extends "backend/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+{{ block.super }}
+<style>
+    /* General Table Styling */
+    .table-responsive {
+        border: 0; /* Remove default border */
+    }
+
+    .table {
+        margin-bottom: 0; /* Remove default bottom margin */
+        border-collapse: collapse; /* Ensure borders collapse nicely */
+    }
+
+    .table thead th {
+        background-color: #f8f9fa; /* Light background for header */
+        color: #343a40; /* Dark text for header */
+        border-bottom: 2px solid #dee2e6; /* Stronger bottom border */
+        padding: 0.75rem;
+        font-weight: 500; /* Slightly bolder header text */
+    }
+
+    .table tbody td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #e9ecef; /* Light bottom border for rows */
+    }
+
+    .table tbody tr:last-child td {
+        border-bottom: none; /* Remove border from the last row */
+    }
+
+    /* Column Specific Alignment (More Specific) */
+    .table th:nth-child(1), /* # Header */
+    .table td:nth-child(1) { /* # Data */
+        text-align: center;
+        width: 5%; /* Adjust width as needed */
+    }
+
+    .table th:nth-child(2), /* Name Header */
+    .table td:nth-child(2) { /* Name Data */
+        text-align: left;
+    }
+
+    .table th:nth-child(3), /* Email Header */
+    .table td:nth-child(3) { /* Email Data */
+        text-align: left;
+    }
+
+    .table th:nth-child(4), /* Number Header */
+    .table td:nth-child(4) { /* Number Data */
+        text-align: left; /* Or text-end */
+    }
+
+    .table th:nth-child(5), /* Submitted At Header */
+    .table td:nth-child(5) { /* Submitted At Data */
+        text-align: center;
+        width: 15%; /* Adjust width as needed */
+    }
+
+    .table th:nth-child(6), /* Action Header */
+    .table td:nth-child(6) { /* Action Data */
+        text-align: center;
+        width: 10%; /* Adjust width as needed */
+    }
+
+    /* Modern Button Styling */
+    .btn-outline-primary {
+        border: 1px solid #007bff;
+        color: #007bff;
+        transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+    /* Modern Modal Styling */
+    .modal-content {
+        border: 0;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+        background-color: #e9ecef;
+        border-bottom: 1px solid #dee2e6;
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+        padding: 1rem 1.5rem;
+    }
+
+    .modal-title {
+        color: #212529;
+        font-weight: 500;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #dee2e6;
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .modal-footer .btn {
+        margin-left: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-primary">Contact Messages</h2>
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="text-center">#</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Number</th>
+                            <th scope="col" class="text-center">Submitted At</th>
+                            <th scope="col" class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for msg in messages %}
+                        <tr>
+                            <td class="text-center">{{ forloop.counter }}</td>
+                            <td>{{ msg.name }}</td>
+                            <td>{{ msg.email }}</td>
+                            <td>{{ msg.number|default:"-" }}</td>
+                            <td class="text-center">{{ msg.created_at|date:"Y-m-d H:i" }}</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary view-message-btn" data-id="{{ msg.id }}" title="View Message">
+                                    <i class="bi bi-eye-fill"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                <p class="lead">No contact messages yet.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewMessageModal" tabindex="-1" aria-labelledby="viewMessageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title text-primary" id="viewMessageModalLabel">Message Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Name:</strong> <span id="modalName" class="text-secondary"></span></p>
+                <p><strong>Email:</strong> <span id="modalEmail" class="text-secondary"></span></p>
+                <p><strong>Number:</strong> <span id="modalNumber" class="text-secondary">-</span></p>
+                <p><strong>Website:</strong> <span id="modalWebsite" class="text-secondary">-</span></p>
+                <p><strong>Message:</strong></p>
+                <div class="border p-3 rounded bg-light">
+                    <p id="modalMessage" class="text-secondary"></p>
+                </div>
+                <p class="mt-3"><small class="text-muted">Submitted: <span id="modalCreated"></span></small></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block custom_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const viewMessageModal = new bootstrap.Modal(document.getElementById("viewMessageModal"));
+        const modalName = document.getElementById("modalName");
+        const modalEmail = document.getElementById("modalEmail");
+        const modalNumber = document.getElementById("modalNumber");
+        const modalWebsite = document.getElementById("modalWebsite");
+        const modalMessage = document.getElementById("modalMessage");
+        const modalCreated = document.getElementById("modalCreated");
+
+        document.querySelectorAll(".view-message-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const msgId = btn.getAttribute("data-id");
+
+                fetch(`?msg_id=${msgId}`, {
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                })
+                .then((res) => res.json())
+                .then((data) => {
+                    modalName.textContent = data.name;
+                    modalEmail.textContent = data.email;
+                    modalNumber.textContent = data.number || "-";
+                    modalWebsite.textContent = data.website || "-";
+                    modalMessage.textContent = data.message || "-";
+                    modalCreated.textContent = new Date(data.created_at).toLocaleString();
+                    viewMessageModal.show();
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

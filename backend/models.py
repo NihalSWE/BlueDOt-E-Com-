@@ -1,5 +1,6 @@
 from django.db import models
-
+from PIL import Image
+import os
 # Create your models here.
 
 
@@ -340,3 +341,94 @@ class BlogComment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.name} on {self.blog.title}"
+    
+    
+# -----------------------
+# Home Banner Slider
+class HomeSlider(models.Model):
+    title = models.CharField(max_length=200)
+    subtitle = models.CharField(max_length=200, blank=True)
+    image = models.ImageField(upload_to='slider/')
+    button_text = models.CharField(max_length=50, default="Start Your Projects")
+    button_link = models.CharField(max_length=200, default="#")
+    created_at = models.DateTimeField(auto_now_add=True)  # track creation time
+
+    class Meta:
+        ordering = ['-created_at'] 
+        
+    def __str__(self):
+        return self.title
+    
+    
+# Contact Page banner   
+class ContactUsBanner(models.Model):
+    title = models.CharField(max_length=255)
+    subtitle = models.TextField(blank=True, null=True)
+    background_image = models.ImageField(upload_to='contact_banner/')
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # First save to get the file on disk
+
+        if self.background_image:
+            image_path = self.background_image.path
+            with Image.open(image_path) as img:
+                # Force resize to 1920x570 (may distort if original ratio differs)
+                resized_img = img.resize((1920, 570), Image.LANCZOS)
+                resized_img.save(image_path, quality=90, optimize=True)
+                
+                
+# Conatct page branch locations
+class ContactLocation(models.Model):
+    city = models.CharField(max_length=100)
+    address = models.TextField()
+    image = models.ImageField(upload_to='contact_locations/', null=True, blank=True)
+
+    def __str__(self):
+        return self.city
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.image:
+            img = Image.open(self.image.path)
+            img = img.convert('RGB')  # Ensure it's in a valid format
+            img = img.resize((160, 108), Image.LANCZOS)
+            img.save(self.image.path)
+            
+            
+# COntact Msg
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    number = models.CharField(max_length=20)  # Mandatory
+    website = models.URLField(blank=True, null=True)
+    message = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.name} - {self.email}"
+    
+    
+#About Us page 
+#banner 
+# models.py
+
+class AboutUsBanner(models.Model):
+    title = models.CharField(max_length=255)
+    subtitle = models.TextField(blank=True, null=True)
+    background_image = models.ImageField(upload_to='about_banner/')
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.background_image:
+            from PIL import Image
+            image_path = self.background_image.path
+            with Image.open(image_path) as img:
+                resized_img = img.resize((1920, 570), Image.LANCZOS)
+                resized_img.save(image_path, quality=90, optimize=True)

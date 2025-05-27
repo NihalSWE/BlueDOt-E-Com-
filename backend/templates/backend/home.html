@@ -1,0 +1,511 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block custom_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    :root {
+        --primary-color: #4361ee;
+        --secondary-color: #3f37c9;
+        --accent-color: #4cc9f0;
+        --light-bg: #f8f9fa;
+        --dark-text: #212529;
+    }
+    
+    .modern-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 25px;
+    }
+    
+    .modern-card-header {
+        background: var(--primary-color);
+        color: white;
+        padding: 15px 20px;
+        border-bottom: none;
+    }
+    
+    .modern-card-body {
+        padding: 25px;
+        background-color: white;
+    }
+    
+    .modern-input {
+        border-radius: 8px;
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s;
+    }
+    
+    .modern-input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+    }
+    
+    .modern-file-input {
+        padding: 8px;
+    }
+    
+    .modern-file-input::-webkit-file-upload-button {
+        background: var(--light-bg);
+        border: 1px solid #e0e0e0;
+        padding: 8px 15px;
+        border-radius: 5px;
+        color: var(--dark-text);
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .modern-file-input::-webkit-file-upload-button:hover {
+        background: #e9ecef;
+    }
+    
+    .btn-modern {
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    
+    .btn-modern-primary {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color:white;
+    }
+    
+    .btn-modern-primary:hover {
+        background: var(--secondary-color);
+        border-color: var(--secondary-color);
+        color:white;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 8px;
+        color: var(--dark-text);
+    }
+    
+    .image-preview-container {
+        margin-top: 15px;
+    }
+    
+    .image-preview {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        display: none;
+    }
+    
+    .form-section {
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .form-section-title {
+        font-size: 1.1rem;
+        color: var(--primary-color);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-section-title i {
+        margin-right: 10px;
+    }
+
+    /* Fixed Table Styles */
+    .table-responsive {
+        overflow-x: auto;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .table {
+        margin-bottom: 0;
+        width: 100%;
+        table-layout: fixed;
+    }
+    
+    .table th,
+    .table td {
+        vertical-align: middle;
+        padding: 12px 15px;
+        border-bottom: 1px solid #dee2e6;
+        text-align: left;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: var(--dark-text);
+        border-bottom: 2px solid #dee2e6;
+        white-space: nowrap;
+    }
+    
+    /* Fixed column widths */
+    .table th:nth-child(1), /* Preview column */
+    .table td:nth-child(1) {
+        width: 100px;
+        text-align: center;
+    }
+    
+    .table th:nth-child(2), /* Title column */
+    .table td:nth-child(2) {
+        width: 25%;
+        min-width: 200px;
+    }
+    
+    .table th:nth-child(3), /* Subtitle column */
+    .table td:nth-child(3) {
+        width: 25%;
+        min-width: 200px;
+    }
+    
+    .table th:nth-child(4), /* Button column */
+    .table td:nth-child(4) {
+        width: 200px;
+    }
+    
+    .table th:nth-child(5), /* Actions column */
+    .table td:nth-child(5) {
+        width: 120px;
+        text-align: center;
+    }
+    
+    .img-thumbnail {
+        padding: 0.25rem;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        width: 80px;
+        height: 45px;
+        object-fit: cover;
+        display: block;
+        margin: 0 auto;
+    }
+    
+    .button-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .button-text-badge {
+        background-color: #e9ecef;
+        color: #495057;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .button-link-text {
+        font-size: 0.7rem;
+        color: #6c757d;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+        display: block;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .truncated-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+        display: block;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0"><i class="bi bi-images me-2"></i>Manage Homepage Sliders</h2>
+                <button class="btn btn-modern btn-modern-primary" data-bs-toggle="modal" data-bs-target="#addModal">
+                    <i class="bi bi-plus-circle me-2"></i>Add New Slide
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="modern-card-header">
+                    <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Current Slides</h5>
+                </div>
+                <div class="modern-card-body">
+                    {% if sliders %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Preview</th>
+                                    <th>Title</th>
+                                    <th>Subtitle</th>
+                                    <th>Button</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for slide in sliders %}
+                                <tr>
+                                    <td>
+                                        <img src="{{ slide.image.url }}" class="img-thumbnail" alt="Slide preview">
+                                    </td>
+                                    <td>
+                                        <span class="truncated-text" title="{{ slide.title }}">{{ slide.title|truncatechars:30 }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="truncated-text" title="{{ slide.subtitle }}">{{ slide.subtitle|truncatechars:30|default:"-" }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="button-info">
+                                            <span class="button-text-badge" title="{{ slide.button_text }}">{{ slide.button_text }}</span>
+                                            <span class="button-link-text" title="{{ slide.button_link }}">{{ slide.button_link }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-sm btn-outline-primary edit-btn" 
+                                                data-id="{{ slide.id }}" 
+                                                data-title="{{ slide.title }}"
+                                                data-subtitle="{{ slide.subtitle }}"
+                                                data-button_text="{{ slide.button_text }}"
+                                                data-button_link="{{ slide.button_link }}"
+                                                title="Edit slide">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <form method="post" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="delete_id" value="{{ slide.id }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="return confirm('Are you sure you want to delete this slide?')"
+                                                    title="Delete slide">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>No slides found. Add your first slide to get started.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" enctype="multipart/form-data" id="addForm">
+                {% csrf_token %}
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="addModalLabel"><i class="bi bi-plus-circle me-2"></i>Add New Slide</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-section">
+                        <h5 class="form-section-title"><i class="bi bi-textarea-t"></i>Content</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_title" class="form-label">Title*</label>
+                                {{ form.title }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_subtitle" class="form-label">Subtitle</label>
+                                {{ form.subtitle }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_button_text" class="form-label">Button Text*</label>
+                                {{ form.button_text }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_button_link" class="form-label">Button Link*</label>
+                                {{ form.button_link }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h5 class="form-section-title"><i class="bi bi-image"></i>Image</h5>
+                        <div class="mb-3">
+                            <label for="id_image" class="form-label">Slide Image*</label>
+                            {{ form.image }}
+                            <small class="text-muted">Recommended size: 1920x1080 pixels (16:9 ratio)</small>
+                        </div>
+                        <div class="image-preview-container">
+                            <img id="imagePreview" class="image-preview" alt="Preview will appear here">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-2"></i>Save Slide
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" enctype="multipart/form-data" id="editForm">
+                {% csrf_token %}
+                <input type="hidden" name="edit_id" id="edit_id">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="editModalLabel"><i class="bi bi-pencil me-2"></i>Edit Slide</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-section">
+                        <h5 class="form-section-title"><i class="bi bi-textarea-t"></i>Content</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Title*</label>
+                                <input type="text" name="title" id="edit_title" class="form-control modern-input" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Subtitle</label>
+                                <input type="text" name="subtitle" id="edit_subtitle" class="form-control modern-input">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Button Text*</label>
+                                <input type="text" name="button_text" id="edit_button_text" class="form-control modern-input" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Button Link*</label>
+                                <input type="text" name="button_link" id="edit_button_link" class="form-control modern-input" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h5 class="form-section-title"><i class="bi bi-image"></i>Image</h5>
+                        <div class="mb-3">
+                            <label class="form-label">Change Image (optional)</label>
+                            <input type="file" name="image" class="form-control modern-file-input" id="edit_image">
+                            <small class="text-muted">Leave blank to keep current image</small>
+                        </div>
+                        <div class="image-preview-container">
+                            <img id="editImagePreview" class="image-preview" alt="Current image">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-2"></i>Update Slide
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Image preview for add form
+    document.getElementById('id_image').addEventListener('change', function(e) {
+        const preview = document.getElementById('imagePreview');
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // Edit modal handling
+    const editButtons = document.querySelectorAll(".edit-btn");
+    editButtons.forEach(btn => {
+        btn.addEventListener("click", function() {
+            const modal = new bootstrap.Modal(document.getElementById('editModal'));
+            
+            // Set form values
+            document.getElementById('edit_id').value = this.dataset.id;
+            document.getElementById('edit_title').value = this.dataset.title;
+            document.getElementById('edit_subtitle').value = this.dataset.subtitle || '';
+            document.getElementById('edit_button_text').value = this.dataset.button_text;
+            document.getElementById('edit_button_link').value = this.dataset.button_link;
+            
+            // Show current image preview
+            const imgPreview = document.getElementById('editImagePreview');
+            const imgSrc = this.closest('tr').querySelector('img').src;
+            imgPreview.src = imgSrc;
+            imgPreview.style.display = 'block';
+            
+            modal.show();
+        });
+    });
+
+    // Image preview for edit form
+    document.getElementById('edit_image').addEventListener('change', function(e) {
+        const preview = document.getElementById('editImagePreview');
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // Form validation
+    document.getElementById('addForm').addEventListener('submit', function(e) {
+        if (!document.getElementById('id_image').value) {
+            e.preventDefault();
+            alert('Please select an image for the slide');
+        }
+    });
+</script>
+{% endblock %}
