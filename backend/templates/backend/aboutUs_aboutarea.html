@@ -1,0 +1,666 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block custom_css %}
+<style>
+    .about-container {
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+    
+    .main-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .page-title {
+        color: #2d3748;
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .page-subtitle {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        border: none;
+        padding: 14px 32px;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-primary-custom::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-primary-custom:hover::before {
+        left: 100%;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.35);
+        color: white;
+    }
+    
+    .btn-primary-custom:active {
+        transform: translateY(0);
+    }
+    
+    /* Enhanced Modal Styling */
+    .modal-xl {
+        max-width: 1200px;
+    }
+    
+    .modal-content {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        border-bottom: none;
+        padding: 24px 32px;
+        position: relative;
+    }
+    
+    .modal-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.1) 75%);
+        background-size: 20px 20px;
+        opacity: 0.1;
+    }
+    
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .btn-close-white {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+        transition: opacity 0.3s ease;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .btn-close-white:hover {
+        opacity: 1;
+    }
+    
+    .modal-body {
+        padding: 32px;
+        background: #fafafa;
+    }
+    
+    .modal-footer {
+        background: white;
+        border-top: 1px solid #e5e7eb;
+        padding: 24px 32px;
+        gap: 12px;
+    }
+    
+    /* Enhanced Tabs */
+    .nav-tabs-custom {
+        border: none;
+        margin-bottom: 32px;
+        background: white;
+        border-radius: 16px;
+        padding: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        display: flex;
+        position: relative;
+    }
+    
+    .nav-tabs-custom::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        height: calc(100% - 16px);
+        width: calc(33.333% - 8px);
+        {% comment %} background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); {% endcomment %}
+        border-radius: 12px;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 0;
+    }
+    
+    .nav-tabs-custom .nav-item {
+        flex: 1;
+        z-index: 1;
+    }
+    
+    .nav-tabs-custom .nav-link {
+        border: none;
+        padding: 14px 20px;
+        color: #6b7280;
+        font-weight: 600;
+        text-align: center;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 1;
+        background: transparent;
+    }
+    
+    .nav-tabs-custom .nav-link:hover {
+        color: white;
+    }
+    
+    .nav-tabs-custom .nav-link.active {
+        color: #6b7280;
+    }
+    
+    .nav-tabs-custom .nav-item:nth-child(1) .nav-link.active ~ .nav-tabs-custom::before {
+        transform: translateX(0);
+    }
+    
+    .nav-tabs-custom .nav-item:nth-child(2) .nav-link.active ~ .nav-tabs-custom::before {
+        transform: translateX(100%);
+    }
+    
+    .nav-tabs-custom .nav-item:nth-child(3) .nav-link.active ~ .nav-tabs-custom::before {
+        transform: translateX(200%);
+    }
+    
+    /* Tab Content */
+    .tab-content {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        padding: 32px;
+        min-height: 400px;
+    }
+    
+    .tab-pane {
+        animation: fadeInUp 0.4s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Form Styling */
+    .form-group {
+        margin-bottom: 24px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        display: block;
+        font-size: 0.95rem;
+        letter-spacing: 0.01em;
+    }
+    
+    .form-control-custom {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px 16px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 100%;
+        font-size: 0.95rem;
+        background: #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .form-control-custom:focus {
+        border-color: #6366f1;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), 0 2px 8px rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
+    }
+    
+    .form-control-custom:hover {
+        border-color: #d1d5db;
+    }
+    
+    /* Image Preview Enhancements */
+    .image-preview {
+        max-height: 140px;
+        border-radius: 12px;
+        margin-top: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+        object-fit: cover;
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    .image-preview:hover {
+        transform: scale(1.02);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .no-image {
+        height: 140px;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border: 2px dashed #cbd5e1;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        margin-top: 12px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .no-image::before {
+        content: '📷';
+        font-size: 2rem;
+        margin-bottom: 8px;
+        opacity: 0.6;
+    }
+    
+    .no-image:hover {
+        border-color: #6366f1;
+        background: linear-gradient(135deg, #f8fafc 0%, #ede9fe 100%);
+        color: #6366f1;
+    }
+    
+    /* Section Headers in Tabs */
+    .tab-section-header {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f3f4f6;
+        position: relative;
+    }
+    
+    .tab-section-header::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    }
+    
+    /* Enhanced Button Styling */
+    .btn-secondary {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        color: #64748b;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+        background: #e2e8f0;
+        border-color: #cbd5e1;
+        color: #475569;
+        transform: translateY(-1px);
+    }
+    
+    /* Loading Animation */
+    .btn-primary-custom.loading {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+    
+    .btn-primary-custom.loading::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        left: 50%;
+        margin-left: -8px;
+        margin-top: -8px;
+        border: 2px solid transparent;
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Responsive Improvements */
+    @media (max-width: 768px) {
+        .main-card {
+            margin: 10px;
+            padding: 20px;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+        }
+        
+        .tab-content {
+            padding: 20px;
+        }
+        
+        .nav-tabs-custom .nav-link {
+            padding: 12px 16px;
+            font-size: 0.9rem;
+        }
+    }
+    
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+        .modal-body {
+            background: #1f2937;
+        }
+        
+        .tab-content {
+            background: #111827;
+            color: #f9fafb;
+        }
+        
+        .form-control-custom {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+        
+        .form-label {
+            color: #d1d5db;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="about-container">
+    <div class="main-card">
+        <div class="page-header">
+            <h1 class="page-title">About Section Management</h1>
+            <p class="page-subtitle">Update your website's about section content</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="text-center mb-4">
+                <button type="button" class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#editModal">
+                    ✨ Edit About Content
+                </button>
+            </div>
+
+            <!-- Enhanced Modal -->
+            <div class="modal fade" id="editModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">✏️ Edit About Section</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        
+                        <div class="modal-body">
+                            <!-- Enhanced Tabs -->
+                            <ul class="nav nav-tabs nav-tabs-custom" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-bs-toggle="tab" href="#text-tab">📝 Text Content</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link " data-bs-toggle="tab" href="#images-tab">🖼️ Images</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#cta-tab">🎯 Call to Action</a>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content">
+                                <!-- Text Content Tab -->
+                                <div class="tab-pane fade show active" id="text-tab">
+                                    <h4 class="tab-section-header">Content & Descriptions</h4>
+                                    <div class="row">
+                                        {% for field in form %}
+                                            {% if field.name in 'sub_title,main_title,description,quality_title,quality_description,automation_title,automation_description,center_title' %}
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">{{ field.label }}</label>
+                                                        {{ field|add_class:"form-control-custom" }}
+                                                        {% if field.errors %}
+                                                            <div class="text-danger mt-1">{{ field.errors.0 }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane fade" id="images-tab">
+                                    <h4 class="tab-section-header">Visual Assets</h4>
+                                    <div class="row">
+                                        {% for field in form %}
+                                            {% if field.name in 'bg_image,man_image,shape1,shape2,call_image' %}
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">{{ field.label }}</label>
+                                                        {{ field|add_class:"form-control-custom" }}
+                                
+                                                        <div class="image-upload-instructions mt-2 text-muted small">
+                                                            {% if field.name == 'bg_image' %}
+                                                                Recommended dimensions: 643x557 pixels
+                                                            {% elif field.name == 'man_image' %}
+                                                                Recommended dimensions: 353x634 pixels
+                                                            {% elif field.name == 'shape1' %}
+                                                                Recommended dimensions: 98x103 pixels
+                                                            {% elif field.name == 'shape2' %}
+                                                                Recommended dimensions: 240x300 pixels
+                                                            {% elif field.name == 'call_image' %}
+                                                                Recommended dimensions: 60x60 pixels
+                                                            {% endif %}
+                                                        </div>
+                                
+                                                        {% if about %}
+                                                            {% if field.name == 'bg_image' and about.bg_image %}
+                                                                <img src="{{ about.bg_image.url }}" class="image-preview" alt="Background">
+                                                            {% elif field.name == 'man_image' and about.man_image %}
+                                                                <img src="{{ about.man_image.url }}" class="image-preview" alt="Main Image">
+                                                            {% elif field.name == 'shape1' and about.shape1 %}
+                                                                <img src="{{ about.shape1.url }}" class="image-preview" alt="Shape 1">
+                                                            {% elif field.name == 'shape2' and about.shape2 %}
+                                                                <img src="{{ about.shape2.url }}" class="image-preview" alt="Shape 2">
+                                                            {% elif field.name == 'call_image' and about.call_image %}
+                                                                <img src="{{ about.call_image.url }}" class="image-preview" alt="Call Icon">
+                                                            {% else %}
+                                                                <div class="no-image">
+                                                                    <div class="text-center">
+                                                                        <div style="font-size: 2rem; margin-bottom: 8px;">📷</div>
+                                                                        <div>No image selected</div>
+                                                                    </div>
+                                                                </div>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            <div class="no-image">
+                                                                <div class="text-center">
+                                                                    <div style="font-size: 2rem; margin-bottom: 8px;">📷</div>
+                                                                    <div>No image selected</div>
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                
+                                                        {% if field.errors %}
+                                                            <div class="text-danger mt-1">{{ field.errors.0 }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <!-- Call to Action Tab -->
+                                <div class="tab-pane fade" id="cta-tab">
+                                    <h4 class="tab-section-header">Buttons & Contact Info</h4>
+                                    <div class="row">
+                                        {% for field in form %}
+                                            {% if field.name in 'button_text,button_url,call_text,call_number' %}
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="form-label">{{ field.label }}</label>
+                                                        {{ field|add_class:"form-control-custom" }}
+                                                        {% if field.errors %}
+                                                            <div class="text-danger mt-1">{{ field.errors.0 }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary-custom" id="saveBtn">
+                                💾 Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced image preview with animations
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                const preview = this.parentNode.querySelector('.image-preview, .no-image');
+                
+                reader.onload = function(e) {
+                    if (preview.classList.contains('no-image')) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'image-preview';
+                        img.style.opacity = '0';
+                        preview.parentNode.replaceChild(img, preview);
+                        
+                        // Fade in animation
+                        setTimeout(() => {
+                            img.style.transition = 'opacity 0.3s ease';
+                            img.style.opacity = '1';
+                        }, 10);
+                    } else {
+                        preview.style.opacity = '0';
+                        setTimeout(() => {
+                            preview.src = e.target.result;
+                            preview.style.opacity = '1';
+                        }, 150);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+    
+    // Tab switching animation
+    document.querySelectorAll('.nav-tabs-custom .nav-link').forEach((tab, index) => {
+        tab.addEventListener('click', function() {
+            const indicator = document.querySelector('.nav-tabs-custom::before');
+            if (indicator) {
+                indicator.style.transform = `translateX(${index * 100}%)`;
+            }
+        });
+    });
+    
+    // Form submission loading state
+    document.getElementById('saveBtn').addEventListener('click', function() {
+        this.classList.add('loading');
+        this.textContent = 'Saving...';
+        
+        // Reset after form submission (or timeout)
+        setTimeout(() => {
+            this.classList.remove('loading');
+            this.textContent = '💾 Save Changes';
+        }, 3000);
+    });
+    
+    // Enhanced form validation feedback
+    document.querySelectorAll('.form-control-custom').forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.value.trim() !== '') {
+                this.style.borderColor = '#10b981';
+                this.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)';
+            }
+        });
+        
+        input.addEventListener('focus', function() {
+            this.style.borderColor = '#6366f1';
+            this.style.boxShadow = '0 0 0 4px rgba(99, 102, 241, 0.1), 0 2px 8px rgba(0, 0, 0, 0.08)';
+        });
+    });
+});
+</script>
+{% endblock %}

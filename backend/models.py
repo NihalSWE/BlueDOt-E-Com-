@@ -432,3 +432,205 @@ class AboutUsBanner(models.Model):
             with Image.open(image_path) as img:
                 resized_img = img.resize((1920, 570), Image.LANCZOS)
                 resized_img.save(image_path, quality=90, optimize=True)
+
+
+#ABout area
+class AboutUs_AboutArea(models.Model):
+    sub_title = models.CharField(max_length=255)
+    main_title = models.CharField(max_length=255)
+    description = models.TextField()
+
+    quality_title = models.CharField(max_length=255)
+    quality_description = models.TextField()
+
+    automation_title = models.CharField(max_length=255)
+    automation_description = models.TextField()
+
+    center_title = models.CharField(max_length=255)
+    
+    button_text = models.CharField(max_length=50, default="Discover More")
+    button_url = models.CharField(max_length=255, blank=True)
+
+    call_text = models.CharField(max_length=255)
+    call_number = models.CharField(max_length=50)
+
+    bg_image = models.ImageField(upload_to='about/')
+    man_image = models.ImageField(upload_to='about/')
+    shape1 = models.ImageField(upload_to='about/')
+    shape2 = models.ImageField(upload_to='about/')
+    call_image = models.ImageField(upload_to='about/')
+
+    class Meta:
+        verbose_name = "About Section"
+        verbose_name_plural = "About Section"
+
+    def __str__(self):
+        return f"About Area Content"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # Save first to ensure image files exist
+
+        def resize_image(field_name, size):
+            image_field = getattr(self, field_name)
+            if image_field:
+                img_path = image_field.path
+                img = Image.open(img_path)
+                if img.size != size:
+                    img = img.convert('RGB')  # Convert to RGB to avoid mode issues
+                    img = img.resize(size, Image.LANCZOS)
+                    img.save(img_path, quality=90)
+
+        resize_image('bg_image', (643, 557))
+        resize_image('man_image', (353, 634))
+        resize_image('shape1', (98, 103))
+        resize_image('shape2', (240, 300))
+        resize_image('call_image', (60, 60))
+        
+        
+class CallToAction(models.Model):
+    sub_title = models.CharField(max_length=255)
+    main_title = models.CharField(max_length=255)
+    button_text = models.CharField(max_length=50, default="Contact Us")
+    button_link = models.CharField(max_length=255, blank=True)
+    shape1 = models.ImageField(upload_to='cta/', blank=True, null=True)
+
+    def __str__(self):
+        return f"CTA: {self.main_title}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # Save first to get access to file
+
+        if self.shape1:
+            img_path = self.shape1.path
+            img = Image.open(img_path)
+
+            # Resize to 1920x615
+            output_size = (1920, 615)
+            img = img.resize(output_size, Image.LANCZOS)
+
+            # Save resized image back to same path
+            img.save(img_path)
+            
+            
+class ChooseUsSection(models.Model):
+    thumb_image = models.ImageField(upload_to='choose_us/')
+    shape_3 = models.ImageField(upload_to='choose_us/', blank=True, null=True)
+    shape_4 = models.ImageField(upload_to='choose_us/', blank=True, null=True)
+
+    def __str__(self):
+        return f"Choose Us Section {self.id}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        def resize_image(field_name, size):
+            image_field = getattr(self, field_name)
+            if image_field:
+                img = Image.open(image_field.path)
+                if img.size != size:
+                    img = img.convert('RGB')
+                    img = img.resize(size, Image.LANCZOS)
+                    img.save(image_field.path, quality=90)
+
+        resize_image('thumb_image', (570, 580))
+        resize_image('shape_3', (177, 260))
+        resize_image('shape_4', (225, 170))
+        
+        
+
+class ChooseUsItem(models.Model):
+    section = models.ForeignKey(
+        ChooseUsSection,
+        related_name='items',
+        on_delete=models.CASCADE
+    )
+    icon_image = models.ImageField(
+        upload_to='choose_us/icons/',
+        help_text="Upload icon image (60x60 recommended)"
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        try:
+            if self.icon_image:
+                img = Image.open(self.icon_image.path)
+                if img.size != (60, 60):
+                    img = img.convert('RGBA')
+                    img = img.resize((60, 60), Image.LANCZOS)
+                    img.save(self.icon_image.path, quality=90)
+        except Exception as e:
+            print(f"Error resizing icon image: {e}")
+
+
+class FAQSection(models.Model):
+    # Left side video and skills
+    video_url = models.URLField(
+        max_length=255,
+        help_text="YouTube or video link for popup video"
+    )
+    video_thumbnail = models.ImageField(
+        upload_to='faq/thumbnails/',
+        help_text="Upload video thumbnail image (recommended size: 570x298)"
+    )
+    # Skills with progress percentage (e.g. T-Shirt Printing, Branding)
+    skill1_name = models.CharField(max_length=100, default="T-Shirt Printing")
+    skill1_progress = models.PositiveIntegerField(
+        default=75,
+        help_text="Progress in percentage (0-100)"
+    )
+    skill2_name = models.CharField(max_length=100, default="Branding")
+    skill2_progress = models.PositiveIntegerField(
+        default=85,
+        help_text="Progress in percentage (0-100)"
+    )
+    # Statistic on left side below skills
+    stat_icon_class = models.CharField(
+        max_length=50,
+        default="flaticon-roll",
+        help_text="Icon CSS class for stat"
+    )
+    stat_title = models.CharField(max_length=100, default="Smooth Automation")
+    stat_count = models.PositiveIntegerField(default=428)
+    stat_description = models.CharField(max_length=150, default="Printing Specialist")
+
+    # Right side section title and subtitle
+    section_subtitle = models.CharField(
+        max_length=255,
+        default="FREQUENTLY ASKED QUESTION",
+        blank=True,
+        null=True
+    )
+    section_title = models.CharField(
+        max_length=255,
+        default="What Our Clients Ask About Presvila",
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return f"FAQ Section - {self.section_title}"
+
+
+class FAQItem(models.Model):
+    faq_section = models.ForeignKey(
+        FAQSection, 
+        related_name='faq_items', 
+        on_delete=models.CASCADE
+    )
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+    # Track whether FAQ is open by default
+    is_expanded = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.question

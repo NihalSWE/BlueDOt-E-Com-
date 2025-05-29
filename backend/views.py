@@ -4,6 +4,7 @@ from .forms import *
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.forms import modelformset_factory
 # Create your views here.
 
 
@@ -78,8 +79,120 @@ def aboutUs_banner(request):
         'form': form,
         'banner': banner
     })
+    
+def aboutUs_aboutarea(request):
+    about = AboutUs_AboutArea.objects.first()
+    form = AboutUsAboutAreaForm(request.POST or None, request.FILES or None, instance=about)
+
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+
+    image_fields = ['bg_image', 'man_image', 'shape1', 'shape2', 'call_image']
+    image_previews = {field: getattr(about, field).url if getattr(about, field) else None for field in image_fields} if about else {}
+
+    return render(request, 'backend/aboutUs_aboutarea.html', {
+        'form': form,
+        'about': about,
+        'image_previews': image_previews,
+    })
 
 
+
+def aboutUs_callToaction(request):
+    cta = CallToAction.objects.first()
+
+    if request.method == "POST":
+        form = CallToActionForm(request.POST, request.FILES, instance=cta)
+        if form.is_valid():
+            form.save()
+            return redirect('aboutUs_callToaction')
+    else:
+        form = CallToActionForm(instance=cta)
+
+    return render(request, 'backend/aboutUs_callToaction.html', {
+        'form': form,
+        'cta': cta,
+    })
+
+from django.shortcuts import render, redirect
+from django.forms import modelformset_factory
+from .models import ChooseUsSection, ChooseUsItem
+from .forms import ChooseUsSectionForm, ChooseUsItemForm
+
+def aboutUs_chooseUs(request):
+    section = ChooseUsSection.objects.last()
+
+    # If no section exists, create one (optional)
+    if not section:
+        section = ChooseUsSection.objects.create()
+
+    # Form for section images
+    section_form = ChooseUsSectionForm(request.POST or None, request.FILES or None, instance=section)
+
+    # Formset for items (extra=0 means no empty forms by default)
+    ChooseUsItemFormSet = modelformset_factory(ChooseUsItem, form=ChooseUsItemForm, can_delete=True, extra=0)
+    queryset = ChooseUsItem.objects.filter(section=section)
+    formset = ChooseUsItemFormSet(request.POST or None, request.FILES or None, queryset=queryset)
+
+    if request.method == 'POST':
+        if 'save_section' in request.POST:
+            # Saving section form only
+            if section_form.is_valid():
+                section_form.save()
+                return redirect('aboutUs_chooseUs')
+
+        elif 'save_items' in request.POST:
+            # Saving formset for items
+            if formset.is_valid():
+                instances = formset.save(commit=False)
+                # Save new or changed items
+                for obj in instances:
+                    obj.section = section
+                    obj.save()
+                # Delete items marked for deletion
+                for obj in formset.deleted_objects:
+                    obj.delete()
+                return redirect('aboutUs_chooseUs')
+
+        elif 'add_item' in request.POST:
+            # Adding new item from modal form
+            add_item_form = ChooseUsItemForm(request.POST, request.FILES)
+            if add_item_form.is_valid():
+                new_item = add_item_form.save(commit=False)
+                new_item.section = section
+                new_item.save()
+                return redirect('aboutUs_chooseUs')
+    else:
+        add_item_form = ChooseUsItemForm()
+
+    context = {
+        'section_form': section_form,
+        'formset': formset,
+        'add_item_form': add_item_form,
+        'section': section,
+    }
+    return render(request, 'backend/aboutUs_chooseUs.html', context)
+
+
+def aboutus_faq(request):
+    faq_section = FAQSection.objects.first()
+
+    if request.method == 'POST':
+        form = FAQSectionForm(request.POST, request.FILES, instance=faq_section)
+        formset = FAQItemFormSet(request.POST, instance=faq_section)
+
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect('aboutus_faq')  # Adjust this to your named URL
+    else:
+        form = FAQSectionForm(instance=faq_section)
+        formset = FAQItemFormSet(instance=faq_section)
+
+    return render(request, 'backend/aboutUs_faq.html', {
+        'form': form,
+        'formset': formset,
+    })
 
 
 

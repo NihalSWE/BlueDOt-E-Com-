@@ -41,11 +41,11 @@
                             <div class="col-xl-6 col-lg-8">
                                 <div class="tp-about-left-wrapper mt-100 wow fadeInUp">
                                     <div class="tp-about-thumb p-relative" data-tilt>
-                                        <img src="{% static 'assets/img/about/about-bg-img.png'%}" alt="">
+                                        <img src="{{ about.bg_image.url }}" alt="">
                                         <div class="tp-about-thumb-shape">
-                                            <img class="tp-about-thumb-shape-1" src="{% static 'assets/img/about/about-man-img.png'%}" alt="">
-                                            <img class="tp-about-thumb-shape-2" src="{% static 'assets/img/about/about-shape-1.png'%}" alt="">
-                                            <img class="tp-about-thumb-shape-3" src="{% static 'assets/img/about/about-shape-2.jpg'%}" alt="">
+                                            <img class="tp-about-thumb-shape-1" src="{{ about.man_image.url }}" alt="">
+                                            <img class="tp-about-thumb-shape-2" src="{{ about.shape1.url }}" alt="">
+                                            <img class="tp-about-thumb-shape-3" src="{{ about.shape2.url }}" alt="">
                                         </div>
                                     </div>
                                 </div>
@@ -53,20 +53,17 @@
                             <div class="col-xl-6 col-lg-8 col-md-10">
                                 <div class="tp-about-right-wrapper wow fadeInUp">
                                     <div class="tp-section-title-wrapper mb-35">
-                                        <h6 class="tp-section-sub-title">Make Your Ideas With Presvila</h6>
-                                        <h3 class="tp-section-title tp-split-text right">Presvila Provide You <br>
-                                            100% Complete Printing</h3>
-                                        <p class="tp-section-paragraph">Beautiful, customizable template, with a ton of web blocks to create an
-                                            amazing website that looks and digita chapakhana in City</p>
+                                        <h6 class="tp-section-sub-title">{{ about.sub_title }}</h6>
+                                        <h3 class="tp-section-title tp-split-text right">{{ about.main_title|safe }}</h3>
+                                        <p class="tp-section-paragraph">{{ about.description }}</p>
                                     </div>
                                     <div class="tp-about-icon-box mb-25 d-flex">
                                         <div class="tp-about-icon">
                                             <span><i class="flaticon-quality"></i></span>
                                         </div>
                                         <div class="tp-about-right-title">
-                                            <h4>Reliable Quality</h4>
-                                            <p>Make a lasting impression by using our industy <br>
-                                                leading quality premium metairal</p>
+                                            <h4>{{ about.quality_title }}</h4>
+                                            <p>{{ about.quality_description }}</p>
                                         </div>
                                     </div>
                                     <div class="tp-about-icon-box mb-35 d-flex">
@@ -74,24 +71,23 @@
                                             <span><i class="flaticon-printer"></i></span>
                                         </div>
                                         <div class="tp-about-right-title">
-                                            <h4>Smooth Automation</h4>
-                                            <p>Make a lasting impression by using our industy <br>
-                                                leading quality premium metairal</p>
+                                            <h4>{{ about.automation_title }}</h4>
+                                            <p>{{ about.automation_description }}</p>
                                         </div>
                                     </div>
-                                    <div class="tp-about-center-title mb-50">Premium product categories you can customize</div>
+                                    <div class="tp-about-center-title mb-50">{{ about.center_title }}</div>
                                     <div class="tp-about-button-item d-flex">
                                         <div class="tp-about-btn">
-                                            <a class="tp-btn" href="about.html"><span>Discover More</span></a>
+                                            <a class="tp-btn" href="{{ about.button_url }}"><span>{{ about.button_text }}</span></a>
                                         </div>
                                         <div class="tp-about-call-item ml-50">
-                                            <a class="d-flex align-items-center" href="tel:+9978687653695">
+                                            <a class="d-flex align-items-center" href="tel:{{ about.call_number }}">
                                                 <div class="tp-about-call-icon">
-                                                    <span><img src="{% static 'assets/img/about/about-call-img.png'%}" alt=""></span>
+                                                    <span><img src="{{ about.call_image.url }}" alt=""></span>
                                                 </div>
                                                 <div class="tp-about-call-number ml-20">
-                                                    <span>Call to Expert</span>
-                                                    <p>0 800 555 44 33</p>
+                                                    <span>{{ about.call_text }}</span>
+                                                    <p>{{ about.call_number }}</p>
                                                 </div>
                                             </a>
                                         </div>
@@ -101,89 +97,91 @@
                         </div>
                     </div>
                 </section>
+                
                 <!-- about area end -->
 
 
 
-                <!-- call to action area start -->
-                <section class="tp-cta-area pt-160 pb-150 p-relative z-index-1">
-                    <div class="tp-cta-bg-shape">
-                        <img class="tp-cta-bg-shape-1" src="{% static 'assets/img/cta/cta-shape1.png'%}" alt="">
-                        <img class="tp-cta-bg-shape-2" src="{% static 'assets/img/cta/cta-shape2.png'%}" alt="">
+  <!-- call to action area start -->
+{% if cta %}
+<section class="tp-cta-area pt-160 pb-150 p-relative z-index-1">
+    <div class="tp-cta-bg-shape">
+        {% if cta.shape1 %}
+        <img class="tp-cta-bg-shape-1" src="{{ cta.shape1.url }}" alt="">
+        {% endif %}
+    </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-8 col-lg-9">
+                <div class="tp-cta-wrapper text-center">
+                    <div class="tp-section-title-wrapper mb-50">
+                        <h6 class="tp-section-sub-title">{{ cta.sub_title }}</h6>
+                        <h3 class="tp-section-title tp-split-text right">{{ cta.main_title }}</h3>
                     </div>
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-xl-8 col-lg-9">
-                                <div class="tp-cta-wrapper text-center">
-                                    <div class="tp-section-title-wrapper mb-50">
-                                        <h6 class="tp-section-sub-title">Contact us for more</h6>
-                                        <h3 class="tp-section-title tp-split-text right">Most Professional Printing
-                                            Agency in City</h3>
-                                    </div>
-                                    <div class="tp-cta-btn text-center">
-                                        <a class="tp-btn-border" href="contact.html"><span>Contact Us</span></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="tp-cta-btn text-center">
+                        <a class="tp-btn-border" href="{{ cta.button_link }}"><span>{{ cta.button_text }}</span></a>
                     </div>
-                </section>
-                <!-- call to action area end -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+<!-- call to action area end -->
 
 
-                <!-- choose-us area start -->
-                <section class="tp-choose-us-2-area pt-165 pb-140">
-                    <div class="container">
-                        <div class="row align-items-center">
-                            <div class="col-xl-6 col-lg-6">
-                                <div class="tp-choose-us-2-thumb p-relative z-index-1 wow fadeInUp" data-tilt>
-                                    <img src="{% static 'assets/img/choose/choose-us-2-img.png'%}" alt="">
-                                    <div class="tp-choose-us-2-shape">
-                                        <img class="tp-choose-us-2-shape-1" src="{% static 'assets/img/choose/choose-us-2--shape1.png'%}" alt="">
-                                        <img class="tp-choose-us-2-shape-2" src="{% static 'assets/img/choose/choose-us-2--shape2.png'%}" alt="">
-                                        <img class="tp-choose-us-2-shape-3" src="{% static 'assets/img/choose/choose-us-2--shape3.png'%}" alt="">
-                                        <img class="tp-choose-us-2-shape-4" src="{% static 'assets/img/choose/choose-us-2--shape4.png'%}" alt="">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-6 col-lg-6 col-md-11">
-                                <div class="tp-choose-us-2-wrapper ml-70 wow fadeInUp">
-                                    <div class="tp-choose-us-2-single-item">
-                                        <div class="tp-choose-us-2-icon">
-                                            <span><i class="flaticon-award"></i></span>
-                                        </div>
-                                        <div class="tp-choose-us-2-content">
-                                            <h4 class="tp-choose-us-2-title">Reliable quality </h4>
-                                            <p class="tp-choose-us-2-paragraph">Through a unique co construction and design discipl
-                                                nes expertise Concor and delivers</p>
-                                        </div>
-                                    </div>
-                                    <div class="tp-choose-us-2-single-item">
-                                        <div class="tp-choose-us-2-icon">
-                                            <span><i class="flaticon-customer-support"></i></span>
-                                        </div>
-                                        <div class="tp-choose-us-2-content">
-                                            <h4 class="tp-choose-us-2-title">Different Types Tools</h4>
-                                            <p class="tp-choose-us-2-paragraph">Through a unique co construction and design discipl
-                                                nes expertise Concor and delivers</p>
-                                        </div>
-                                    </div>
-                                    <div class="tp-choose-us-2-single-item last-chile">
-                                        <div class="tp-choose-us-2-icon">
-                                            <span><i class="flaticon-money"></i></span>
-                                        </div>
-                                        <div class="tp-choose-us-2-content">
-                                            <h4 class="tp-choose-us-2-title">No Order Minimums</h4>
-                                            <p class="tp-choose-us-2-paragraph">Through a unique co construction and design discipl
-                                                nes expertise Concor and delivers</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+
+               <!-- choose-us area start -->
+<section class="tp-choose-us-2-area pt-165 pb-140">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-xl-6 col-lg-6">
+                <div class="tp-choose-us-2-thumb p-relative z-index-1 wow fadeInUp" data-tilt>
+                    {% if choose_us_section.thumb_image %}
+                    <img src="{{ choose_us_section.thumb_image.url }}" alt="Choose Us Image">
+                    {% else %}
+                    <img src="{% static 'assets/img/choose/choose-us-2-img.png' %}" alt="">
+                    {% endif %}
+                    <div class="tp-choose-us-2-shape">
+                        {% if choose_us_section.shape_3 %}
+                        <img class="tp-choose-us-2-shape-3" src="{{ choose_us_section.shape_3.url }}" alt="Shape 3">
+                        {% else %}
+                        <img class="tp-choose-us-2-shape-3" src="{% static 'assets/img/choose/choose-us-2--shape3.png' %}" alt="">
+                        {% endif %}
+                        {% if choose_us_section.shape_4 %}
+                        <img class="tp-choose-us-2-shape-4" src="{{ choose_us_section.shape_4.url }}" alt="Shape 4">
+                        {% else %}
+                        <img class="tp-choose-us-2-shape-4" src="{% static 'assets/img/choose/choose-us-2--shape4.png' %}" alt="">
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6 col-lg-6 col-md-11">
+                <div class="tp-choose-us-2-wrapper ml-70 wow fadeInUp">
+                    {% for item in choose_us_items %}
+                    <div class="tp-choose-us-2-single-item {% if forloop.last %}last-chile{% endif %}">
+                        <div class="tp-choose-us-2-icon">
+                            {% if item.icon_image %}
+                            <img src="{{ item.icon_image.url }}" alt="{{ item.title }}" style="width: 40px; height: auto;">
+                            {% else %}
+                            <span><i class="{{ item.icon_class }}"></i></span>
+                            {% endif %}
+                        </div>
+                        <div class="tp-choose-us-2-content">
+                            <h4 class="tp-choose-us-2-title">{{ item.title }}</h4>
+                            <p class="tp-choose-us-2-paragraph">{{ item.description }}</p>
                         </div>
                     </div>
-                </section>
-                <!-- choose-us area end -->
+                    {% empty %}
+                    <p>No Choose Us items available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- choose-us area end -->
+
 
 
                 <!-- faq area start -->

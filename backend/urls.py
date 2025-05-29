@@ -14,6 +14,10 @@ urlpatterns = [
     path('contactUs_msg',views.contactUs_msg,name='contactUs_msg'),
     
     path('aboutUs_banner',views.aboutUs_banner,name='aboutUs_banner'),
+    path('aboutUs_aboutarea',views.aboutUs_aboutarea,name='aboutUs_aboutarea'),
+    path('aboutUs_callToaction',views.aboutUs_callToaction,name='aboutUs_callToaction'),
+    path('aboutUs_chooseUs',views.aboutUs_chooseUs,name='aboutUs_chooseUs'),
+    path('aboutus_faq',views.aboutus_faq,name='aboutus_faq'),
     
     
     

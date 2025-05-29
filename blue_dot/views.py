@@ -67,7 +67,20 @@ def contact(request):
 
 def aboutUs(request):
     banner = AboutUsBanner.objects.first()
-    return render(request, 'blue_dot/about.html', {'banner': banner})
+    about = AboutUs_AboutArea.objects.first()
+    cta = CallToAction.objects.first()
+    choose_us_section = ChooseUsSection.objects.last()
+    choose_us_items = ChooseUsItem.objects.all()  # Fetch all choose us items
+    
+    context = {
+        'banner': banner,
+        'about': about,
+        'cta': cta,
+        'choose_us_section': choose_us_section,
+        'choose_us_items': choose_us_items,
+    }
+
+    return render(request, 'blue_dot/about.html', context)
 
 def ourteam(request):
     return render(request, 'blue_dot/team.html')
