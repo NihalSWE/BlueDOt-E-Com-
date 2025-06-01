@@ -343,14 +343,14 @@ class BlogComment(models.Model):
         return f"Comment by {self.name} on {self.blog.title}"
     
     
-# -----------------------
+# -----------------------Home-----
 # Home Banner Slider
 class HomeSlider(models.Model):
     title = models.CharField(max_length=200)
     subtitle = models.CharField(max_length=200, blank=True)
     image = models.ImageField(upload_to='slider/')
     button_text = models.CharField(max_length=50, default="Start Your Projects")
-    button_link = models.CharField(max_length=200, default="#")
+    button_link = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)  # track creation time
 
     class Meta:
@@ -358,7 +358,24 @@ class HomeSlider(models.Model):
         
     def __str__(self):
         return self.title
-    
+   
+#Home page 1st 2 cards
+class CenterCard(models.Model):
+    subtitle = models.CharField(max_length=100, default="LATEST DESIGN")
+    title = models.CharField(max_length=200)
+    button_text = models.CharField(max_length=100, default="Shop Now")
+    button_link = models.URLField(default="#")
+    image = models.ImageField(upload_to='center_cards/')
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.title
+   
+   
+ 
     
 # Contact Page banner   
 class ContactUsBanner(models.Model):
@@ -571,7 +588,7 @@ class ChooseUsItem(models.Model):
         except Exception as e:
             print(f"Error resizing icon image: {e}")
 
-
+from urllib.parse import urlparse, parse_qs
 class FAQSection(models.Model):
     # Left side video and skills
     video_url = models.URLField(
@@ -617,8 +634,36 @@ class FAQSection(models.Model):
         null=True
     )
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.video_thumbnail:
+            try:
+                img = Image.open(self.video_thumbnail.path)
+                img = img.convert("RGB")
+                img = img.resize((570, 298), Image.LANCZOS)
+                img.save(self.video_thumbnail.path)
+            except Exception as e:
+                print(f"Error resizing image: {e}")
+
+    def get_embed_video_url(self):
+        """Return embed-friendly video URL for YouTube"""
+        try:
+            parsed = urlparse(self.video_url)
+            if 'youtube.com' in parsed.netloc:
+                video_id = parse_qs(parsed.query).get('v', [None])[0]
+                if video_id:
+                    return f'https://www.youtube.com/embed/{video_id}'
+            elif 'youtu.be' in parsed.netloc:
+                video_id = parsed.path.lstrip('/')
+                return f'https://www.youtube.com/embed/{video_id}'
+        except:
+            pass
+        return ''
+
     def __str__(self):
-        return f"FAQ Section - {self.section_title}"
+        return f"FAQ Section - {self.section_title or 'Untitled'}"
+    
 
 
 class FAQItem(models.Model):
@@ -634,3 +679,80 @@ class FAQItem(models.Model):
 
     def __str__(self):
         return self.question
+    
+
+class PracticeArea(models.Model):
+    heading = models.CharField(max_length=255)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.heading
+    
+    
+    
+# Our Faq
+class OurfaqBanner(models.Model):
+    title = models.CharField(max_length=255)
+    subtitle = models.TextField(blank=True, null=True)
+    background_image = models.ImageField(upload_to='Ourfaq_banner/')
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.background_image:
+            from PIL import Image
+            image_path = self.background_image.path
+            with Image.open(image_path) as img:
+                resized_img = img.resize((1920, 570), Image.LANCZOS)
+                resized_img.save(image_path, quality=90, optimize=True)
+                
+# Our Faq faq's              
+class FAQ(models.Model):
+    # FAQ item fields
+    question = models.CharField(max_length=500, help_text="FAQ Question")
+    answer = models.TextField(help_text="FAQ Answer")
+    is_active = models.BooleanField(default=True, help_text="Display this FAQ on frontend")
+    order = models.PositiveIntegerField(default=0, help_text="Display order (lower numbers first)")
+    
+    # Left-side visual content
+    image = models.ImageField(
+        upload_to='faq/section/',
+        blank=True,
+        null=True,
+        help_text="Background/side image (will be resized to 400x218)"
+    )
+    section_title = models.CharField(
+        max_length=255,
+        default="Presvila Your Printing Company",
+        help_text="Section heading text"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+        verbose_name = "FAQ"
+        verbose_name_plural = "FAQs"
+
+    def __str__(self):
+        return self.question[:50] + "..." if len(self.question) > 50 else self.question
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        # Resize image if it exists
+        if self.image:
+            try:
+                img_path = self.image.path
+                with Image.open(img_path) as img:
+                    img = img.convert("RGB")
+                    img = img.resize((400, 218), Image.LANCZOS)
+                    img.save(img_path)
+            except Exception as e:
+                print(f"Error resizing image: {e}")

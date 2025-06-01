@@ -49,6 +49,52 @@ class HomeSliderForm(forms.ModelForm):
         return image
     
     
+class PracticeAreaForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add modern styling classes to all fields
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({
+                'class': 'form-control modern-input',
+                'autocomplete': 'off'
+            })
+        
+        # Specific field customizations
+        self.fields['heading'].widget.attrs.update({
+            'placeholder': 'Enter Heading (e.g., Quality Printing Services)',
+        })
+        
+        self.fields['description'].widget.attrs.update({
+            'placeholder': 'Optional subtitle text',
+            'class': 'form-control modern-input subtitle-field'
+        })
+        
+        self.fields['button_text'].widget.attrs.update({
+            'placeholder': 'Call-to-action text (e.g., Get Started)'
+        })
+        
+        self.fields['button_link'].widget.attrs.update({
+            'placeholder': 'URL path (e.g., /contact or #services)'
+        })
+        
+        self.fields['image'].widget.attrs.update({
+            'class': 'form-control modern-file-input',
+            'accept': 'image/*'
+        })
+
+    class Meta:
+        model = HomeSlider
+        fields = '__all__'
+
+    def clean_image(self):
+        image = self.cleaned_data.get('image', False)
+        if image:
+            if image.size > 5*1024*1024:  # 5MB limit
+                raise forms.ValidationError("Image file too large ( > 5MB )")
+            return image
+        return image
+    
+    
     
 
 # Contac banner form
@@ -130,23 +176,12 @@ class ChooseUsItemForm(forms.ModelForm):
         }
         
 
-class FAQSectionForm(forms.ModelForm):
-    class Meta:
-        model = FAQSection
-        fields = '__all__'
-        widgets = {
-            'video_url': forms.URLInput(attrs={'class': 'form-control'}),
-            'section_title': forms.TextInput(attrs={'class': 'form-control'}),
-            'section_subtitle': forms.TextInput(attrs={'class': 'form-control'}),
-        }
-
-FAQItemFormSet = inlineformset_factory(
-    FAQSection,
-    FAQItem,
-    fields=['question', 'answer', 'is_expanded'],
-    extra=1,
-    widgets={
-        'question': forms.TextInput(attrs={'class': 'form-control'}),
-        'answer': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-    }
-)
+# class FaqBannerForm(forms.ModelForm):
+#     class Meta:
+#         model = OurfaqBanner
+#         fields = ['title', 'subtitle', 'background_image']
+#         widgets = {
+#             'title': forms.TextInput(attrs={'class': 'form-control'}),
+#             'subtitle': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+#             'background_image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+#         }

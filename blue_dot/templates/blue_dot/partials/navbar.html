@@ -17,7 +17,7 @@
                 <div class="row align-items-center">
                     <div class="col-xl-2 col-lg-6 col-md-6 col-sm-6 col-5">
                         <div class="tp-header-2-logo">
-                            <a href="index.html"><img src="assets/img/logo/logo.png" alt=""></a>
+                            <a href="index.html"><img src="{% static 'assets/img/logo/logo_text.png'%}" alt=""></a>
                         </div>
                     </div>
                     <div class="col-xl-5 d-none d-xl-block">
@@ -26,41 +26,17 @@
                                 <ul>
                                     <li class="has-dropdown"><a href="{% url 'home' %}">Home</a>
                                     </li>
-                                    <li class="has-dropdown"><a href="{% url 'service' %}">Services</a>
-                                        <ul class="submenu tp-submenu">
-                                            <li><a href="{% url 'service' %}">Our Service</a></li>
-
-                                            <li><a href="{% url 'service_details' %}">Service Details</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="has-dropdown"><a href="{% url 'shop' %}">Shop</a>
-                                        <ul class="submenu tp-submenu">
-                                            <li><a href="{% url 'shop' %}">Our Shop</a></li>
+                                    
+                                    <li class="has-dropdown"><a href="{% url 'shop' %}">Products</a>
+                                        {% comment %} <ul class="submenu tp-submenu">
+                                            <li><a href="{% url 'shop' %}">Products</a></li>
                                             <li><a href="{% url 'shop_details' %}">Shop Details</a></li>
                                             <li><a href="{% url 'cart' %}">Cart</a></li>
                                             <li><a href="{% url 'checkout' %}">Checkout</a></li>
-                                        </ul>
+                                        </ul> {% endcomment %}
                                     </li>
-                                    <li class="has-dropdown"><a href="{% url 'blog' %}">Blog</a>
-                                        <ul class="submenu tp-submenu">
-                                            <li><a href="{% url 'blog' %}">Blog</a></li>
-                                            <li><a href="{% url 'blog_sidebar' %}">Blog Sidebar</a></li>
-                                            <li><a href="{% url 'blog_details' %}">Blog Details</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="has-dropdown"><a href="index.html">Pages</a>
-                                        <ul class="submenu tp-submenu">
-                                            <li><a href="{% url 'aboutUs' %}">About Us</a></li>
-                                            <li><a href="{% url 'ourteam' %}">Our Team</a></li>
-                                            <li><a href="{% url 'team_details' %}">Team Details</a></li>
-                                            <li><a href="{% url 'testimonial' %}">Testimonials</a></li>
-                                            <li><a href="{% url 'pricing' %}">Pricing</a></li>
-                                            <li><a href="{% url 'project' %}">Our Project</a></li>
-                                            <li><a href="{% url 'project_details' %}">Project Details</a></li>
-                                            <li><a href="{% url 'faq' %}">Our Faq</a></li>
-                                            <li><a href="{% url 'error' %}">Error</a></li>
-                                        </ul>
-                                    </li>
+                                    <li><a href="{% url 'aboutUs' %}">About Us</a></li>
+                                    <li><a href="{% url 'faq' %}">Our Faq</a></li>
                                     <li class="has-dropdown"><a href="{% url 'contact' %}">Contact</a></li>
                                 </ul>
                             </nav>
@@ -68,7 +44,6 @@
                     </div>
                     <div class="col-xl-5 col-lg-6 col-md-6 col-sm-6 col-7">
                         <div class="tp-header-bottom-item d-flex justify-content-end mt-10">
-
                             <!-- Header input -->
                             <div class="tp-header-2-input-search p-relative mr-30">
                                 <form action="#">

@@ -185,6 +185,7 @@
 
 
                 <!-- faq area start -->
+                {% if faq_section %}
                 <section class="tp-faq-2-area fix pt-120 pb-120 p-relative z-index-1">
                     <div class="tp-faq-2-bg-shape">
                         <img class="tp-faq-2-bg-shape-1" src="{% static 'assets/img/faq/faq-2-bg-shape1.png'%}" alt="">
@@ -195,38 +196,55 @@
                             <div class="col-xl-6 col-lg-6 col-md-9">
                                 <div class="tp-faq-2-left-wrapper wow fadeInUp">
                                     <div class="tp-faq-2-thumb p-relative mb-60">
-                                        <img src="{% static 'assets/img/faq/faq-2-thumb.jpg'%}" alt="">
+                                        {% if faq_section.video_thumbnail %}
+                                            <img src="{{ faq_section.video_thumbnail.url }}" alt="FAQ Video Thumbnail">
+                                        {% else %}
+                                            <img src="{% static 'assets/img/faq/faq-2-thumb.jpg'%}" alt="Default FAQ Thumbnail">
+                                        {% endif %}
                                         <div class="tp-faq-2-thumb-video">
-                                            <a class="popup-video" href="https://www.youtube.com/watch?v=go7QYaQR494"><i class="fa-solid fa-play"></i></a>
+                                            <a class="popup-video" href="{{ faq_section.video_url }}">
+                                                <i class="fa-solid fa-play"></i>
+                                            </a>
                                         </div>
                                     </div>
                                     <div class="tp-faq-2-progres-skill mb-45">
                                         <div class="tp-about-2-skill fix pb-20">
-                                            <label class="tp-about-2-label">T-Shirt Printing</label>
+                                            <label class="tp-about-2-label">{{ faq_section.skill1_name }}</label>
                                             <div class="progress tp-about-2-progress two">
-                                                <div class="progress-bar tp-about-2-progress-bar two wow slideInLeft" data-wow-duration="1s" data-wow-delay=".8s" role="progressbar" aria-label="Example with label" style="width: 75%; visibility: visible; animation-duration: 1s; animation-delay: 0.8s; animation-name: slideInLeft;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"><span class="progresscounter two">75%</span></div>
+                                                <div class="progress-bar tp-about-2-progress-bar two wow slideInLeft" 
+                                                     data-wow-duration="1s" data-wow-delay=".8s" role="progressbar" 
+                                                     aria-label="Example with label" style="width: {{ faq_section.skill1_progress }}%; visibility: visible; animation-duration: 1s; animation-delay: 0.8s; animation-name: slideInLeft;" 
+                                                     aria-valuenow="{{ faq_section.skill1_progress }}" aria-valuemin="0" aria-valuemax="100">
+                                                    <span class="progresscounter two">{{ faq_section.skill1_progress }}%</span>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="tp-about-2-skill fix pb-20">
-                                            <label class="tp-about-2-label">Branding</label>
+                                            <label class="tp-about-2-label">{{ faq_section.skill2_name }}</label>
                                             <div class="progress tp-about-2-progress two">
-                                                <div class="progress-bar tp-about-2-progress-bar two wow slideInLeft" data-wow-duration="1s" data-wow-delay=".8s" role="progressbar" aria-label="Example with label" style="width: 85%; visibility: visible; animation-duration: 1s; animation-delay: 0.8s; animation-name: slideInLeft;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"><span class="progresscounter two">85%</span></div>
+                                                <div class="progress-bar tp-about-2-progress-bar two wow slideInLeft" 
+                                                     data-wow-duration="1s" data-wow-delay=".8s" role="progressbar" 
+                                                     aria-label="Example with label" style="width: {{ faq_section.skill2_progress }}%; visibility: visible; animation-duration: 1s; animation-delay: 0.8s; animation-name: slideInLeft;" 
+                                                     aria-valuenow="{{ faq_section.skill2_progress }}" aria-valuemin="0" aria-valuemax="100">
+                                                    <span class="progresscounter two">{{ faq_section.skill2_progress }}%</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="tp-faq-2-single-box d-flex align-items-center">
                                         <div class="tp-faq-2-single-item d-flex">
                                             <div class="tp-faq-2-icon">
-                                                <span><i class="flaticon-roll"></i></span>
+                                                <span><i class="{{ faq_section.stat_icon_class }}"></i></span>
                                             </div>
                                             <div class="tp-faq-2-content">
-                                                <h4 class="tp-faq-2-title">Smooth <br>
-                                                    Automation</h4>
+                                                <h4 class="tp-faq-2-title">{{ faq_section.stat_title|linebreaks }}</h4>
                                             </div>
                                         </div>
                                         <div class="tp-faq-2-contant ml-40">
-                                            <h4 class="tp-counter"><span class="purecounter" data-purecounter-duration="2" data-purecounter-end="428">428</span></h4>
-                                            <p>Printing Speacilist</p>
+                                            <h4 class="tp-counter">
+                                                <span class="purecounter" data-purecounter-duration="2" data-purecounter-end="{{ faq_section.stat_count }}">{{ faq_section.stat_count }}</span>
+                                            </h4>
+                                            <p>{{ faq_section.stat_description }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -234,258 +252,64 @@
                             <div class="col-xl-6 col-lg-6">
                                 <div class="tp-faq-2-right-wrapper wow fadeInUp">
                                     <div class="tp-section-title-wrapper mb-50">
-                                        <h6 class="tp-section-sub-title">FREQUENTLY ASKED QUESTION</h6>
-                                        <h3 class="tp-section-title tp-split-text right">What Our Clients Ask
-                                            About Presvila</h3>
+                                        {% if faq_section.section_subtitle %}
+                                            <h6 class="tp-section-sub-title">{{ faq_section.section_subtitle }}</h6>
+                                        {% endif %}
+                                        {% if faq_section.section_title %}
+                                            <h3 class="tp-section-title tp-split-text right">{{ faq_section.section_title }}</h3>
+                                        {% endif %}
                                     </div>
                                     <div class="tp-faq-2-accordion accordion-flush wow fadeInLeft" id="accordionFlushExample">
-                                        <div class="tp-faq-2-accordion-item accordion-item mb-10">
-                                            <h2 class="accordion-header tp-faq-2-accordion-header">
-                                                <button class="tp-faq-2-accordion-title accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-                                                    I'm a total beginner. Can I still follow along?
-                                                    <span class="tp-faq-2-accordion-btn"></span>
-                                                </button>
-                                            </h2>
-                                            <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-                                                <div class="tp-faq-2-accordion-pera accordion-body">Your applicant may have limited help desk wexperience. In that case, look for applicants who are motivated to grow and have some transferable </div>
+                                        {% for faq_item in faq_items %}
+                                            <div class="tp-faq-2-accordion-item accordion-item mb-10">
+                                                <h2 class="accordion-header tp-faq-2-accordion-header">
+                                                    <button class="tp-faq-2-accordion-title accordion-button {% if not faq_item.is_expanded %}collapsed{% endif %}" 
+                                                            type="button" data-bs-toggle="collapse" 
+                                                            data-bs-target="#flush-collapse{{ forloop.counter }}" 
+                                                            aria-expanded="{% if faq_item.is_expanded %}true{% else %}false{% endif %}" 
+                                                            aria-controls="flush-collapse{{ forloop.counter }}">
+                                                        {{ faq_item.question }}
+                                                        <span class="tp-faq-2-accordion-btn"></span>
+                                                    </button>
+                                                </h2>
+                                                <div id="flush-collapse{{ forloop.counter }}" 
+                                                     class="accordion-collapse collapse {% if faq_item.is_expanded %}show{% endif %}" 
+                                                     data-bs-parent="#accordionFlushExample">
+                                                    <div class="tp-faq-2-accordion-pera accordion-body">
+                                                        {{ faq_item.answer|linebreaks }}
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="tp-faq-2-accordion-item accordion-item mb-10">
-                                            <h2 class="accordion-header tp-faq-2-accordion-header">
-                                                <button class="tp-faq-2-accordion-title accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
-                                                    Which technical skills would you improve?
-                                                    <span class="tp-faq-2-accordion-btn"></span>
-                                                </button>
-                                            </h2>
-                                            <div id="flush-collapseTwo" class="accordion-collapse collapse show" data-bs-parent="#accordionFlushExample">
-                                                <div class="tp-faq-2-accordion-pera accordion-body">Your applicant may have limited help desk wexperience. In that case, look for applicants who are motivated to grow and have some transferable </div>
+                                        {% empty %}
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                No FAQ items available at the moment.
                                             </div>
-                                        </div>
-                                        <div class="tp-faq-2-accordion-item accordion-item mb-10">
-                                            <h2 class="accordion-header tp-faq-2-accordion-header">
-                                                <button class="tp-faq-2-accordion-title accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
-                                                    What do Logical Drives do?
-                                                    <span class="tp-faq-2-accordion-btn"></span>
-                                                </button>
-                                            </h2>
-                                            <div id="flush-collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-                                                <div class="tp-faq-2-accordion-pera accordion-body">Your applicant may have limited help desk wexperience. In that case, look for applicants who are motivated to grow and have some transferable </div>
-                                            </div>
-                                        </div>
-                                        <div class="tp-faq-2-accordion-item accordion-item ">
-                                            <h2 class="accordion-header tp-faq-2-accordion-header">
-                                                <button class="tp-faq-2-accordion-title accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFour" aria-expanded="false" aria-controls="flush-collapseFour">
-                                                    What about our safety measures ?
-                                                    <span class="tp-faq-2-accordion-btn"></span>
-                                                </button>
-                                            </h2>
-                                            <div id="flush-collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-                                                <div class="tp-faq-2-accordion-pera accordion-body">Your applicant may have limited help desk wexperience. In that case, look for applicants who are motivated to grow and have some transferable </div>
-                                            </div>
-                                        </div>
+                                        {% endfor %}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
+                {% else %}
+                <!-- FAQ Section not configured -->
+                <section class="tp-faq-2-area fix pt-120 pb-120 p-relative z-index-1">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    FAQ section is not configured yet.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                {% endif %}
                 <!-- faq area end -->
 
 
-
-                <!-- team area start -->
-                <section class="tp-team-area pt-120 pb-90">
-                    <div class="container">
-                        <div class="row align-items-end mb-45">
-                            <div class="col-xl-6 col-lg-8">
-                                <div class="tp-team-section-wrapper">
-                                    <div class="tp-section-title-wrapper">
-                                        <h6 class="tp-section-sub-title">OUR TEAM MEMBERS</h6>
-                                        <h3 class="tp-section-title tp-split-text right">Meet With Our <br>
-                                            Awesome Team Mates</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-6 col-lg-4">
-                                <div class="tp-team-btn-wrapper d-flex justify-content-end">
-                                    <a class="tp-btn" href="team-details.html"><span>View all Team</span></a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xl-4 col-lg-6 col-md-6">
-                                <div class="tp-team-wrapper fix p-relative mb-30 wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s">
-                                    <div class="tp-team-img">
-                                        <div class="tp-team-img-inner">
-                                            <a href="team-details.html"><img src="{% static 'assets/img/team/team-img1.jpg'%}" alt=""></a>
-                                        </div>
-                                        <div class="tp-team-content">
-                                            <h4 class="tp-team-title"><a href="team-details.html">Shajib Hasan</a></h4>
-                                            <p>Designer</p>
-                                            <div class="tp-team-social">
-                                                <div class="tp-team-btn">
-                                                    <button><i class="fa-sharp fa-regular fa-share-nodes"></i></button>
-                                                </div>
-                                                <div class="tp-team-icon">
-                                                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-                                                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
-                                                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-4 col-lg-6 col-md-6">
-                                <div class="tp-team-wrapper mb-30 wow fadeInUp" data-wow-delay=".5s" data-wow-duration="1s">
-                                    <div class="tp-team-img p-relative">
-                                        <a href="team-details.html"><img src="{% static 'assets/img/team/team-img2.jpg'%}" alt=""></a>
-                                        <div class="tp-team-content">
-                                            <h4 class="tp-team-title"><a href="team-details.html">Janes Cooper</a></h4>
-                                            <p>Consultant</p>
-                                            <div class="tp-team-social">
-                                                <div class="tp-team-btn">
-                                                    <button><i class="fa-sharp fa-regular fa-share-nodes"></i></button>
-                                                </div>
-                                                <div class="tp-team-icon">
-                                                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-                                                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
-                                                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-4 col-lg-6 col-md-6">
-                                <div class="tp-team-wrapper mb-30 wow fadeInUp" data-wow-delay=".7s" data-wow-duration="1s">
-                                    <div class="tp-team-img p-relative">
-                                        <a href="team-details.html"><img src="{% static 'assets/img/team/team-img3.jpg'%}" alt=""></a>
-                                        <div class="tp-team-content">
-                                            <h4 class="tp-team-title"><a href="team-details.html">Leana Dcruz</a></h4>
-                                            <p>Content Creator</p>
-                                            <div class="tp-team-social">
-                                                <div class="tp-team-btn">
-                                                    <button><i class="fa-sharp fa-regular fa-share-nodes"></i></button>
-                                                </div>
-                                                <div class="tp-team-icon">
-                                                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-                                                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
-                                                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                <!-- team area end -->
-
-
-
-                <!-- testimonial area start -->
-                <section class="tp-testimonial-2-area pt-120 pb-120 p-relative z-index-1">
-                    <div class="tp-testimonial-2-bg-shape">
-                        <img src="{% static 'assets/img/testimonial/testimonial-bg-shape.png'%}" alt="">
-                    </div>
-                    <div class="container">
-                        <div class="row align-items-end mb-60">
-                            <div class="col-xl-6 col-lg-9">
-                                <div class="tp-section-title-wrapper">
-                                    <h6 class="tp-section-sub-title">FREQUENTLY ASKED QUESTION</h6>
-                                    <h3 class="tp-section-title tp-split-text right">What Our Clients Ask
-                                        About Presvila</h3>
-                                </div>
-                            </div>
-                            <div class="col-xl-6 col-lg-3">
-                                <div class="tp-testimonial-2-arrow-box">
-                                    <button class="slider-prev" tabindex="0" aria-label="Previous slide">
-                                        <i class="fa-sharp fa-light fa-arrow-left"></i>
-                                    </button>
-                                    <button class="slider-next" tabindex="0" aria-label="Next slide">
-                                        <i class="fa-sharp fa-light fa-arrow-right"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xxl-12">
-                                <div class="tp-testimonial-2-slider p-relative">
-                                    <div class="tp-testimonial-2-active swiper-container wow fadeInUp">
-                                        <div class="swiper-wrapper">
-                                            <!-- Slide 1 -->
-                                            <div class="tp-testimonial-2-wrapper swiper-slide p-relative z-index-1">
-                                                <div class="tp-testimonial-2-review">
-                                                    <img src="{% static 'assets/img/testimonial/testimonial-2-review.png'%}" alt="">
-                                                </div>
-                                                <div class="tp-testimonial-2-content">
-                                                    <p>Pension schemes ensu security during retirement years for eligible individua. Retirement pensions provide fina</p>
-                                                </div>
-                                                <div class="tp-testimonial-2-bio">
-                                                    <div class="tp-testimonial-2-member">
-                                                        <img src="{% static 'assets/img/testimonial/testimonial-2-member1.png'%}" alt="">
-                                                    </div>
-                                                    <div class="tp-testimonial-2-name">
-                                                        <h4>Hazard Will</h4>
-                                                        <p>Delivery Man</p>
-                                                    </div>
-                                                </div>
-                                                <div class="tp-testimonial-2-wrapper-shape">
-                                                    <img src="{% static 'assets/img/testimonial/testimonial-2-box-shape.png'%}" alt="">
-                                                </div>
-                                            </div>
-                                            <!-- Slide 2 -->
-                                            <div class="tp-testimonial-2-wrapper swiper-slide p-relative z-index-1">
-                                                <div class="tp-testimonial-2-review">
-                                                    <img src="{% static 'assets/img/testimonial/testimonial-2-review.png'%}" alt="">
-                                                </div>
-                                                <div class="tp-testimonial-2-content">
-                                                    <p>Pension schemes ensu security during retirement years for eligible individua. Retirement pensions provide fina</p>
-                                                </div>
-                                                <div class="tp-testimonial-2-bio">
-                                                    <div class="tp-testimonial-2-member">
-                                                        <img src="{% static 'assets/img/testimonial/testimonial-2-member1.png'%}" alt="">
-                                                    </div>
-                                                    <div class="tp-testimonial-2-name">
-                                                        <h4>Muhammad IK</h4>
-                                                        <p>Printer</p>
-                                                    </div>
-                                                </div>
-                                                <div class="tp-testimonial-2-wrapper-shape">
-                                                    <img src="{% static 'assets/img/testimonial/testimonial-2-box-shape.png'%}" alt="">
-                                                </div>
-                                            </div>
-                                            <!-- Slide 3 -->
-                                            <div class="tp-testimonial-2-wrapper swiper-slide p-relative z-index-1">
-                                                <div class="tp-testimonial-2-review">
-                                                    <img src="{% static 'assets/img/testimonial/testimonial-2-review.png'%}" alt="">
-                                                </div>
-                                                <div class="tp-testimonial-2-content">
-                                                    <p>Pension schemes ensu security during retirement years for eligible individua. Retirement pensions provide fina</p>
-                                                </div>
-                                                <div class="tp-testimonial-2-bio">
-                                                    <div class="tp-testimonial-2-member">
-                                                        <img src="{% static 'assets/img/testimonial/testimonial-2-member1.png'%}" alt="">
-                                                    </div>
-                                                    <div class="tp-testimonial-2-name">
-                                                        <h4>Richard Piko</h4>
-                                                        <p>Printer</p>
-                                                    </div>
-                                                </div>
-                                                <div class="tp-testimonial-2-wrapper-shape">
-                                                    <img src="{% static 'assets/img/testimonial/testimonial-2-box-shape.png'%}" alt="">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                <!-- testimonial area end -->
                 {% endblock content %}
 
                 {% block custom_js %}{% endblock custom_js %}

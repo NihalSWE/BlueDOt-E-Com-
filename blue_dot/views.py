@@ -8,8 +8,12 @@ from django.contrib import messages
 
 
 def home(request):
-    sliders = HomeSlider.objects.all()  # fetch all sliders
-    return render(request, 'blue_dot/index.html', {'sliders': sliders})
+    sliders = HomeSlider.objects.all()
+    center_cards = CenterCard.objects.all()  # Add this line
+    return render(request, 'blue_dot/index.html', {
+        'sliders': sliders,
+        'center_cards': center_cards,
+    })
 
 
 def service(request):
@@ -71,6 +75,9 @@ def aboutUs(request):
     cta = CallToAction.objects.first()
     choose_us_section = ChooseUsSection.objects.last()
     choose_us_items = ChooseUsItem.objects.all()  # Fetch all choose us items
+    # Add FAQ data
+    faq_section = FAQSection.objects.first()
+    faq_items = FAQItem.objects.filter(faq_section=faq_section).order_by('id') if faq_section else []
     
     context = {
         'banner': banner,
@@ -78,6 +85,8 @@ def aboutUs(request):
         'cta': cta,
         'choose_us_section': choose_us_section,
         'choose_us_items': choose_us_items,
+        'faq_section': faq_section,
+        'faq_items': faq_items,
     }
 
     return render(request, 'blue_dot/about.html', context)
@@ -101,7 +110,17 @@ def project_details(request):
     return render(request, 'blue_dot/project-details.html')
 
 def faq(request):
-    return render(request, 'blue_dot/faq.html')
+    banner = OurfaqBanner.objects.first()
+    faqs = FAQ.objects.filter(is_active=True).order_by('order', '-created_at')
+    context = {
+        'banner': banner,
+        'faqs': faqs,
+        
+    }
+    return render(request, 'blue_dot/faq.html', context)
 
 def error(request):
     return render(request, 'blue_dot/error.html')
+
+def policy(request):
+    return render(request, 'blue_dot/return_Delivery.html')

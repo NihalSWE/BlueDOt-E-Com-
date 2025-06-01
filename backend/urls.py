@@ -8,7 +8,17 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.deshboard, name='dashboard'),
-    path('home',views.home,name='admin-home'),
+    
+    # home page
+    # path('home',views.home,name='admin-home'),
+    path('home/banner/',views.home_banner,name='home_banner'),
+    path('home/practice-area/',views.practice_area,name='practice_area'),
+    path('home/practice-area-create/',views.practice_area_create, name='practice_area_create'),
+    path('home_centerCard',views.home_centerCard,name='home_centerCard'),
+    path('home-center-card/edit/<int:card_id>/', views.edit_center_card, name='edit_center_card'),
+    path('home-center-card/delete/<int:card_id>/', views.delete_center_card, name='delete_center_card'),
+    # path('home_CTA',views.home_CTA,name='home_CTA'),
+    
     path('contactUs',views.contactUs,name='contactUs'),
     path('contactUs_location',views.contactUs_location,name='contactUs_location'),
     path('contactUs_msg',views.contactUs_msg,name='contactUs_msg'),
@@ -19,7 +29,8 @@ urlpatterns = [
     path('aboutUs_chooseUs',views.aboutUs_chooseUs,name='aboutUs_chooseUs'),
     path('aboutus_faq',views.aboutus_faq,name='aboutus_faq'),
     
-    
+    path('Ourfaq_banner',views.Ourfaq_banner,name='Ourfaq_banner'),
+    path('Ourfaq_faqs',views.Ourfaq_faqs,name='Ourfaq_faqs'),
     
     path('product_list/',views.product_list,name='product_list'),
     path('add_product/',views.add_product,name='add_product'),

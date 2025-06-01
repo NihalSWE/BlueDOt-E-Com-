@@ -1,0 +1,305 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block custom_css %}
+<style>
+    .faq-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    .faq-card {
+        border: 1px solid #e3e6f0;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+    .faq-card:hover {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    .faq-question {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+    .faq-answer {
+        color: #6c757d;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    .status-active {
+        background: #28a745;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+    .status-inactive {
+        background: #dc3545;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+    .order-badge {
+        background: #17a2b8;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 15px;
+        font-size: 11px;
+        font-weight: bold;
+    }
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-question-circle text-primary"></i> FAQ Management
+        </h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#faqModal">
+            <i class="fas fa-plus"></i> Add New FAQ
+        </button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="faq-stats text-center">
+                <div class="h4 mb-1">{{ total_faqs }}</div>
+                <div class="small">Total FAQs</div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="faq-stats text-center">
+                <div class="h4 mb-1">{{ active_faqs }}</div>
+                <div class="small">Active FAQs</div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="faq-stats text-center">
+                <div class="h4 mb-1">{{ total_faqs|add:"-1"|add:active_faqs }}</div>
+                <div class="small">Inactive FAQs</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ List -->
+    <div class="card shadow">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">All FAQs</h6>
+            <small class="text-muted">Manage your FAQ content</small>
+        </div>
+        <div class="card-body">
+            <div id="faqList">
+                {% for faq in faqs %}
+                <div class="faq-card p-3" data-faq-id="{{ faq.id }}">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="faq-question">{{ faq.question }}</div>
+                            <div class="faq-answer">{{ faq.answer|truncatechars:100 }}</div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="mb-2">
+                                <span class="order-badge">Order: {{ faq.order }}</span>
+                                {% if faq.is_active %}
+                                    <span class="status-active">Active</span>
+                                {% else %}
+                                    <span class="status-inactive">Inactive</span>
+                                {% endif %}
+                            </div>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-outline-primary edit-faq" data-id="{{ faq.id }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-faq" data-id="{{ faq.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <i class="fas fa-question-circle text-muted" style="font-size: 3rem;"></i>
+                    <h5 class="text-muted mt-3">No FAQs Found</h5>
+                    <p class="text-muted">Create your first FAQ to get started!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ Modal -->
+<div class="modal fade" id="faqModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="faqModalTitle">Add New FAQ</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="faqForm" enctype="multipart/form-data" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" id="faqId" name="faq_id">
+                    <input type="hidden" id="formAction" name="action" value="create">
+
+                    <div class="mb-3">
+                        <label for="section_title" class="form-label">Section Title</label>
+                        <input type="text" class="form-control" id="section_title" name="section_title" maxlength="255">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Background/Side Image</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        <small class="form-text text-muted">Image will be resized to 400x218</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="question" class="form-label">Question *</label>
+                        <input type="text" class="form-control" id="question" name="question" required maxlength="500">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="answer" class="form-label">Answer *</label>
+                        <textarea class="form-control" id="answer" name="answer" rows="4" required></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="order" class="form-label">Display Order</label>
+                                <input type="number" class="form-control" id="order" name="order" value="0" min="0">
+                                <small class="text-muted">Lower numbers appear first</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" checked>
+                                    <label class="form-check-label" for="is_active">
+                                        Active (Display on frontend)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save FAQ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+$(document).ready(function() {
+    $('#faqForm').on('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: '{% url "Ourfaq_faqs" %}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    $('#faqModal').modal('hide');
+                    location.reload();
+                    alert(response.message);
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            },
+            error: function() {
+                alert('An error occurred. Please try again.');
+            }
+        });
+    });
+
+    $('.edit-faq').on('click', function() {
+        const faqId = $(this).data('id');
+
+        $.ajax({
+            url: '{% url "Ourfaq_faqs" %}',
+            type: 'POST',
+            data: {
+                'action': 'get',
+                'faq_id': faqId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    const faq = response.faq;
+                    $('#faqModalTitle').text('Edit FAQ');
+                    $('#faqId').val(faq.id);
+                    $('#formAction').val('update');
+                    $('#question').val(faq.question);
+                    $('#answer').val(faq.answer);
+                    $('#order').val(faq.order);
+                    $('#is_active').prop('checked', faq.is_active);
+                    $('#faqModal').modal('show');
+                }
+            }
+        });
+    });
+
+    $('.delete-faq').on('click', function() {
+        const faqId = $(this).data('id');
+
+        if (confirm('Are you sure you want to delete this FAQ?')) {
+            $.ajax({
+                url: '{% url "Ourfaq_faqs" %}',
+                type: 'POST',
+                data: {
+                    'action': 'delete',
+                    'faq_id': faqId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                        alert(response.message);
+                    }
+                }
+            });
+        }
+    });
+
+    $('#faqModal').on('hidden.bs.modal', function() {
+        $('#faqForm')[0].reset();
+        $('#faqModalTitle').text('Add New FAQ');
+        $('#faqId').val('');
+        $('#formAction').val('create');
+        $('#is_active').prop('checked', true);
+    });
+});
+</script>
+{% endblock %}

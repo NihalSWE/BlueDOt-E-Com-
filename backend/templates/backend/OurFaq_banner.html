@@ -1,0 +1,320 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block custom_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    :root {
+        --banner-primary: #4361ee;
+        --banner-secondary: #3f37c9;
+        --banner-accent: #4cc9f0;
+        --banner-light: #f8f9fa;
+        --banner-dark: #212529;
+    }
+
+    .banner-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .banner-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .banner-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--banner-dark);
+    }
+
+    .banner-btn {
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 500;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .banner-btn-primary {
+        background: var(--banner-primary);
+        border-color: var(--banner-primary);
+        color: white;
+    }
+
+    .banner-btn-primary:hover {
+        background: var(--banner-secondary);
+        border-color: var(--banner-secondary);
+    }
+
+    .banner-preview {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+        border: none;
+    }
+
+    .banner-img {
+        height: 300px;
+        object-fit: cover;
+        object-position: center;
+    }
+
+    .banner-placeholder {
+        height: 300px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        font-size: 1.2rem;
+    }
+
+    .banner-body {
+        padding: 1.5rem;
+    }
+
+    .banner-preview-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--banner-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .banner-preview-subtitle {
+        font-size: 1rem;
+        color: #64748b;
+        line-height: 1.5;
+    }
+
+    .banner-modal .modal-content {
+        border-radius: 12px;
+        border: none;
+    }
+
+    .banner-modal .modal-header {
+        background: var(--banner-primary);
+        color: white;
+        border-bottom: none;
+        padding: 1.2rem 1.5rem;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .banner-modal .modal-title {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .banner-modal .modal-body {
+        padding: 1.5rem;
+    }
+
+    .banner-modal .modal-footer {
+        border-top: none;
+        padding: 1rem 1.5rem;
+    }
+
+    .banner-form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .banner-form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: var(--banner-dark);
+        display: block;
+    }
+
+    .banner-form-control {
+        border-radius: 8px;
+        padding: 12px 15px;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s;
+        width: 100%;
+    }
+
+    .banner-form-control:focus {
+        border-color: var(--banner-primary);
+        box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+    }
+
+    .banner-file-input {
+        padding: 8px;
+    }
+
+    .banner-file-input::-webkit-file-upload-button {
+        background: var(--banner-light);
+        border: 1px solid #e2e8f0;
+        padding: 8px 15px;
+        border-radius: 5px;
+        color: var(--banner-dark);
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .banner-file-input::-webkit-file-upload-button:hover {
+        background: #e2e8f0;
+    }
+
+    .banner-image-preview-container {
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+    .banner-image-preview {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        display: none;
+    }
+
+    .banner-btn-save {
+        background: var(--banner-primary);
+        border-color: var(--banner-primary);
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .banner-btn-save:hover {
+        background: var(--banner-secondary);
+        border-color: var(--banner-secondary);
+    }
+
+    .banner-btn-cancel {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="banner-container">
+    <div class="banner-header">
+        <h1 class="banner-title">
+            <i class="bi bi-info-circle"></i> Faq's Banner Editor
+        </h1>
+        <button type="button" class="btn banner-btn banner-btn-primary" data-bs-toggle="modal" data-bs-target="#editBannerModal">
+            <i class="bi bi-pencil-square"></i> Edit Banner
+        </button>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Preview Section -->
+    <div class="banner-preview card">
+        {% if banner and banner.background_image %}
+        <img src="{{ banner.background_image.url }}" class="banner-img card-img-top" alt="Banner Image">
+        {% else %}
+        <div class="banner-placeholder">
+            <i class="bi bi-image me-2"></i> No Faq Us banner uploaded
+        </div>
+        {% endif %}
+        <div class="banner-body">
+            <h3 class="banner-preview-title">
+                {{ banner.title|default:"Learn More About Us" }}
+            </h3>
+            <p class="banner-preview-subtitle">
+                {{ banner.subtitle|default:"Discover who we are and what we do." }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade banner-modal" id="editBannerModal" tabindex="-1" aria-labelledby="editBannerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="POST" enctype="multipart/form-data" id="aboutUsBannerForm">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editBannerModalLabel">
+                            <i class="bi bi-pencil-square"></i> Edit Faq's Banner
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="banner-form-group">
+                            <label for="id_title" class="banner-form-label">Title</label>
+                            <input type="text" name="title" id="id_title" class="banner-form-control"
+                                   value="{{ form.title.value|default:'' }}" required>
+                        </div>
+                        <div class="banner-form-group">
+                            <label for="id_subtitle" class="banner-form-label">Subtitle</label>
+                            <textarea name="subtitle" id="id_subtitle" class="banner-form-control"
+                                      rows="3">{{ form.subtitle.value|default:'' }}</textarea>
+                        </div>
+                        <div class="banner-form-group">
+                            <label for="id_background_image" class="banner-form-label">Background Image</label>
+                            <input type="file" name="background_image" id="id_background_image"
+                                   class="form-control banner-file-input"
+                                   accept="image/*">
+                            <small class="text-muted">Recommended size: 1920x600 pixels</small>
+                            <div class="banner-image-preview-container">
+                                {% if banner and banner.background_image %}
+                                <img id="aboutUsBannerPreview" src="{{ banner.background_image.url }}"
+                                     class="banner-image-preview" style="display: block;"
+                                     alt="Current banner image">
+                                {% else %}
+                                <img id="aboutUsBannerPreview" class="banner-image-preview"
+                                     alt="Image preview will appear here">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn banner-btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary banner-btn-save">
+                            <i class="bi bi-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('id_background_image').addEventListener('change', function(e) {
+        const preview = document.getElementById('aboutUsBannerPreview');
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    document.getElementById('aboutUsBannerForm').addEventListener('submit', function(e) {
+        const title = document.getElementById('id_title').value.trim();
+        if (!title) {
+            e.preventDefault();
+            alert('Please enter a title for the banner');
+            document.getElementById('id_title').focus();
+        }
+    });
+</script>
+{% endblock %}
