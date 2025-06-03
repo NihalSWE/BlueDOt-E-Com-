@@ -386,6 +386,13 @@ def create_order(request):
 def product_list(request):
     return render(request, 'backend/product-list.html')
 
+def product_review(request):
+    reviews = ProductReview.objects.select_related('product').order_by('-created_at')
+    return render(request, 'backend/products/reviews.html', {'reviews': reviews})
+
+
+
+
 def add_product(request):
     return render(request, 'backend/product-add.html')
 
@@ -2086,3 +2093,206 @@ def home_CTA(request):
         'form': form,
         'cta': cta,
     })
+
+
+
+
+
+# Discount Category Views
+def discount_category_list(request):
+    categories = DiscountCategory.objects.all()
+    return render(request, 'backend/discount/category_list.html', {
+        'categories': categories
+    })
+
+def discount_category_create(request):
+    if request.method == 'POST':
+        try:
+            name = request.POST.get('name')
+            description = request.POST.get('description')
+            image = request.FILES.get('image')
+            start_date = request.POST.get('start_date')
+            end_date = request.POST.get('end_date')
+            status = int(request.POST.get('status', 1))
+
+            if not (name and start_date and end_date):
+                return HttpResponse("Name, start date and end date are required", status=400)
+
+            DiscountCategory.objects.create(
+                name=name,
+                description=description,
+                image=image,
+                start_date=start_date,
+                end_date=end_date,
+                status=status
+            )
+            return redirect('discount_category_list')
+        except Exception as e:
+            return HttpResponse(f"Error creating category: {str(e)}", status=400)
+
+    return render(request, 'backend/discount/category_form.html')
+
+def discount_category_update(request, pk):
+    category = get_object_or_404(DiscountCategory, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            category.name = request.POST.get('name')
+            category.description = request.POST.get('description')
+            if 'image' in request.FILES:
+                category.image = request.FILES['image']
+            category.start_date = request.POST.get('start_date')
+            category.end_date = request.POST.get('end_date')
+            category.status = int(request.POST.get('status', 1))
+            category.save()
+            return redirect('discount_category_list')
+        except Exception as e:
+            return HttpResponse(f"Error updating category: {str(e)}", status=400)
+
+    return render(request, 'backend/discount/category_form.html', {
+        'category': category
+    })
+
+def discount_category_delete(request, pk):
+    category = get_object_or_404(DiscountCategory, pk=pk)
+    try:
+        category.delete()
+        return redirect('discount_category_list')
+    except Exception as e:
+        return HttpResponse(f"Error deleting category: {str(e)}", status=400)
+
+def discount_list(request):
+    discounts = Discount.objects.prefetch_related('products', 'category').all()
+    products = Product.objects.all()
+    categories = DiscountCategory.objects.all()
+    return render(request, 'backend/discount/discount_list.html', {
+        'discounts': discounts,
+        'products': products,
+        'categories': categories,
+    })
+
+
+def discount_create(request):
+    products = Product.objects.all().order_by('name')
+    categories = DiscountCategory.objects.all().order_by('name')
+
+    if request.method == 'POST':
+        product_ids = request.POST.getlist('products')
+        category_id = request.POST.get('category_id')
+        discount_type = request.POST.get('discount_type')
+        discount_value = request.POST.get('discount_value')
+        status = request.POST.get('status', 1)
+
+        # Check for missing required fields
+        missing_fields = []
+        if not product_ids:
+            missing_fields.append('Products')
+        if not category_id:
+            missing_fields.append('Category')
+        if not discount_type:
+            missing_fields.append('Discount Type')
+        if not discount_value:
+            missing_fields.append('Discount Value')
+
+        if missing_fields:
+            messages.error(request, f"The following fields are required: {', '.join(missing_fields)}")
+            preserved_data = request.POST.dict()
+            preserved_data['products'] = product_ids
+            return render(request, 'backend/discount/discount_create.html', {
+                'products': products,
+                'categories': categories,
+                'preserved_data': preserved_data
+            })
+
+        try:
+            category = DiscountCategory.objects.get(id=category_id)
+
+            # Validate discount value if percentage
+            if discount_type == 'percent' and float(discount_value) > 100:
+                messages.error(request, 'Percentage discount cannot exceed 100%')
+                preserved_data = request.POST.dict()
+                preserved_data['products'] = product_ids
+                return render(request, 'backend/discount/discount_create.html', {
+                    'products': products,
+                    'categories': categories,
+                    'preserved_data': preserved_data
+                })
+
+            discount = Discount.objects.create(
+                category=category,
+                discount_type=discount_type,
+                discount_value=discount_value,
+                status=status,
+            )
+
+            selected_products = Product.objects.filter(id__in=product_ids)
+            discount.products.set(selected_products)
+
+            messages.success(request, f'Discount created successfully for {selected_products.count()} products!')
+            return redirect('discount_list')
+
+        except DiscountCategory.DoesNotExist:
+            messages.error(request, 'Selected category does not exist')
+        except ValueError as e:
+            messages.error(request, f'Invalid value: {str(e)}')
+        except Exception as e:
+            messages.error(request, f'Error creating discount: {str(e)}')
+
+        # Return with preserved data if any error occurs
+        preserved_data = request.POST.dict()
+        preserved_data['products'] = product_ids
+        return render(request, 'backend/discount/discount_create.html', {
+            'products': products,
+            'categories': categories,
+            'preserved_data': preserved_data
+        })
+
+    # GET request - render empty form
+    return render(request, 'backend/discount/discount_create.html', {
+        'products': products,
+        'categories': categories,
+    })
+
+def discount_update(request, discount_id):
+    discount = get_object_or_404(Discount, id=discount_id)
+    products = Product.objects.all()
+    categories = DiscountCategory.objects.all()
+
+    if request.method == 'POST':
+        product_ids = request.POST.getlist('products')
+        category_id = request.POST.get('category_id')
+        discount_type = request.POST.get('discount_type')
+        discount_value = request.POST.get('discount_value')
+        status = request.POST.get('status', 1)
+
+        try:
+            category = DiscountCategory.objects.get(id=category_id)
+            discount.category = category
+            discount.discount_type = discount_type
+            discount.discount_value = discount_value
+            discount.status = status
+            discount.save()
+
+            selected_products = Product.objects.filter(id__in=product_ids)
+            discount.products.set(selected_products)
+
+            messages.success(request, 'Discount updated successfully!')
+            return redirect('discount_list')
+        except Exception as e:
+            messages.error(request, f'Error updating discount: {str(e)}')
+
+    return render(request, 'backend/discount/discount_form.html', {
+        'discount': discount,
+        'products': products,
+        'categories': categories,
+    })
+
+def discount_delete(request, pk):
+    discount = get_object_or_404(Discount, pk=pk)
+    try:
+        discount.delete()
+        messages.success(request, 'Discount deleted successfully!')
+        return redirect('discount_list')
+    except Exception as e:
+        messages.error(request, f'Error deleting discount: {str(e)}')
+        return redirect('discount_list')

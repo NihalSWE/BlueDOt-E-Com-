@@ -1,7 +1,36 @@
 {% extends "blue_dot/base.html" %}
 {% load static %}
 
-{% block custom_css %}{% endblock custom_css %}
+{% block custom_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<!-- Star Rating Styles -->
+<style>
+    .star-rating {
+      direction: rtl;
+      font-size: 24px;
+      display: inline-flex;
+      gap: 5px;
+    }
+  
+    .star-rating input[type="radio"] {
+      display: none;
+    }
+  
+    .star-rating label {
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+  
+    .star-rating input[type="radio"]:checked ~ label,
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+      color: #f7b518;
+    }
+   
+  </style>
+{% endblock custom_css %}
 
 {% block breadcrumb %}  
 <!-- breadcrumb area start -->
@@ -128,57 +157,79 @@
             </div>
         </div>
 
-        <div class="row mb-30">
-            <div class="product__details-reveiw wow fadeInUp">
-                <h3 class="product__details-reveiw-title">Client Reviews</h3>
-                <div class="product__details-reveiw-inner d-flex">
-                    <div class="comment-author-avatar me-3">
-                        <i class="fas fa-user-circle fs-3 text-secondary"></i>
-                    </div>
-                    <div class="product__details-reveiw-content">
-                        <h6>by David Parker <span>/  March 28, 2022</span></h6>
-                        <div class="product__details-reveiw-icon">
-                            <span><i class="fa-solid fa-star-sharp"></i></span>
-                            <span><i class="fa-solid fa-star-sharp"></i></span>
-                            <span><i class="fa-solid fa-star-sharp"></i></span>
-                            <span><i class="fa-solid fa-star-sharp"></i></span>
-                            <span><i class="fa-solid fa-star-sharp-half-stroke"></i></span>
-                        </div>
-                        <p>Elementum tempus egestas sed sed risus pretium quam vulputate dignissim...</p>
-                    </div>
-                </div>
-            </div>
+<!-- Client Reviews -->
+<div class="row mb-30">
+    <div class="product__details-reveiw wow fadeInUp">
+      <h3 class="product__details-reveiw-title">Client Reviews</h3>
+      {% for review in reviews %}
+      <div class="product__details-reveiw-inner d-flex mb-4">
+        <div class="comment-author-avatar me-3">
+          <i class="fas fa-user-circle fs-3 text-secondary"></i>
         </div>
-
+        <div class="product__details-reveiw-content">
+          <h6>by {{ review.name }} <span>/ {{ review.created_at|date:"F d, Y" }}</span></h6>
+          <div class="product__details-reveiw-icon">
+            {% for i in "12345"|make_list %}
+              {% if forloop.counter <= review.rating %}
+                <i class="fas fa-star text-warning"></i>
+              {% else %}
+                <i class="fas fa-star text-secondary"></i>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <p>{{ review.comment }}</p>
+        </div>
+      </div>
+      {% empty %}
+      <p>No reviews yet. Be the first to review!</p>
+      {% endfor %}
+    </div>
+  </div>
+  
+  <!-- Review Form -->
+  <div class="row">
+    <div class="tp-postbox-contact-reply wow fadeInUp">
+      <h3 class="tp-postbox-contact-title mb-35">Add Your Review</h3>
+      <form method="POST">
+        {% csrf_token %}
         <div class="row">
-            <div class="tp-postbox-contact-reply wow fadeInUp">
-                <h3 class="tp-postbox-contact-title mb-35">Add Your Review</h3>
-                <form id="tp-postbox-contact-form" action="{% static 'assets/mail.php' %}" method="POST">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="tp-postbox-contact-input">
-                                <textarea placeholder="Write Your Comment*"></textarea>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="tp-postbox-contact-input">
-                                <input name="name" type="text" placeholder="Your Name*">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="tp-postbox-contact-input">
-                                <input name="email" type="email" placeholder="Your E-mail*">
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="tp-postbox-contact-input-btn">
-                                <button class="tp-btn" type="submit"><span>Submit Your Review</span></button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+          <div class="col-md-12">
+            <div class="tp-postbox-contact-input">
+              {{ form.comment }}
             </div>
+          </div>
+          <div class="col-md-6">
+            <div class="tp-postbox-contact-input">
+              {{ form.name }}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="tp-postbox-contact-input">
+              {{ form.email }}
+            </div>
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Your Rating</label>
+            <div class="star-rating d-flex align-items-center gap-1">
+                <input type="hidden" name="rating" id="rating" value="0">
+                <i class="fa-regular fa-star fa-2x text-muted star" data-value="1"></i>
+                <i class="fa-regular fa-star fa-2x text-muted star" data-value="2"></i>
+                <i class="fa-regular fa-star fa-2x text-muted star" data-value="3"></i>
+                <i class="fa-regular fa-star fa-2x text-muted star" data-value="4"></i>
+                <i class="fa-regular fa-star fa-2x text-muted star" data-value="5"></i>
+              </div>
+              
+          </div>
+          <div class="col-md-12">
+            <div class="tp-postbox-contact-input-btn" style="margin-top: 20px;">
+              <button class="tp-btn" type="submit"><span>Submit Your Review</span></button>
+            </div>
+          </div>
         </div>
+      </form>
+    </div>
+  </div>
+  
 
     </div>
 </section>
@@ -186,6 +237,30 @@
 {% endblock content %}
 
 {% block custom_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const stars = document.querySelectorAll('.star-rating .star');
+      const ratingInput = document.getElementById('rating');
+  
+      stars.forEach((star, index) => {
+        star.addEventListener('click', function () {
+          const selectedValue = this.getAttribute('data-value');
+          ratingInput.value = selectedValue;
+  
+          stars.forEach((s, i) => {
+            if (i < selectedValue) {
+              s.classList.remove('fa-regular', 'text-muted');
+              s.classList.add('fa-solid', 'text-warning');
+            } else {
+              s.classList.remove('fa-solid', 'text-warning');
+              s.classList.add('fa-regular', 'text-muted');
+            }
+          });
+        });
+      });
+    });
+  </script>
+  
 <script>
     document.addEventListener('DOMContentLoaded', function () {
       const thumbnails = document.querySelectorAll('.switch-image');

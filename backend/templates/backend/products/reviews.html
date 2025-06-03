@@ -1,0 +1,311 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<div class="container mt-5">
+    <h2 class="mb-4">Product Reviews</h2>
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th class="text-center" style="width: 5%;">SL</th>
+                    <th class="text-center" style="width: 20%;">PRODUCT</th>
+                    <th class="text-center" style="width: 15%;">REVIEWER</th>
+                    <th class="text-center" style="width: 15%;">EMAIL</th>
+                    <th class="text-center" style="width: 10%;">RATING</th>
+                    <th class="text-center" style="width: 15%;">COMMENT</th>
+                    <th class="text-center" style="width: 10%;">DATE</th>
+                    <th class="text-center" style="width: 10%;">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for review in reviews %}
+                <tr>
+                    <td class="text-center fw-bold">{{ forloop.counter }}</td>
+                    <td class="text-center fw-medium">{{ review.product.name }}</td>
+                    <td class="text-center">{{ review.name }}</td>
+                    <td class="text-center text-muted">{{ review.email }}</td>
+                    <td class="text-center">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= review.rating %}
+                                <i class="fa-solid fa-star text-warning"></i>
+                            {% else %}
+                                <i class="fa-regular fa-star text-muted"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <small class="d-block text-muted">({{ review.rating }}/5)</small>
+                    </td>
+                    <td class="text-center">
+                        <div style="max-width: 120px; word-wrap: break-word; white-space: normal; margin: 0 auto;">
+                            {{ review.comment|truncatechars:30 }}
+                        </div>
+                    </td>
+                    <td class="text-center text-muted small">
+                        {{ review.created_at|date:"M d, Y" }}<br>
+                        {{ review.created_at|date:"H:i" }}
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-info btn-sm" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#viewModal{{ review.id }}"
+                                    title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" 
+                                    onclick="confirmDelete({{ review.id }}, '{{ review.name|escapejs }}')"
+                                    title="Delete Review">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-5">
+                        <i class="fas fa-star-half-alt fa-2x mb-2 d-block"></i>
+                        No reviews available.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- View Review Modal -->
+    {% for review in reviews %}
+    <div class="modal fade" id="viewModal{{ review.id }}" tabindex="-1" aria-labelledby="viewModalLabel{{ review.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewModalLabel{{ review.id }}">Review Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Product:</strong>
+                            <p class="text-muted">{{ review.product.name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Date:</strong>
+                            <p class="text-muted">{{ review.created_at|date:"F d, Y - H:i" }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Reviewer Name:</strong>
+                            <p class="text-muted">{{ review.name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Email:</strong>
+                            <p class="text-muted">{{ review.email|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <strong>Rating:</strong>
+                            <div class="mb-3">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fa-solid fa-star text-warning fs-4"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-star text-muted fs-4"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="ms-2 text-muted">({{ review.rating }} out of 5 stars)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <strong>Review Comment:</strong>
+                            <div class="border p-3 bg-light rounded mt-2">
+                                {{ review.comment|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the review from <strong id="deleteReviewName"></strong>?</p>
+                    <p class="text-muted small">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination if needed -->
+    {% if is_paginated %}
+    <nav aria-label="Reviews pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">&laquo; First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+/* Custom styles for better alignment and readability */
+.table td, .table th {
+    vertical-align: middle;
+    text-align: center;
+}
+
+.table th {
+    font-weight: 600;
+    background-color: #212529;
+    color: white;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Ensure consistent spacing */
+.table td, .table th {
+    padding: 12px 8px;
+}
+
+/* Button styling */
+.btn-group .btn {
+    margin: 0 2px;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Star rating styling */
+.fa-star {
+    margin: 0 1px;
+}
+
+/* Better mobile responsiveness */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        margin: 1px 0;
+        font-size: 0.75rem;
+    }
+    
+    .fa-star {
+        font-size: 0.8rem;
+    }
+}
+
+/* Modal enhancements */
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.modal-title {
+    color: #495057;
+    font-weight: 600;
+}
+</style>
+
+<script>
+function confirmDelete(reviewId, reviewerName) {
+    // Set the reviewer name in the modal
+    document.getElementById('deleteReviewName').textContent = reviewerName;
+    
+    // Set the form action URL
+    const deleteForm = document.getElementById('deleteForm');
+    deleteForm.action = `/admin/reviews/delete/${reviewId}/`; // Adjust this URL to match your Django URL pattern
+    
+    // Show the modal
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+
+// Optional: Add success/error messages after actions
+document.addEventListener('DOMContentLoaded', function() {
+    // You can add toast notifications here if needed
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('deleted') === 'success') {
+        // Show success message
+        showToast('Review deleted successfully!', 'success');
+    }
+});
+
+function showToast(message, type) {
+    // Simple toast notification function
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}

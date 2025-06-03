@@ -1,0 +1,429 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<style>
+
+  .discount-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
+    border: none;
+  }
+  .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eaeaea;
+    border-radius: 10px 10px 0 0 !important;
+  }
+  .table th {
+    background-color: #f1f5fd;
+    color: #3b3b3b;
+    font-weight: 600;
+    border-top: 1px solid #eaeaea;
+  }
+  .table td {
+    vertical-align: middle;
+  }
+  .price-cell {
+    font-weight: 600;
+    text-align: right;
+  }
+  .action-btns .btn {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.875rem;
+    margin-right: 5px;
+  }
+  .status-badge {
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+    border-radius: 0.25rem;
+  }
+  .badge-active {
+    background-color: #e8f5e9;
+    color: #388e3c;
+  }
+  .badge-inactive {
+    background-color: #fff8e1;
+    color: #ffa000;
+  }
+  .product-list {
+    max-height: 100px;
+    overflow-y: auto;
+  }
+  /* Dual panel styling */
+  .selection-panel {
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  .selection-header {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+  }
+  .selected-item {
+    padding: 8px;
+    border: 1px solid #eaeaea;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    background: #f9f9f9;
+  }
+  .select2-container--default .select2-selection--multiple {
+    min-height: 38px;
+    border: 1px solid #ced4da;
+  }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<div class="card discount-card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="card-title mb-0 fw-semibold">
+        <i class="fas fa-tags me-2"></i>Discount Management
+      </h5>
+      <small class="text-muted">Create and manage product discounts</small>
+    </div>
+    <div>
+      <a href="{% url 'discount_category_list' %}" class="btn btn-secondary me-2">
+        <i class="fas fa-list me-2"></i>Categories
+      </a>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDiscountModal">
+        <i class="fas fa-plus me-2"></i>Create Discount
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table id="discountTable" class="table table-hover" style="width:100%">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Products</th>
+            <th>Category</th>
+            <th>Type</th>
+            <th>Value</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for discount in discounts %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              <div class="product-list">
+                {% for product in discount.products.all %}
+                  {{ product.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              </div>
+            </td>
+            <td>{{ discount.category.name }}</td>
+            <td>{{ discount.get_discount_type_display }}</td>
+            <td class="price-cell">
+              {% if discount.discount_type == 'percent' %}
+                {{ discount.discount_value }}%
+              {% else %}
+                ${{ discount.discount_value }}
+              {% endif %}
+            </td>
+            <td>
+              {% if discount.status == 1 %}
+                <span class="status-badge badge-active">Active</span>
+              {% else %}
+                <span class="status-badge badge-inactive">Inactive</span>
+              {% endif %}
+            </td>
+            
+            <td class="action-btns">
+              
+              <form action="{% url 'discount_delete' discount.id %}" method="POST" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this discount?')">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Discount Modal -->
+<div class="modal fade" id="addDiscountModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form action="{% url 'discount_create' %}" method="POST" id="discountForm">
+        {% csrf_token %}
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Add New Discount</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <!-- Product Selection Panel -->
+            <div class="col-md-12 mb-4">
+              <div class="selection-panel">
+                <div class="selection-header d-flex justify-content-between">
+                  <h6>Product Selection</h6>
+                  <span class="badge bg-primary" id="selectedCount">0 products selected</span>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="input-group mb-3">
+                      <span class="input-group-text"><i class="fas fa-search"></i></span>
+                      <input type="text" class="form-control" id="productSearch" placeholder="Search products...">
+                    </div>
+                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                      <table class="table table-sm table-hover" id="productTable">
+                        <thead>
+                          <tr>
+                            <th>Product</th>
+                            <th width="100px">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for product in products %}
+                          <tr data-product-id="{{ product.id }}">
+                            <td>
+                              <div class="d-flex align-items-center">
+                                {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded me-2" width="40" height="40">
+                                {% else %}
+                                <div class="rounded bg-light me-2 d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
+                                  <i class="fas fa-camera text-muted"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                  <div class="fw-semibold">{{ product.name }}</div>
+                                  <small class="text-muted">${{ product.final_price }}</small>
+                                </div>
+                              </div>
+                            </td>
+                            <td class="text-center">
+                              <button type="button" class="btn btn-sm btn-primary add-product" data-product-id="{{ product.id }}">
+                                <i class="fas fa-plus"></i> Add
+                              </button>
+                            </td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="selected-products-container" id="selectedProductsContainer" style="max-height: 300px; overflow-y: auto;">
+                      <div class="text-center py-5">
+                        <i class="fas fa-box-open text-muted mb-3" style="font-size: 2rem;"></i>
+                        <p class="text-muted">No products selected</p>
+                        <small class="text-muted">Add products from the list</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Hidden field for selected products -->
+                <select class="d-none" name="products" id="selectedProducts" multiple required>
+                  {% if preserved_data %}
+                    {% for product_id in preserved_data.products %}
+                      <option value="{{ product_id }}" selected></option>
+                    {% endfor %}
+                  {% endif %}
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Category <span class="text-danger">*</span></label>
+              <select name="category_id" class="form-select" required>
+                <option value="" disabled selected>Select a category</option>
+                {% for category in categories %}
+                  <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Discount Type <span class="text-danger">*</span></label>
+              <select name="discount_type" class="form-select" id="discountType" required>
+                <option value="percent" selected>Percentage</option>
+                <option value="flat">Fixed Amount</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Discount Value <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text discount-type-symbol">%</span>
+                <input type="number" step="0.01" name="discount_value" class="form-control" required min="0" max="100">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-select">
+                <option value="1" selected>Active</option>
+                <option value="0">Inactive</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Start Date</label>
+              <input type="datetime-local" name="start_date" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">End Date</label>
+              <input type="datetime-local" name="end_date" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Discount</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- DataTables and Select2 JS -->
+<link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    // Initialize DataTable
+    $('#discountTable').DataTable({
+      responsive: true,
+      dom: '<"top"<"row"<"col-md-6"l><"col-md-6"f>>>rt<"bottom"<"row"<"col-md-6"i><"col-md-6"p>>>',
+      pageLength: 10,
+      language: {
+        search: "_INPUT_",
+        searchPlaceholder: "Search discounts...",
+      }
+    });
+
+    // Discount type change handler
+    $('#discountType').change(function() {
+      const type = $(this).val();
+      $('.discount-type-symbol').text(type === 'percent' ? '%' : '$');
+      const input = $('input[name="discount_value"]');
+      input.attr('max', type === 'percent' ? '100' : '');
+      if (type === 'percent' && parseFloat(input.val()) > 100) input.val('100');
+    });
+
+    // Product search functionality
+    $('#productSearch').on('input', function() {
+      const term = $(this).val().toLowerCase();
+      $('#productTable tbody tr').each(function() {
+        const rowText = $(this).text().toLowerCase();
+        $(this).toggle(rowText.includes(term));
+      });
+    });
+
+    // Add product to selection
+    $(document).on('click', '.add-product', function() {
+      const productRow = $(this).closest('tr');
+      const productId = productRow.data('product-id');
+      const productName = productRow.find('.fw-semibold').text();
+      const productPrice = productRow.find('small').text();
+      const productImage = productRow.find('img').attr('src');
+      
+      // Check if already selected
+      if ($(`#selectedProducts option[value="${productId}"]`).length > 0) {
+        return;
+      }
+      
+      // Add to hidden select
+      $('#selectedProducts').append(`<option value="${productId}" selected></option>`);
+      
+      // Create selected item HTML
+      const selectedItem = `
+        <div class="selected-item d-flex justify-content-between align-items-center" data-product-id="${productId}">
+          <div class="d-flex align-items-center">
+            ${productImage ? 
+              `<img src="${productImage}" alt="${productName}" class="rounded me-2" width="30" height="30">` : 
+              `<div class="rounded bg-light me-2 d-flex align-items-center justify-content-center" style="width:30px;height:30px;">
+                <i class="fas fa-camera text-muted"></i>
+              </div>`
+            }
+            <div>
+              <div class="fw-semibold">${productName}</div>
+              <small class="text-muted">${productPrice}</small>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-danger remove-product">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>`;
+      
+      // Add to selected container
+      if ($('#selectedProductsContainer').find('.text-center').length) {
+        $('#selectedProductsContainer').empty();
+      }
+      $('#selectedProductsContainer').append(selectedItem);
+      
+      // Update button state
+      $(this).html('<i class="fas fa-check"></i> Added')
+             .removeClass('btn-primary')
+             .addClass('btn-success')
+             .prop('disabled', true);
+      
+      // Update counter
+      updateSelectedCount();
+    });
+
+    // Remove product from selection
+    $(document).on('click', '.remove-product', function() {
+      const productId = $(this).closest('.selected-item').data('product-id');
+      
+      // Remove from hidden select
+      $(`#selectedProducts option[value="${productId}"]`).remove();
+      
+      // Remove from selected container
+      $(this).closest('.selected-item').remove();
+      
+      // Enable add button
+      $(`#productTable tr[data-product-id="${productId}"] .add-product`)
+        .html('<i class="fas fa-plus"></i> Add')
+        .removeClass('btn-success')
+        .addClass('btn-primary')
+        .prop('disabled', false);
+      
+      // Update counter
+      updateSelectedCount();
+      
+      // Show empty state if no products selected
+      if ($('#selectedProducts option').length === 0) {
+        $('#selectedProductsContainer').html(`
+          <div class="text-center py-5">
+            <i class="fas fa-box-open text-muted mb-3" style="font-size: 2rem;"></i>
+            <p class="text-muted">No products selected</p>
+            <small class="text-muted">Add products from the list</small>
+          </div>
+        `);
+      }
+    });
+
+    // Form validation
+    $('#discountForm').submit(function(e) {
+      if ($('#selectedProducts option').length === 0) {
+        e.preventDefault();
+        alert('Please select at least one product');
+        return false;
+      }
+      return true;
+    });
+
+    // Update selected products count
+    function updateSelectedCount() {
+      const count = $('#selectedProducts option').length;
+      $('#selectedCount').text(count + ' product' + (count !== 1 ? 's' : '') + ' selected');
+    }
+  });
+</script>
+{% endblock %}

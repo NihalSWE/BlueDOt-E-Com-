@@ -70,6 +70,8 @@ urlpatterns = [
     path('product_list/',views.product_list,name='product_list'),
     path('add_product/',views.add_product,name='add_product'),
     path('category_list',views.category_list,name='category_list'),
+    path('product_review',views.product_review,name='product_review'),
+    
     
     path('order_detail',views.order_detail,name='order_detail'),
     path('customer_list',views.customer_list,name='customer_list'),
@@ -158,5 +160,18 @@ path('material-purchases/', views.material_purchase_list, name='material_purchas
     
     
     # Blog urls
+    
+    
+    #discount
+    path('discount-categories/', views.discount_category_list, name='discount_category_list'),
+    path('discount-categories/create/', views.discount_category_create, name='discount_category_create'),
+    path('discount-categories/update/<int:pk>/', views.discount_category_update, name='discount_category_update'),
+    path('discount-categories/delete/<int:pk>/', views.discount_category_delete, name='discount_category_delete'),
+    # Discount URLs
+    path('discounts/', views.discount_list, name='discount_list'),
+    path('discounts/create/', views.discount_create, name='discount_create'),
+    path('discounts/update/<int:pk>/', views.discount_update, name='discount_update'),
+    path('discounts/delete/<int:pk>/', views.discount_delete, name='discount_delete'),
+    #discount
     
 ]

@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from backend.models import *
 from django.shortcuts import render, get_object_or_404
-
+from backend.forms import *
 # Create your views here.
 
 
@@ -158,7 +158,18 @@ def shop(request):
 def product_detail(request, slug):
     banner=ProductBanner.objects.last()
     product = get_object_or_404(Product, slug=slug)
-    return render(request, 'blue_dot/shop-details.html', {'product': product,'banner':banner})
+    reviews = product.reviews.order_by('-created_at')  # all reviews related to this product
+
+    if request.method == 'POST':
+        form = ProductReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.product = product
+            review.save()
+            return redirect('product_detail', slug=product.slug)
+    else:
+        form = ProductReviewForm()
+    return render(request, 'blue_dot/shop-details.html', {'product': product,'banner':banner,'reviews': reviews,'form': form,})
 
 def ourteam(request):
     return render(request, 'blue_dot/team.html')

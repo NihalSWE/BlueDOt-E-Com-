@@ -231,6 +231,10 @@ class Brand(models.Model):
     
     
 class Product(models.Model):
+    DISCOUNT_TYPE_CHOICES = (
+        ('flat', 'Flat'),
+        ('percent', 'Percentage'),
+    )
     name = models.CharField(max_length=255)
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, related_name='products')
     brand = models.ForeignKey('Brand', on_delete=models.SET_NULL, null=True, related_name='products')
@@ -241,33 +245,85 @@ class Product(models.Model):
     )
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
     # Required thumbnail image
     thumbnail = models.ImageField(upload_to='product_thumbnails/', help_text="Main thumbnail image (required)")
-
     # Many-to-Many for materials
     materials = models.ManyToManyField('Material', through='ProductMaterial')
-
+    discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPE_CHOICES, blank=True, null=True)
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    @property
+    def active_discount(self):
+        return self.discounts.filter(
+            status=1,
+            start_date__lte=timezone.now(),
+            end_date__gte=timezone.now()
+        ).first()
+    @property
+    def final_price(self):
+        """
+        Calculate final price after discount.
+        """
+        if self.discount_type == 'flat' and self.discount_value:
+            return max(self.base_price - self.discount_value, 0)
+        elif self.discount_type == 'percent' and self.discount_value:
+            discount_amount = (self.discount_value / 100) * self.base_price
+            return max(self.base_price - discount_amount, 0)
+        return self.base_price
     def __str__(self):
         return self.name
-
+    def __str__(self):
+        return self.name
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = self.generate_unique_slug(Product)
         super().save(*args, **kwargs)
-
     def generate_unique_slug(self, model_class, slug_field_name='slug'):
         from django.utils.text import slugify
-
         base_slug = slugify(self.name)
         slug = base_slug
         index = 1
         slug_field = model_class._meta.get_field(slug_field_name).attname
-
         while model_class.objects.filter(**{slug_field: slug}).exclude(pk=self.pk).exists():
             slug = f"{base_slug}-{index}"
             index += 1
         return slug
+class DiscountCategory(models.Model):
+    STATUS_CHOICES = (
+        (1, 'Active'),
+        (0, 'Inactive'),
+    )
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)  # optional description
+    image = models.ImageField(upload_to='discount_categories/', blank=True, null=True)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    status = models.SmallIntegerField(choices=STATUS_CHOICES, default=1)  # 1 = Active, 0 = Inactive
+    def __str__(self):
+        return self.name
+    def is_active(self):
+        now = timezone.now()
+        return (
+            self.status == 1 and
+            self.start_date <= now <= self.end_date
+        )
+class Discount(models.Model):
+    STATUS_CHOICES = (
+        (1, 'Active'),
+        (0, 'Inactive'),
+    )
+    products = models.ManyToManyField('Product', related_name='discounts')
+    category = models.ForeignKey(DiscountCategory, on_delete=models.CASCADE, related_name='discounts')
+    discount_type = models.CharField(max_length=10, choices=(('flat', 'Flat'), ('percent', 'Percentage')))
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.SmallIntegerField(choices=STATUS_CHOICES, default=1)  # 1 = Active, 0 = Inactive
+    def __str__(self):
+        return f"{self.category.name} - {self.discount_value} {self.get_discount_type_display()}"
+
+
+
+
+
+
 
 
 class ProductImage(models.Model):
@@ -278,7 +334,22 @@ class ProductImage(models.Model):
     def __str__(self):
         return f"Image for {self.product.name}"
     
-    
+
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+class ProductReview(models.Model):
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='reviews')
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    comment = models.TextField()
+    rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Review by {self.name} - {self.product.name}"
+
+
+  
     
     
 class MeasurementType(models.Model):
@@ -1000,6 +1071,8 @@ class MaterialInventoryDetail(models.Model):
     adminid = models.IntegerField(null=True, blank=True)  # if using custom tracking dsfsd
 
     due_discount = models.DecimalField(max_digits=10,  decimal_places=2, default=0)
+    mid_debit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    mid_credit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def __str__(self):
         return f"Inventory #{self.id} - Material: {self.mid_material.mr_material_name}"
