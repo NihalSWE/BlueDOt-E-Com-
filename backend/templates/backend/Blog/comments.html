@@ -6,40 +6,272 @@
     <h2 class="mb-4">User Comments</h2>
 
     <div class="table-responsive shadow-sm rounded">
-        <table class="table table-bordered table-hover align-middle text-nowrap">
-            <thead class="table-light text-center">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
                 <tr>
-                    <th style="width: 5%;">#</th>
-                    <th style="width: 20%;">Blog</th>
-                    <th style="width: 15%;">Name</th>
-                    <th style="width: 15%;">Email</th>
-                    <th style="width: 10%;">Number</th>
-                    <th style="width: 25%;">Message</th>
-                    <th style="width: 10%;">Date</th>
+                    <th class="text-center" style="width: 5%;">SL</th>
+                    <th class="text-center" style="width: 20%;">BLOG</th>
+                    <th class="text-center" style="width: 15%;">NAME</th>
+                    <th class="text-center" style="width: 15%;">EMAIL</th>
+                    <th class="text-center" style="width: 10%;">NUMBER</th>
+                    <th class="text-center" style="width: 20%;">MESSAGE</th>
+                    <th class="text-center" style="width: 10%;">DATE</th>
+                    <th class="text-center" style="width: 15%;">ACTIONS</th>
                 </tr>
             </thead>
             <tbody>
                 {% for comment in comments %}
                 <tr>
-                    <td class="text-center">{{ forloop.counter }}</td>
-                    <td>
-                        <a href="{{ comment.blog.get_absolute_url }}" target="_blank" class="text-decoration-none">
+                    <td class="text-center fw-bold">{{ forloop.counter }}</td>
+                    <td class="text-center">
+                        <a href="{{ comment.blog.get_absolute_url }}" target="_blank" 
+                           class="text-decoration-none text-primary fw-medium">
                             {{ comment.blog.title }}
                         </a>
                     </td>
-                    <td>{{ comment.name }}</td>
-                    <td>{{ comment.email|default:"-" }}</td>
-                    <td>{{ comment.number|default:"-" }}</td>
-                    <td style="word-wrap: break-word; max-width: 300px;">{{ comment.message }}</td>
-                    <td class="text-center">{{ comment.created_at|date:"Y-m-d H:i" }}</td>
+                    <td class="text-center fw-medium">{{ comment.name }}</td>
+                    <td class="text-center text-muted">{{ comment.email|default:"-" }}</td>
+                    <td class="text-center">{{ comment.number|default:"-" }}</td>
+                    <td class="text-center">
+                        <div style="max-width: 200px; word-wrap: break-word; white-space: normal; margin: 0 auto;">
+                            {{ comment.message|truncatechars:50 }}
+                        </div>
+                    </td>
+                    <td class="text-center text-muted small">
+                        {{ comment.created_at|date:"M d, Y" }}<br>
+                        {{ comment.created_at|date:"H:i" }}
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-info btn-sm" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#viewModal{{ comment.id }}"
+                                    title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" 
+                                    onclick="confirmDelete({{ comment.id }}, '{{ comment.name|escapejs }}')"
+                                    title="Delete Comment">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center text-muted">No comments found.</td>
+                    <td colspan="8" class="text-center text-muted py-5">
+                        <i class="fas fa-comments-slash fa-2x mb-2 d-block"></i>
+                        No comments found.
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <!-- View Comment Modal -->
+    {% for comment in comments %}
+    <div class="modal fade" id="viewModal{{ comment.id }}" tabindex="-1" aria-labelledby="viewModalLabel{{ comment.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewModalLabel{{ comment.id }}">Comment Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Blog:</strong>
+                            <p class="text-muted">{{ comment.blog.title }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Date:</strong>
+                            <p class="text-muted">{{ comment.created_at|date:"F d, Y - H:i" }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Name:</strong>
+                            <p class="text-muted">{{ comment.name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Email:</strong>
+                            <p class="text-muted">{{ comment.email|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <strong>Phone Number:</strong>
+                            <p class="text-muted">{{ comment.number|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <strong>Message:</strong>
+                            <div class="border p-3 bg-light rounded">
+                                {{ comment.message|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the comment from <strong id="deleteCommentName"></strong>?</p>
+                    <p class="text-muted small">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination if needed -->
+    {% if is_paginated %}
+    <nav aria-label="Comments pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">&laquo; First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
+
+<style>
+/* Custom styles for better alignment and readability */
+.table td, .table th {
+    vertical-align: middle;
+    text-align: center;
+}
+
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Ensure consistent spacing */
+.table td, .table th {
+    padding: 12px 8px;
+}
+
+/* Button styling */
+.btn-group .btn {
+    margin: 0 2px;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Better mobile responsiveness */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        margin: 1px 0;
+        font-size: 0.75rem;
+    }
+}
+</style>
+
+<script>
+function confirmDelete(commentId, commentName) {
+    // Set the comment name in the modal
+    document.getElementById('deleteCommentName').textContent = commentName;
+    
+    // Set the form action URL
+    const deleteForm = document.getElementById('deleteForm');
+    deleteForm.action = `/admin/comments/delete/${commentId}/`; // Adjust this URL to match your Django URL pattern
+    
+    // Show the modal
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+
+// Optional: Add success/error messages after actions
+document.addEventListener('DOMContentLoaded', function() {
+    // You can add toast notifications here if needed
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('deleted') === 'success') {
+        // Show success message
+        showToast('Comment deleted successfully!', 'success');
+    }
+});
+
+function showToast(message, type) {
+    // Simple toast notification function
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+</script>
 {% endblock %}
