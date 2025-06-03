@@ -1,0 +1,160 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow-lg border-0 rounded-lg">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Update Pricing Card Section</h4>
+        </div>
+        
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="row g-4">
+                    <!-- Left Column -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="text" name="sub_title" class="form-control" id="id_sub_title" 
+                                   value="{{ form.sub_title.value|default_if_none:'' }}" placeholder=" " required>
+                            <label for="id_sub_title">Sub Title</label>
+                            <div class="invalid-feedback">Please provide a sub title.</div>
+                        </div>
+                        
+                        <div class="form-floating mb-3">
+                            <input type="text" name="title" class="form-control" id="id_title" 
+                                   value="{{ form.title.value|default_if_none:'' }}" placeholder=" " required>
+                            <label for="id_title">Main Title</label>
+                            <div class="invalid-feedback">Please provide a main title.</div>
+                        </div>
+                        
+                        <div class="form-floating mb-3">
+                            <input type="text" name="price_text" class="form-control" id="id_price_text" 
+                                   value="{{ form.price_text.value|default_if_none:'' }}" placeholder=" ">
+                            <label for="id_price_text">Price Text</label>
+                        </div>
+                        
+                        <div class="form-floating mb-3">
+                            <input type="text" name="price_value" class="form-control" id="id_price_value" 
+                                   value="{{ form.price_value.value|default_if_none:'' }}" placeholder=" ">
+                            <label for="id_price_value">Price Value</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="text" name="button_text" class="form-control" id="id_button_text" 
+                                   value="{{ form.button_text.value|default_if_none:'' }}" placeholder=" ">
+                            <label for="id_button_text">Button Text</label>
+                        </div>
+                        
+                        <div class="form-floating mb-3">
+                            <input type="text" name="button_link" class="form-control" id="id_button_link" 
+                                   value="{{ form.button_link.value|default_if_none:'' }}" placeholder=" ">
+                            <label for="id_button_link">Button Link</label>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="id_image" class="form-label fw-bold">Upload Image (556×540)</label>
+                            <input type="file" name="image" class="form-control" id="id_image" 
+                                   accept="image/*" onchange="previewImage(this)">
+                            <div class="form-text">Recommended dimensions: 556px × 540px</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Image Preview -->
+                {% if form.instance.image %}
+                <div class="mb-4 p-3 border rounded bg-light">
+                    <label class="form-label fw-bold d-block">Current Image:</label>
+                    <div class="image-preview-container">
+                        <img src="{{ form.instance.image.url }}" alt="Current Pricing Image" 
+                             class="img-thumbnail" style="max-height: 200px; width: auto;">
+                        <div class="mt-2">
+                            <a href="{{ form.instance.image.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-expand"></i> View Full Size
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="reset" class="btn btn-outline-secondary">
+                        <i class="fas fa-undo me-2"></i>Reset
+                    </button>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        overflow: hidden;
+    }
+    .card-header {
+        padding: 1.5rem;
+        font-weight: 600;
+    }
+    .form-control:focus {
+        border-color: #4dabf7;
+        box-shadow: 0 0 0 0.25rem rgba(77, 171, 247, 0.25);
+    }
+    .image-preview-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .img-thumbnail {
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+</style>
+
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+    
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var previewContainer = document.querySelector('.image-preview-container');
+                if (!previewContainer) {
+                    var container = document.createElement('div');
+                    container.className = 'mb-4 p-3 border rounded bg-light';
+                    container.innerHTML = `
+                        <label class="form-label fw-bold d-block">New Image Preview:</label>
+                        <div class="image-preview-container">
+                            <img src="#" alt="Preview" class="img-thumbnail" style="max-height: 200px; width: auto;">
+                        </div>
+                    `;
+                    input.parentNode.parentNode.after(container);
+                }
+                document.querySelector('.image-preview-container img').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

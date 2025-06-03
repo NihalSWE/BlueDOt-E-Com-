@@ -1,0 +1,256 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+
+<div class="card purchase-card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="card-title mb-0 fw-semibold">Sales Report</h5>
+      <p class="mb-0 text-muted">All customer orders and sales data</p>
+    </div>
+    <div>
+      <!-- Export buttons will be added by DataTables -->
+    </div>
+  </div>
+  <div class="card-body">
+    <!-- Filters -->
+    <form method="get" class="mb-4" id="filter-form">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label for="status" class="form-label">Order Status</label>
+          <select name="status" id="status" class="form-select">
+            <option value="">All Statuses</option>
+            {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>
+              {{ label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="date_from" class="form-label">From Date</label>
+          <input type="date" name="date_from" id="date_from" 
+                 class="form-control" value="{{ request.GET.date_from }}">
+        </div>
+        <div class="col-md-3">
+          <label for="date_to" class="form-label">To Date</label>
+          <input type="date" name="date_to" id="date_to" 
+                 class="form-control" value="{{ request.GET.date_to }}">
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary me-2">
+            <i class="ti ti-filter"></i> Filter
+          </button>
+          <a href="{% url 'sales_report' %}" class="btn btn-outline-secondary">
+            <i class="ti ti-refresh"></i> Reset
+          </a>
+        </div>
+      </div>
+    </form>
+
+    <!-- Report Table -->
+    <div class="table-responsive">
+      <table id="sales-table" class="table table-hover table-bordered" style="width:100%">
+        <thead class="table-light">
+          <tr>
+            <th>Order ID</th>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Status</th>
+            <th>Items</th>
+            <th class="text-end">Total</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in orders_with_totals %}
+          {% with order=entry.order %}
+          <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.created_at|date:"Y-m-d" }}</td>
+            <td>{{ order.customer.name }}</td>
+            <td>
+              <span class="badge 
+                {% if order.status == 'completed' %}bg-success-lighten
+                {% elif order.status == 'cancelled' %}bg-danger-lighten
+                {% elif order.status == 'processing' %}bg-warning-lighten
+                {% else %}bg-secondary-lighten{% endif %}">
+                {{ order.get_status_display }}
+              </span>
+            </td>
+            <td>
+              <ul class="list-unstyled mb-0">
+                {% for item in order.items.all %}
+                <li>{{ item.quantity }} × {{ item.product.name }}</li>
+                {% endfor %}
+              </ul>
+            </td>
+            <td class="text-end">
+              ${{ entry.total|floatformat:2 }}
+            </td>
+            <td>
+              <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Details">
+                <i class="ti ti-eye"></i>
+              </a>
+            </td>
+          </tr>
+          {% endwith %}
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center">No orders found</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="table-active">
+            <td colspan="5" class="text-end fw-bold">Total Sales:</td>
+            <td class="text-end fw-bold">
+              ${{ total_sales|floatformat:2 }}
+            </td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+$(document).ready(function() {
+  // Initialize DataTable
+  var table = $('#sales-table').DataTable({
+    dom: '<"top"Bf>rt<"bottom"lip><"clear">',
+    buttons: [
+      {
+        extend: 'csv',
+        text: '<i class="ti ti-file-type-csv"></i> CSV',
+        className: 'btn btn-outline-primary',
+        exportOptions: {
+          columns: [0, 1, 2, 3, 4, 5],
+          format: {
+            body: function(data, row, column, node) {
+              // Handle the items list for CSV export
+              if (column === 4) {
+                return $(node).find('li').map(function() {
+                  return $(this).text().trim();
+                }).get().join('; ');
+              }
+              return data;
+            }
+          }
+        }
+      },
+      {
+        extend: 'excel',
+        text: '<i class="ti ti-file-type-xls"></i> Excel',
+        className: 'btn btn-outline-success',
+        exportOptions: {
+          columns: [0, 1, 2, 3, 4, 5]
+        },
+        customize: function(xlsx) {
+          var sheet = xlsx.xl.worksheets['sheet1.xml'];
+          $('row c[r^="F"]', sheet).attr('s', '2'); // Format currency column
+        }
+      },
+      {
+        extend: 'pdf',
+        text: '<i class="ti ti-file-type-pdf"></i> PDF',
+        className: 'btn btn-outline-danger',
+        exportOptions: {
+          columns: [0, 1, 2, 3, 4, 5]
+        },
+        customize: function(doc) {
+          doc.content[1].table.widths = ['auto', 'auto', 'auto', 'auto', 'auto', 'auto'];
+          doc.styles.tableHeader.alignment = 'center';
+        }
+      },
+      {
+        extend: 'print',
+        text: '<i class="ti ti-printer"></i> Print',
+        className: 'btn btn-outline-info',
+        exportOptions: {
+          columns: [0, 1, 2, 3, 4, 5]
+        }
+      },
+      'colvis'
+    ],
+    columnDefs: [
+      { targets: 5, className: 'dt-body-right' },
+      { targets: [6], orderable: false, searchable: false },
+      { targets: '_all', className: 'dt-head-center' }
+    ],
+    language: {
+      search: "_INPUT_",
+      searchPlaceholder: "Search...",
+      paginate: {
+        previous: '<i class="ti ti-chevron-left"></i>',
+        next: '<i class="ti ti-chevron-right"></i>'
+      }
+    },
+    responsive: true,
+    stateSave: true,
+    pageLength: 25,
+    order: [[1, 'desc']],
+    initComplete: function() {
+      // Calculate totals for footer
+      var api = this.api();
+      var total = api
+        .column(5, { search: 'applied' })
+        .data()
+        .reduce(function(a, b) {
+          return parseFloat(a) + parseFloat(b.replace('$', ''));
+        }, 0);
+      
+      $(api.column(5).footer()).html('$'+total.toFixed(2));
+    }
+  });
+
+  // Initialize datepickers
+  $('#date_from, #date_to').flatpickr({
+    dateFormat: 'Y-m-d',
+    allowInput: true
+  });
+
+  // Initialize tooltips
+  $('[data-bs-toggle="tooltip"]').tooltip();
+
+  // Handle filter form submission with DataTables
+  $('#filter-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    var status = $('#status').val();
+    var date_from = $('#date_from').val();
+    var date_to = $('#date_to').val();
+    
+    // Combine filters
+    table.columns().search('').draw();
+    
+    if (status) {
+      table.column(3).search(status).draw();
+    }
+    if (date_from) {
+      table.column(1).search('>='+date_from).draw();
+    }
+    if (date_to) {
+      table.column(1).search('<='+date_to).draw();
+    }
+  });
+});
+</script>
+{% endblock %}

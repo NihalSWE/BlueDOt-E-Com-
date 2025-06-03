@@ -7,29 +7,29 @@
 <!-- breadcrumb area start -->
 <section class="tp-breadcrumb-area tp-slider-spacing-inner p-relative z-index-1">
     <div class="tp-breadcrumb-bg-shape">
-        <img class="tp-breadcrumb-bg-shape-1" src="{% static 'assets/img/breadcrumb/breadcrumb-shape1.png' %}" alt="">
-        <img class="tp-breadcrumb-bg-shape-2" src="{% static 'assets/img/breadcrumb/breadcrumb-shape2.png' %}" alt="">
-        <img class="tp-breadcrumb-bg-shape-3" src="{% static 'assets/img/breadcrumb/breadcrumb-shape3.png' %}" alt="">
-        <img class="tp-breadcrumb-bg-shape-4" src="{% static 'assets/img/breadcrumb/breadcrumb-shape4.png' %}" alt="">
-        <img class="tp-breadcrumb-bg-shape-5" src="{% static 'assets/img/breadcrumb/breadcrumb-shape5.png' %}" alt="">
+      {% if banner.background_image %}
+        <img class="tp-breadcrumb-bg-shape-1" src="{{ banner.background_image.url }}" alt="">
+      {% else %}
+        <img class="tp-breadcrumb-bg-shape-1" src="{% static 'assets/img/breadcrumb/default-banner.jpg' %}" alt="Default Banner">
+      {% endif %}
     </div>
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col-xl-5">
-                <div class="tp-breadcrumb-content">
-                    <h2 class="tp-breadcrumb-title tp-split-text right">Our Blog</h2>
-                    <p class="tp-breadcrumb-body">
-                        <span>
-                            <a class="home" href="{% url 'home' %}">Home <span class="spacing">_</span></a>
-                        </span>
-                        Our Blog
-                    </p>
-                </div>
-            </div>
+      <div class="row align-items-center">
+        <div class="col-xl-5">
+          <div class="tp-breadcrumb-content">
+            <h2 class="tp-breadcrumb-title tp-split-text right">{{ banner.title }}</h2>
+            <p class="tp-breadcrumb-body">
+              <span>
+                <a class="home" href="{% url 'home' %}">Home <span class="spacing">_</span> </a>
+              </span>
+              {{ banner.subtitle }}
+            </p>
+          </div>
         </div>
+      </div>
     </div>
-</section>
-<!-- breadcrumb area end -->
+  </section>
+  <!-- breadcrumb area end -->
 {% endblock breadcrumb %}
 
 {% block content %}  
@@ -39,142 +39,31 @@
         <div class="row">
 
             <!-- Blog Post 1 -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tp-blog-wrapper tp-blog-4-wrapper wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s">
-                    <div class="tp-blog-thumb tp-blog-4-thumb not-hide-cursor" data-cursor="View<br>Demo">
-                        <a class="cursor-hide" href="{% url 'blog_details' %}">
-                            <img src="{% static 'assets/img/blog/blog-4-img1.jpg' %}" alt="">
+            {% for blog in blogs %}
+            <div class=" col-lg-4 col-md-6">
+                <div class="tp-blog-wrapper wow fadeInUp" style="border: 1px solid #00000026;">
+                    <div class="tp-blog-thumb">
+                        <a href="{{ blog.get_absolute_url }}">
+                            <img src="{{ blog.image.url }}" alt="{{ blog.title }}">
                         </a>
                     </div>
                     <div class="tp-blog-4-content">
                         <div class="tp-blog-4-meta">
-                            <span>Printing</span>
-                            <span>02 July, 2023</span>
+                            <span>{{ blog.get_category_name }}</span>
+                            <span>{{ blog.date }}</span>
                         </div>
                         <h4 class="tp-blog-4-title">
-                            <a href="{% url 'blog_details' %}">Guaranteed Repeatability Without Having to</a>
+                            <a href="{{ blog.get_absolute_url }}">{{ blog.title }}</a>
                         </h4>
+                        {% comment %} <p>{{ blog.get_short_description }}</p> {% endcomment %}
                         <div class="tp-blog-4-btn">
-                            <a href="{% url 'blog_details' %}">Read More <span><i class="fa-regular fa-plus"></i></span></a>
+                            <a href="{{ blog.get_absolute_url }}">Read More <i class="fa-regular fa-plus"></i></a>
                         </div>
                     </div>
                 </div>
             </div>
+            {% endfor %}
 
-            <!-- Blog Post 2 -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tp-blog-wrapper tp-blog-4-wrapper wow fadeInUp" data-wow-delay=".5s" data-wow-duration="1s">
-                    <div class="tp-blog-thumb tp-blog-4-thumb not-hide-cursor" data-cursor="View<br>Demo">
-                        <a class="cursor-hide" href="{% url 'blog_details' %}">
-                            <img src="{% static 'assets/img/blog/blog-4-img2.jpg' %}" alt="">
-                        </a>
-                    </div>
-                    <div class="tp-blog-4-content">
-                        <div class="tp-blog-4-meta">
-                            <span>Printing</span>
-                            <span>02 July, 2023</span>
-                        </div>
-                        <h4 class="tp-blog-4-title">
-                            <a href="{% url 'blog_details' %}">Make Yourself Happy With Our T-Shirt Customer</a>
-                        </h4>
-                        <div class="tp-blog-4-btn">
-                            <a href="{% url 'blog_details' %}">Read More <span><i class="fa-regular fa-plus"></i></span></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Blog Post 3 -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tp-blog-wrapper tp-blog-4-wrapper wow fadeInUp" data-wow-delay=".7s" data-wow-duration="1s">
-                    <div class="tp-blog-thumb tp-blog-4-thumb not-hide-cursor" data-cursor="View<br>Demo">
-                        <a class="cursor-hide" href="{% url 'blog_details' %}">
-                            <img src="{% static 'assets/img/blog/blog-4-img3.jpg' %}" alt="">
-                        </a>
-                    </div>
-                    <div class="tp-blog-4-content">
-                        <div class="tp-blog-4-meta">
-                            <span>Printing</span>
-                            <span>02 July, 2023</span>
-                        </div>
-                        <h4 class="tp-blog-4-title">
-                            <a href="{% url 'blog_details' %}">Easy and Most Powerful Server and Platform</a>
-                        </h4>
-                        <div class="tp-blog-4-btn">
-                            <a href="{% url 'blog_details' %}">Read More <span><i class="fa-regular fa-plus"></i></span></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Blog Post 4 -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tp-blog-wrapper tp-blog-4-wrapper wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s">
-                    <div class="tp-blog-thumb tp-blog-4-thumb not-hide-cursor" data-cursor="View<br>Demo">
-                        <a class="cursor-hide" href="{% url 'blog_details' %}">
-                            <img src="{% static 'assets/img/blog/blog-4-img4.jpg' %}" alt="">
-                        </a>
-                    </div>
-                    <div class="tp-blog-4-content">
-                        <div class="tp-blog-4-meta">
-                            <span>Printing</span>
-                            <span>02 July, 2023</span>
-                        </div>
-                        <h4 class="tp-blog-4-title">
-                            <a href="{% url 'blog_details' %}">Guaranteed Repeatability Without Having to</a>
-                        </h4>
-                        <div class="tp-blog-4-btn">
-                            <a href="{% url 'blog_details' %}">Read More <span><i class="fa-regular fa-plus"></i></span></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Blog Post 5 -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tp-blog-wrapper tp-blog-4-wrapper wow fadeInUp" data-wow-delay=".5s" data-wow-duration="1s">
-                    <div class="tp-blog-thumb tp-blog-4-thumb not-hide-cursor" data-cursor="View<br>Demo">
-                        <a class="cursor-hide" href="{% url 'blog_details' %}">
-                            <img src="{% static 'assets/img/blog/blog-4-img5.jpg' %}" alt="">
-                        </a>
-                    </div>
-                    <div class="tp-blog-4-content">
-                        <div class="tp-blog-4-meta">
-                            <span>Printing</span>
-                            <span>02 July, 2023</span>
-                        </div>
-                        <h4 class="tp-blog-4-title">
-                            <a href="{% url 'blog_details' %}">Technology support allows erie profit serve</a>
-                        </h4>
-                        <div class="tp-blog-4-btn">
-                            <a href="{% url 'blog_details' %}">Read More <span><i class="fa-regular fa-plus"></i></span></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Blog Post 6 -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tp-blog-wrapper tp-blog-4-wrapper wow fadeInUp" data-wow-delay=".7s" data-wow-duration="1s">
-                    <div class="tp-blog-thumb tp-blog-4-thumb not-hide-cursor" data-cursor="View<br>Demo">
-                        <a class="cursor-hide" href="{% url 'blog_details' %}">
-                            <img src="{% static 'assets/img/blog/blog-4-img6.jpg' %}" alt="">
-                        </a>
-                    </div>
-                    <div class="tp-blog-4-content">
-                        <div class="tp-blog-4-meta">
-                            <span>Printing</span>
-                            <span>02 July, 2023</span>
-                        </div>
-                        <h4 class="tp-blog-4-title">
-                            <a href="{% url 'blog_details' %}">A Complete Guide to Insurance perfect</a>
-                        </h4>
-                        <div class="tp-blog-4-btn">
-                            <a href="{% url 'blog_details' %}">Read More <span><i class="fa-regular fa-plus"></i></span></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
         </div>
     </div>

@@ -11,10 +11,11 @@ urlpatterns = [
     path('service_details/',views.service_details,name='service_details'),
     path('shop/',views.shop,name='shop'),
     path('shop_details/',views.shop_details,name='shop_details'),
+    path('product/<slug:slug>/', views.product_detail, name='product_detail'),
     path('cart/',views.cart,name='cart'),
     path('checkout/',views.checkout,name='checkout'),
     path('blog/',views.blog,name='blog'),
-    path('blog_details/',views.blog_details,name='blog_details'),
+    path('blog_details/<slug:slug>/',views.blog_details,name='blog_details'),
     path('blog_sidebar/',views.blog_sidebar,name='blog_sidebar'),
     path('contact/',views.contact,name='contact'),
     path('aboutUs/',views.aboutUs,name="aboutUs"),
@@ -25,8 +26,7 @@ urlpatterns = [
     path('project/',views.project,name='project'),
     path('project_details/',views.project_details,name='project_details'),
     path('faq/',views.faq,name='faq'),
-    path('error/',views.error,name='error'),    
-    path('policy',views.policy,name='policy'),
+    path('error/',views.error,name='error'),
     
 ]
 

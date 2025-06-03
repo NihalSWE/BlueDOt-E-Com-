@@ -1,0 +1,315 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    .customer-card {
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: none;
+    }
+    .customer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6e8efb, #a777e3);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    .badge-type {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .badge-regular {
+        background-color: #e3f2fd;
+        color: #1976d2;
+    }
+    .badge-premium {
+        background-color: #e8f5e9;
+        color: #388e3c;
+    }
+    .badge-wholesale {
+        background-color: #f3e5f5;
+        color: #8e24aa;
+    }
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+    }
+    .status-active {
+        background-color: #4caf50;
+    }
+    .status-inactive {
+        background-color: #f44336;
+    }
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+    .action-btn:hover {
+        transform: translateY(-2px);
+    }
+    .filter-card {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+</style>
+
+<div class="card customer-card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center border-0 py-3">
+        <div>
+            <h5 class="card-title mb-1 fw-semibold text-primary"><i class="fas fa-users me-2"></i> Customer Report</h5>
+            <p class="mb-0 text-muted">Manage and analyze your customer data</p>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="exportToCSV()">
+                <i class="fas fa-file-export me-2"></i> Export
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Filters -->
+        <div class="filter-card mb-4">
+            <form method="get" id="filter-form">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="type" class="form-label">Customer Type</label>
+                        <select name="type" id="type" class="form-select">
+                            <option value="">All Types</option>
+                            {% for type in customer_types %}
+                                {% if type %}
+                                    <option value="{{ type }}" {% if request.GET.type == type %}selected{% endif %}>
+                                        {{ type|title }}
+                                    </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="date_from" class="form-label">From Date</label>
+                        <input type="date" name="date_from" id="date_from" 
+                               class="form-control" value="{{ request.GET.date_from }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="date_to" class="form-label">To Date</label>
+                        <input type="date" name="date_to" id="date_to" 
+                               class="form-control" value="{{ request.GET.date_to }}">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-filter me-2"></i> Filter
+                        </button>
+                        <a href="{% url 'customer_report' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-sync-alt me-2"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Customer Table -->
+        <div class="table-responsive">
+            <table id="customer-table" class="table table-hover align-middle" style="width:100%">
+                <thead class="table-light">
+                    <tr>
+                        <th>Customer</th>
+                        <th>Contact Info</th>
+                        <th>Registration</th>
+                        <th>Type</th>
+                        <th class="text-end">Balance</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in customers %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="customer-avatar me-3">
+                                    {{ customer.CustomerName|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ customer.CustomerName }}</h6>
+                                    <small class="text-muted">ID: {{ customer.CustomerID }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <div><i class="fas fa-phone-alt me-2 text-muted"></i> {{ customer.CustomerContact }}</div>
+                                {% if customer.CustomerEmail %}
+                                <div class="mt-1"><i class="fas fa-envelope me-2 text-muted"></i> {{ customer.CustomerEmail }}</div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-muted">
+                                <i class="far fa-calendar-alt me-2"></i>
+                                {{ customer.RegDate|date:"M d, Y" }}
+                            </div>
+                        </td>
+                        <td>
+                            {% if customer.type %}
+                                <span class="badge-type 
+                                    {% if customer.type|lower == 'premium' %}badge-premium
+                                    {% elif customer.type|lower == 'wholesale' %}badge-wholesale
+                                    {% else %}badge-regular{% endif %}">
+                                    {{ customer.type|title }}
+                                </span>
+                            {% else %}
+                                <span class="badge-type badge-regular">Regular</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="fw-semibold">
+                                {% if customer.dabite %}
+                                    <span class="text-danger">-${{ customer.dabite }}</span>
+                                {% elif customer.cradit %}
+                                    <span class="text-success">+${{ customer.cradit }}</span>
+                                {% else %}
+                                    $0.00
+                                {% endif %}
+                            </div>
+                            {% if customer.open_due %}
+                            <small class="text-muted">Due: ${{ customer.open_due }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="action-btn btn btn-sm btn-outline-primary me-2" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="action-btn btn btn-sm btn-outline-success" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="d-flex flex-column align-items-center">
+                                <i class="fas fa-user-slash fa-2x text-muted mb-2"></i>
+                                <h5 class="text-muted">No customers found</h5>
+                                <p class="text-muted">Try adjusting your filters</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+$(document).ready(function() {
+    // Initialize DataTable
+    var table = $('#customer-table').DataTable({
+        dom: '<"top"Bf>rt<"bottom"lip><"clear">',
+        buttons: [
+            {
+                extend: 'csv',
+                text: '<i class="fas fa-file-csv me-2"></i> CSV',
+                className: 'btn btn-outline-primary btn-sm',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel me-2"></i> Excel',
+                className: 'btn btn-outline-success btn-sm',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-pdf me-2"></i> PDF',
+                className: 'btn btn-outline-danger btn-sm',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            {
+                extend: 'print',
+                text: '<i class="fas fa-print me-2"></i> Print',
+                className: 'btn btn-outline-info btn-sm',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            },
+            'colvis'
+        ],
+        columnDefs: [
+            { targets: 4, className: 'dt-body-right' },
+            { targets: [5], orderable: false, searchable: false }
+        ],
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search customers...",
+            paginate: {
+                previous: '<i class="fas fa-chevron-left"></i>',
+                next: '<i class="fas fa-chevron-right"></i>'
+            }
+        },
+        responsive: true,
+        pageLength: 25,
+        order: [[2, 'desc']]
+    });
+
+    // Initialize datepickers
+    $('#date_from, #date_to').flatpickr({
+        dateFormat: 'Y-m-d',
+        allowInput: true
+    });
+
+    // Initialize tooltips
+    $('[title]').tooltip({
+        placement: 'top'
+    });
+});
+
+function exportToCSV() {
+    // Add export parameter to form and submit
+    var form = document.getElementById('filter-form');
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'export';
+    input.value = 'csv';
+    form.appendChild(input);
+    form.submit();
+}
+</script>
+{% endblock %}

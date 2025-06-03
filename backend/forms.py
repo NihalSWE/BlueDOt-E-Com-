@@ -176,12 +176,55 @@ class ChooseUsItemForm(forms.ModelForm):
         }
         
 
-# class FaqBannerForm(forms.ModelForm):
-#     class Meta:
-#         model = OurfaqBanner
-#         fields = ['title', 'subtitle', 'background_image']
-#         widgets = {
-#             'title': forms.TextInput(attrs={'class': 'form-control'}),
-#             'subtitle': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-#             'background_image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
-#         }
+class FAQSectionForm(forms.ModelForm):
+    class Meta:
+        model = FAQSection
+        fields = '__all__'
+        widgets = {
+            'video_url': forms.URLInput(attrs={'class': 'form-control'}),
+            'section_title': forms.TextInput(attrs={'class': 'form-control'}),
+            'section_subtitle': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+FAQItemFormSet = inlineformset_factory(
+    FAQSection,
+    FAQItem,
+    fields=['question', 'answer', 'is_expanded'],
+    extra=1,
+    widgets={
+        'question': forms.TextInput(attrs={'class': 'form-control'}),
+        'answer': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+    }
+)
+
+
+class HomeCallToActionForm(forms.ModelForm):
+    class Meta:
+        model = HomeCTA
+        fields = ['sub_title', 'title', 'button_text', 'button_link', 'image']
+        widgets = {
+            'sub_title': forms.TextInput(attrs={'class': 'form-control'}),
+            'main_title': forms.TextInput(attrs={'class': 'form-control'}),
+            'button_text': forms.TextInput(attrs={'class': 'form-control'}),
+            'button_link': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '/contact/'}),
+        }
+        
+        
+class PricingCardForm(forms.ModelForm):
+    class Meta:
+        model = PricingCard
+        fields = ['sub_title', 'title', 'price_text', 'price_value', 'button_text', 'button_link', 'image']
+        
+        
+class BlogPostForm(forms.ModelForm):
+    class Meta:
+        model = BlogPost
+        fields = ['title', 'image', 'category', 'description', 'author', 'is_active']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'author': forms.TextInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }

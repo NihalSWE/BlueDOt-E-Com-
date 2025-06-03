@@ -1,0 +1,518 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block custom_css %}
+  <link rel="stylesheet" href="{% static 'assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}" />
+  <link rel="stylesheet" href="{% static 'assets/vendor/libs/datatables-rowgroup-bs5/rowgroup.bootstrap5.css' %}" />
+  <link rel="stylesheet" href="{% static 'assets/vendor/libs/animate-css/animate.css' %}" />
+
+
+  <link rel="stylesheet" href="{% static 'assets/vendor/libs/select2/select2.css' %}" />
+  <link rel="stylesheet" href="{% static 'assets/vendor/libs/tagify/tagify.css' %}" />
+  <link rel="stylesheet" href="{% static 'assets/vendor/libs/@form-validation/form-validation.css' %}" />
+  <link rel="stylesheet" href="{% static 'assets/vendor/libs/bs-stepper/bs-stepper.css' %}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+    <style>
+        .icon-park--edit-two {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%230e65c1' stroke-linejoin='round' stroke-width='4'%3E%3Cpath stroke-linecap='round' d='M42 26V40C42 41.1046 41.1046 42 40 42H8C6.89543 42 6 41.1046 6 40V8C6 6.89543 6.89543 6 8 6L22 6'/%3E%3Cpath fill='%232167d7' d='M14 26.7199V34H21.3172L42 13.3081L34.6951 6L14 26.7199Z'/%3E%3C/g%3E%3C/svg%3E");
+            transition: 0.3s linear;
+        }
+
+        .icon-park--edit-two:hover {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%230d82fd' stroke-linejoin='round' stroke-width='4'%3E%3Cpath stroke-linecap='round' d='M42 26V40C42 41.1046 41.1046 42 40 42H8C6.89543 42 6 41.1046 6 40V8C6 6.89543 6.89543 6 8 6L22 6'/%3E%3Cpath fill='%23448cff' d='M14 26.7199V34H21.3172L42 13.3081L34.6951 6L14 26.7199Z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .weui--delete-filled {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23b91c1c' fill-rule='evenodd' d='m18.412 6.5l-.801 13.617A2 2 0 0 1 15.614 22H8.386a2 2 0 0 1-1.997-1.883L5.59 6.5H3.5v-1A.5.5 0 0 1 4 5h16a.5.5 0 0 1 .5.5v1zM10 2.5h4a.5.5 0 0 1 .5.5v1h-5V3a.5.5 0 0 1 .5-.5M9 9l.5 9H11l-.4-9zm4.5 0l-.5 9h1.5l.5-9z' stroke-width='0.5' stroke='%23b91c1c'/%3E%3C/svg%3E");
+            transition: 0.3s linear;
+        }
+
+        .weui--delete-filled:hover{
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ec0808' fill-rule='evenodd' d='m18.412 6.5l-.801 13.617A2 2 0 0 1 15.614 22H8.386a2 2 0 0 1-1.997-1.883L5.59 6.5H3.5v-1A.5.5 0 0 1 4 5h16a.5.5 0 0 1 .5.5v1zM10 2.5h4a.5.5 0 0 1 .5.5v1h-5V3a.5.5 0 0 1 .5-.5M9 9l.5 9H11l-.4-9zm4.5 0l-.5 9h1.5l.5-9z' stroke-width='0.5' stroke='%23ec0808'/%3E%3C/svg%3E");
+        }
+
+        .image-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background-color: #f8f9fa;
+            overflow: hidden;
+            border-radius: 0.375rem;
+            border: 1px solid #ddd;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .image-actions {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-container:hover .image-actions {
+            opacity: 1;
+        }
+
+        .image-actions button {
+            background-color: #ffffffcc;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .image-actions button:hover {
+            background-color: #ffffff;
+        }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+  <!-- DataTable with Buttons -->
+  <div class="card">
+    <script>
+    {% if messages %}
+        {% for message in messages %}
+            toastr.options = {
+                "closeButton": true,
+                "progressBar": true
+            };
+            toastr["{{ message.tags }}"]("{{ message|escapejs }}");
+        {% endfor %}
+    {% endif %}
+</script>
+
+    <div class="card-datatable text-nowrap">
+      <div id="DataTables_Table_0_wrapper" class="dt-container dt-bootstrap5 dt-empty-footer">
+        <div class="row card-header mx-0 px-2">
+          <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
+            <h5 class="card-title mb-0 text-md-start text-center">DataTable with Buttons</h5>
+          </div>
+          <div class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto mt-0">
+            <div class="dt-buttons btn-group flex-wrap">
+              <div class="btn-group">
+                <button class="btn buttons-collection btn-label-primary dropdown-toggle me-4 waves-effect border-none" tabindex="0" aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded="false"><span><span class="d-flex align-items-center gap-2"><i class="icon-base ri ri-external-link-line icon-18px"></i> <span class="d-none d-sm-inline-block">Export</span></span></span></button>
+                <a href="{% url 'product_create' %}"><button class="btn create-new btn-primary" tabindex="0" aria-controls="DataTables_Table_0" type="button"><span><span class="d-flex align-items-center"><i class="icon-base ri ri-add-line icon-18px me-sm-1"></i><span class="d-none d-sm-inline-block">Add New Product</span></span></span></button></a>
+            </div> 
+            </div>
+          </div>
+        </div>
+        <div class="row m-3 mx-2 my-0 justify-content-between">
+          <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
+            <div class="dt-length">
+              <label for="dt-length-0">
+                Show<select name="DataTables_Table_0_length" aria-controls="DataTables_Table_0" class="form-select form-select-sm" id="dt-length-0">
+                  <option value="7">7</option>
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>entries
+              </label>
+            </div>
+          </div>
+          <div class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto mt-0">
+            <div class="dt-search mt-md-5 mt-0">
+              <label for="dt-search-0">Search:</label><input type="search" class="form-control form-control-sm" id="dt-search-0" placeholder="Type search here" aria-controls="DataTables_Table_0" />
+            </div>
+          </div>
+        </div>
+        <div class="justify-content-between dt-layout-table">
+          <div class="d-md-flex justify-content-between align-items-center dt-layout-full table-responsive">
+            <table class="datatables-basic table table-bordered table-responsive dataTable dtr-column" id="DataTables_Table_0" aria-describedby="DataTables_Table_0_info">
+              <colgroup>
+                <col data-dt-column="0" />
+                <col data-dt-column="1" />
+                <col data-dt-column="2" />
+                <col data-dt-column="3" />
+                <col data-dt-column="4" />
+                <col data-dt-column="5" />
+                <col data-dt-column="6" />
+              </colgroup>
+              <thead>
+                <tr>
+                    </th>
+                    <th data-dt-column="3" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc" aria-label="Email: Activate to sort" tabindex="0">
+                        <span class="dt-column-title" role="button">S/L</span><span class="dt-column-order"></span>
+                    </th>
+                    <th data-dt-column="4" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc" aria-label="Date: Activate to sort" tabindex="0">
+                        <span class="dt-column-title" role="button">Name</span><span class="dt-column-order"></span>
+                    </th>
+                    <th data-dt-column="5" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc" aria-label="Salary: Activate to sort" tabindex="0">
+                        <span class="dt-column-title" role="button">Category</span><span class="dt-column-order"></span>
+                    </th>
+                    <th data-dt-column="5" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc" aria-label="Salary: Activate to sort" tabindex="0">
+                        <span class="dt-column-title" role="button">Subcategory</span><span class="dt-column-order"></span>
+                    </th>
+                    <th data-dt-column="4" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc" aria-label="Date: Activate to sort" tabindex="0">
+                        <span class="dt-column-title" role="button">Description</span><span class="dt-column-order"></span>
+                    </th>
+                    <th data-dt-column="5" rowspan="1" colspan="1" class="dt-orderable-asc dt-orderable-desc" aria-label="Salary: Activate to sort" tabindex="0">
+                        <span class="dt-column-title" role="button">Price</span><span class="dt-column-order"></span>
+                    </th>
+                    <th class="dt-orderable-none" data-dt-column="7" rowspan="1" colspan="1" aria-label="Actions">
+                        <span class="dt-column-title">Actions</span><span class="dt-column-order"></span>
+                    </th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ forloop.counter }}</td> <!-- Control column (for responsive or row details) -->
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.category }}</td>
+                    <td>{{ product.category }}</td>
+                    {% comment %} <td>{{ product.brand }}</td> {% endcomment %}
+                    <td>{{ product.description|slice:":60" }}{% if product.description|length > 60 %}...{% endif %}</td>
+                    <td>{{ product.base_price }}</td>
+                    <td>
+                        <div class="d-flex">
+                            {% comment %} <span class="icon-park--edit-two me-2" data-bs-toggle="modal" data-bs-target="#editCategory"></span> {% endcomment %}
+                            <span 
+                                class="icon-park--edit-two me-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editCategory"
+                                data-id="{{ product.id }}"
+                                data-name="{{ product.name }}"
+                                data-description="{{ product.description|escapejs }}"
+                                data-parent-id="{{ product.parent_category.id }}"
+                                {% if product.image %}
+                                    data-image-url="{{ product.image.url }}"
+                                {% else %}
+                                    data-image-url=""
+                                {% endif %}>
+                            </span>
+                            <span class="weui--delete-filled"></span>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+              <tfoot></tfoot>
+            </table>
+          </div>
+        </div>
+        <div class="row mx-3 justify-content-between">
+          <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
+            <div class="dt-info" aria-live="polite" id="DataTables_Table_0_info" role="status">Showing 0 to 0 of 0 entries</div>
+          </div>
+          <div class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto mt-0">
+            <div class="dt-paging">
+              <nav aria-label="pagination"></nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- / DataTable with Buttons -->
+
+  <!--Edit Modal-->
+  <div
+  class="modal fade animate__animated fadeIn"
+  id="animationModal"
+  tabindex="-1"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel5">Modal title</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col mb-6 mt-2">
+            <div class="form-floating form-floating-outline">
+              <input
+                type="text"
+                id="nameAnimation"
+                class="form-control"
+                placeholder="Enter Name" />
+              <label for="nameAnimation">Name</label>
+            </div>
+          </div>
+        </div>
+        <div class="row g-4">
+          <div class="col mb-2">
+            <div class="form-floating form-floating-outline">
+              <input
+                type="email"
+                id="emailAnimation"
+                class="form-control"
+                placeholder="xxxx@xxx.xx" />
+              <label for="emailAnimation">Email</label>
+            </div>
+          </div>
+          <div class="col mb-2">
+            <div class="form-floating form-floating-outline">
+              <input type="date" id="dobAnimation" class="form-control" />
+              <label for="dobAnimation">DOB</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Edit Modal-->
+
+
+  <!-- Delete Modal -->
+  <div class="modal modal-top fade" id="modalTop" tabindex="-1">
+    <div class="modal-dialog">
+      <form class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTopTitle">Modal title</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col mb-6 mt-2">
+              <div class="form-floating form-floating-outline">
+                <input
+                  type="text"
+                  id="nameSlideTop"
+                  class="form-control"
+                  placeholder="Enter Name" />
+                <label for="nameSlideTop">Name</label>
+              </div>
+            </div>
+          </div>
+          <div class="row g-4">
+            <div class="col mb-2">
+              <div class="form-floating form-floating-outline">
+                <input
+                  type="email"
+                  id="emailSlideTop"
+                  class="form-control"
+                  placeholder="xxxx@xxx.xx" />
+                <label for="emailSlideTop">Email</label>
+              </div>
+            </div>
+            <div class="col mb-2">
+              <div class="form-floating form-floating-outline">
+                <input type="date" id="dobSlideTop" class="form-control" />
+                <label for="dobSlideTop">DOB</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Close
+          </button>
+          <button type="button" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- Delete Modal -->
+
+
+  <!-- Edit  Modal -->
+  <div class="modal fade" id="editCategory" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-simple modal-edit-user">
+    <div class="modal-content">
+      <div class="modal-body p-0">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="text-center mb-6">
+          <h4 class="mb-2">Edit User Information</h4>
+          <p class="mb-6">Updating user details will receive a privacy audit.</p>
+        </div>
+
+        <form id="editUserForm" class="row g-5" onsubmit="return false" method="POST" enctype="multipart/form-data" >
+            {% csrf_token %}
+          <!-- Category Name -->
+          <div class="col-md-6">
+            <div class="form-floating form-floating-outline">
+              <input type="text" id="multicol-first-name" name="name" class="form-control" placeholder="John"
+                value="{{ category.name }}" />
+              <label for="multicol-first-name">Category Name</label>
+            </div>
+          </div>
+
+          <!-- Parent Category -->
+          <div class="col-md-6">
+            <div class="form-floating form-floating-outline">
+              <select id="multicol-country" class="select2 form-select" name="parent_category" data-allow-clear="true">
+                <option value="">Select Parent Category</option>
+                {% for category in categories %}
+                  <option value="{{ category.id }}" {% if category.parent_category and category.parent_category.id == category.id %}selected{% endif %}>
+                    {{ category.name }}
+                  </option>
+                {% endfor %}
+              </select>
+              <label for="multicol-country">Parent Category</label>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="form-floating form-floating-outline mb-6">
+            <div>
+              <label for="description">Category Description</label>
+            </div>
+            <textarea class="form-control h-px-100" id="description" name="description" placeholder="Comments here..."
+              style="min-height: 400px">{{ category.description }}</textarea>
+          </div>
+
+            <!-- Category Image -->
+            <div class="col-md-6">
+            <div class="form-floating form-floating-outline">
+                <input type="file" id="image-upload" name="image" class="form-control" accept="image/*" />
+                <label for="image-upload">Category Image</label>
+            </div>
+            <div class="image-preview mt-3" id="image-preview-wrapper">
+                {% if category.image %}
+                <img id="category-image-preview" src="{{ category.image.url }}" alt="Category Image"
+                    class="img-thumbnail" style="width: 100%; height: 200px; object-fit: contain; background-color: #f8f9fa;" />
+                {% else %}
+                <img id="category-image-preview" src="https://via.placeholder.com/300x200?text=Category+Image" alt="Category Image"
+                    class="img-thumbnail" style="width: 100%; height: 200px; object-fit: contain; background-color: #f8f9fa;" />
+                {% endif %}
+                <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeImagePreview('category-image-preview')">Remove</button>
+            </div>
+            </div>
+
+            <!-- Banner Image -->
+            <div class="col-md-6">
+            <div class="form-floating form-floating-outline">
+                <input type="file" id="banner-upload" name="banner_image" class="form-control" accept="image/*" />
+                <label for="banner-upload">Banner Image</label>
+            </div>
+            <div class="image-preview mt-3" id="banner-preview-wrapper">
+                {% if category.banner_image %}
+                <img id="banner-image-preview" src="{{ category.banner_image.url }}" alt="Banner Image"
+                    class="img-thumbnail" style="width: 100%; height: 200px; object-fit: contain; background-color: #f8f9fa;" />
+                {% else %}
+                <img id="banner-image-preview" src="https://via.placeholder.com/300x200?text=Banner+Image" alt="Banner Image"
+                    class="img-thumbnail" style="width: 100%; height: 200px; object-fit: contain; background-color: #f8f9fa;" />
+                {% endif %}
+                <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeImagePreview('banner-image-preview')">Remove</button>
+            </div>
+            </div>
+
+          <!-- Submit and Cancel Buttons -->
+          <div class="col-12 text-center">
+            <button type="submit" class="btn btn-primary me-3">Submit</button>
+            <button type="reset" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+  <!--/ Edit Modal -->
+{% endblock content %}
+
+{% block custom_js %}
+    <script src="https://cdn.ckeditor.com/ckeditor5/35.3.0/classic/ckeditor.js"></script>
+    <script src="{% static 'assets/js/tables-datatables-basic.js' %}"></script>
+
+    <!-- Flat Picker -->
+    <script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/flatpickr/flatpickr.js' %}"></script>
+    <script src="{% static 'assets/js/ui-modals.js' %}"></script>
+    <script src="{% static 'assets/js/modal-edit-user.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/select2/select2.js' %}"></script>
+
+    <script src="{% static 'assets/vendor/libs/quill/katex.js' %}"></script>
+<script src="{% static 'assets//vendor/libs/highlight/highlight.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/quill/quill.js' %}"></script>
+
+
+    <script src="{% static 'assets/js/form-layouts.js' %}"></script>
+    <script src="{% static 'assets/js/forms-editors.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+  <script>
+    let editorInstance;
+
+    ClassicEditor
+        .create(document.querySelector('#description'))
+        .then(editor => {
+            editorInstance = editor; // Store the editor instance
+        })
+        .catch(error => {
+            console.error('CKEditor initialization error:', error);
+        });
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('editUserForm').addEventListener('submit', function (e) {
+        e.preventDefault(); // Prevent form from submitting the traditional way
+
+        const form = e.target;
+        const formData = new FormData(form);
+        const categoryId = document.querySelector('[data-id]').getAttribute('data-id'); // Or pass it in another way
+        const url = `/admin-dashboard/category-update/${categoryId}/`; // Adjust to your actual Django URL
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: formData
+        })
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        })
+        .then(function(result) {
+            alert(result.message || "Category updated successfully.");
+            location.reload(); // Reload to show updated data
+        })
+        .catch(function(error) {
+            console.error("Error submitting form:", error);
+            alert("An error occurred while submitting the form.");
+        });
+    });
+    });
+</script>
+
+{% endblock custom_js %}

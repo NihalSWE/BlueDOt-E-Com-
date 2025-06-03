@@ -162,13 +162,212 @@
             <div data-i18n="Messages">Center Area Cards</div>
           </a>
         </li>
-        {% comment %} <li class="menu-item">
+
+        <li class="menu-item">
           <a href="{% url 'home_CTA' %}" class="menu-link">
-            <div data-i18n="Messages">Call To Action Card</div>
+            <div data-i18n="Messages">Call To Action</div>
           </a>
-        </li> {% endcomment %}
+        </li>
+        <li class="menu-item">
+          <a href="{% url 'pricing_card' %}" class="menu-link">
+            <div data-i18n="Messages">Home Page Product Pricing Card</div>
+          </a>
+        </li>
       </ul>
     </li>
+      <li class="menu-item">
+      <a href="{% url 'brand_list' %}" class="menu-link">
+        <i class="menu-icon ri ri-home-line"></i>
+        <div data-i18n="Brand">Brand</div>
+      </a>
+    </li>
+        <li class="menu-item">
+      <a href="{% url 'party_supplier_list' %}" class="menu-link">
+        <i class="menu-icon ri ri-home-line"></i>
+        <div data-i18n="Brand">Supplier List</div>
+      </a>
+    </li>
+
+      <li class="menu-item">
+      <a href="{% url 'warehouse_list' %}" class="menu-link">
+        <i class="menu-icon ri ri-home-line"></i>
+        <div data-i18n="warehouse">Warehouse List</div>
+      </a>
+    </li>
+    <!--Categories Menu -->
+    <li class="menu-item">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon ri ri-home-line"></i>
+        <div data-i18n="Home">Categories</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item">
+          <a href="{% url 'category_list' %}" class="menu-link">
+            <div data-i18n="Banner">Category List</div>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="{% url 'practice_area' %}" class="menu-link">
+            <div data-i18n="home/practice_area Locations">Practice Area</div>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="{% url 'contactUs_msg' %}" class="menu-link">
+            <div data-i18n="Messages">Messages</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <!--Categories Menu -->
+
+    <!--Units Menu -->
+    <li class="menu-item">
+      <a href="{% url 'units' %}" class="menu-link">
+        <i class="menu-icon ri ri-home-line"></i>
+        <div data-i18n="Units">Units</div>
+      </a>
+    </li>
+    <!--Units Menu -->
+
+  <!--Material-->
+    <li class="menu-item">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon ri ri-contacts-book-line"></i>
+        <div data-i18n="Contact">Material</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item">
+          <a href="{% url 'material_type_list' %}" class="menu-link">
+            <div data-i18n="Contact Us">Material Type</div>
+          </a>
+        </li>
+
+          <li class="menu-item">
+          <a href="{% url 'material_type_list' %}" class="menu-link">
+            <div data-i18n="Contact Us">Material Type</div>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="{% url 'material_list' %}" class="menu-link">
+            <div data-i18n="Material List">Material List</div>
+          </a>
+        </li>
+          <li class="menu-item">
+          <a href="{% url 'material_purchase_list' %}" class="menu-link">
+            <div data-i18n="Material List">Material Purchases List</div>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="{% url 'contactUs_msg' %}" class="menu-link">
+            <div data-i18n="Messages">Messages</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!--Product Menu -->
+    <li class="menu-item">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon ri ri-home-line"></i>
+        <div data-i18n="Home">Products</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item">
+          <a href="{% url 'product_list' %}" class="menu-link">
+            <div data-i18n="Product">Product List</div>
+          </a>
+        </li>
+
+        <li class="menu-item">
+          <a href="{% url 'add_product' %}" class="menu-link">
+            <div data-i18n="Add Product">Add Product</div>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="{% url 'product_banner' %}" class="menu-link">
+            <div data-i18n="Product Banner">Product Banner</div>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="{% url 'category_list' %}" class="menu-link">
+            <div data-i18n="Category List">Category List</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <!--Product Menu -->
+
+    <!--Blog Start-->
+    <li class="menu-item">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon ri ri-article-line"></i>
+        <div data-i18n="Blog">Blog</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item">
+          <a href="{% url 'blog_banner' %}" class="menu-link">
+            <div data-i18n="All Blogs">Banner</div>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="{% url 'blog_post' %}" class="menu-link">
+            <div data-i18n="Create Blog">Create Blog</div>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="{% url 'blog_comments' %}" class="menu-link">
+            <div data-i18n="Comments">Comments</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <!--Blog Ends-->
+
+    <!--Brand-->
+    <li class="menu-item">
+      <a href="{% url 'brand_list' %}" class="menu-link">
+        <i class="menu-icon ri ri-home-line"></i>
+        <div data-i18n="Brand">Brand</div>
+      </a>
+    </li>
+
+    <!--Report-->
+    <li class="menu-item">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon ri ri-contacts-book-line"></i>
+        <div data-i18n="Contact">Report</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item">
+          <a href="{% url 'inventory_stock_report' %}" class="menu-link">
+            <div data-i18n="Contact Us">Inventory Stock Report</div>
+          </a>
+        </li>
+
+          <li class="menu-item">
+          <a href="{% url 'material_transactions_report' %}" class="menu-link">
+            <div data-i18n="Material Transaction">Material Transaction Report</div>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="{% url 'sales_report' %}" class="menu-link">
+            <div data-i18n="Sales Report">Sales Report</div>
+          </a>
+        </li>
+          <li class="menu-item">
+          <a href="{% url 'customer_report' %}" class="menu-link">
+            <div data-i18n="Material List">Customer Report</div>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a href="{% url 'profit_loss_report' %}" class="menu-link">
+            <div data-i18n="Profit and Loss">Profit and Loss</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+
     <!--COntact Us-->
     <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -228,7 +427,8 @@
     </li>
   </ul>
 </li>
-<!-- Our FAQ -->
+
+    <!-- Our FAQ -->
 <li class="menu-item">
   <a href="javascript:void(0);" class="menu-link menu-toggle">
     <i class="menu-icon ri ri-question-answer-line"></i>
@@ -248,33 +448,7 @@
   </ul>
 </li>
 
-
     
-
-    <!-- Products Dropdown -->
-    <li class="menu-item">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon ri ri-shopping-bag-3-line"></i>
-        <div data-i18n="Products">Products</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item">
-          <a href="{% url 'product_list' %}" class="menu-link">
-            <div data-i18n="Product List">Product List</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="{% url 'add_product' %}" class="menu-link">
-            <div data-i18n="Add Product">Add Product</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="{% url 'category_list' %}" class="menu-link">
-            <div data-i18n="Category List">Category List</div>
-          </a>
-        </li>
-      </ul>
-    </li>
 
     <!-- Orders Dropdown -->
     <li class="menu-item">

@@ -1,0 +1,230 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<div class="card purchase-card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="card-title mb-0 fw-semibold">Material Transactions Report</h5>
+      <p class="mb-0 text-muted">All material purchases and sales transactions</p>
+    </div>
+    <div>
+      <!-- DataTables export buttons appear here -->
+    </div>
+  </div>
+  <div class="card-body">
+    <!-- Filters -->
+    <form method="get" class="mb-4" id="filter-form">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label for="date_from" class="form-label">From Date</label>
+          <input type="date" name="date_from" id="date_from" 
+                 class="form-control" value="{{ request.GET.date_from }}">
+        </div>
+        <div class="col-md-3">
+          <label for="date_to" class="form-label">To Date</label>
+          <input type="date" name="date_to" id="date_to" 
+                 class="form-control" value="{{ request.GET.date_to }}">
+        </div>
+        <div class="col-md-3">
+          <label for="material" class="form-label">Material</label>
+          <select name="material" id="material" class="form-select">
+            <option value="">All Materials</option>
+            {% for mat in materials %}
+              <option value="{{ mat.id }}" {% if request.GET.material == mat.id|stringformat:"s" %}selected{% endif %}>
+                {{ mat.mr_material_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="transaction_type" class="form-label">Transaction Type</label>
+          <select name="transaction_type" id="transaction_type" class="form-select">
+            <option value="">All Types</option>
+            <option value="buy" {% if request.GET.transaction_type == 'buy' %}selected{% endif %}>Purchase</option>
+            <option value="sell" {% if request.GET.transaction_type == 'sell' %}selected{% endif %}>Sale</option>
+          </select>
+        </div>
+        <div class="col-md-12 d-flex justify-content-end">
+          <button type="submit" class="btn btn-primary me-2">
+            <i class="ti ti-filter"></i> Filter
+          </button>
+          <a href="{% url 'material_transactions_report' %}" class="btn btn-outline-secondary">
+            <i class="ti ti-refresh"></i> Reset
+          </a>
+        </div>
+      </div>
+    </form>
+
+    <!-- Report Table -->
+    <div class="table-responsive">
+      <table id="transactions-table" class="table table-hover table-bordered" style="width:100%">
+        <thead class="table-light">
+          <tr>
+            <th>Date</th>
+            <th>Transaction ID</th>
+            <th>Material</th>
+            <th>Supplier/Customer</th>
+            <th>Type</th>
+            <th class="text-end">Quantity</th>
+            <th class="text-end">Unit Price</th>
+            <th class="text-end">Total Amount</th>
+            <th>Entry By</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in transactions_with_total %}
+            <tr>
+              <td>{{ item.transaction.mid_entry_date|date:"Y-m-d" }}</td>
+              <td>{{ item.transaction.mid_invoice_id }}</td>
+              <td>{{ item.transaction.mid_material.mr_material_name }}</td>
+              <td>{{ item.transaction.mid_party.prs_name }}</td>
+              <td>
+                <span class="badge bg-{% if item.transaction.mid_deal_type == 'buy' %}success{% else %}danger{% endif %}-lighten">
+                  {{ item.transaction.mid_deal_type|title }}
+                </span>
+              </td>
+              <td class="text-end">{{ item.quantity|floatformat:2 }}</td>
+              <td class="text-end">{{ item.price|floatformat:2 }}</td>
+              <td class="text-end">{{ item.total_amount|floatformat:2 }}</td>
+              <td>{{ item.transaction.mid_entry_by.username|default:"System" }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9" class="text-center">No transactions found</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="table-active">
+            <td colspan="5" class="text-end fw-bold">Totals:</td>
+            <td class="text-end fw-bold">{{ total_quantity|default:0|floatformat:2 }}</td>
+            <td colspan="2" class="text-end fw-bold">
+              {% if request.GET.transaction_type == 'buy' %}
+                Total Purchases: {{ total_purchases|default:0|floatformat:2 }}
+              {% elif request.GET.transaction_type == 'sell' %}
+                Total Sales: {{ total_sales|default:0|floatformat:2 }}
+              {% else %}
+                Net: {{ net_total|default:0|floatformat:2 }}
+              {% endif %}
+            </td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- jQuery and DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+$(document).ready(function() {
+  // Initialize DataTable with buttons
+  var table = $('#transactions-table').DataTable({
+    dom: '<"top"Bf>rt<"bottom"lip><"clear">',
+    buttons: [
+      {
+        extend: 'csv',
+         text: '<i style="color:black" class="ti ti-file-type-csv"></i> CSV',
+        className: 'btn btn-outline-info',
+        exportOptions: { columns: ':visible' }
+      },
+      {
+        extend: 'excel',
+        text: '<i class="ti ti-file-type-xls"></i> Excel',
+        className: 'btn btn-outline-success',
+        exportOptions: { columns: ':visible' },
+        customize: function(xlsx) {
+          var sheet = xlsx.xl.worksheets['sheet1.xml'];
+          $('row c[r^="H"]', sheet).attr('s', '2'); // Format currency columns
+        }
+      },
+      {
+        extend: 'pdf',
+        text: '<i class="ti ti-file-type-pdf"></i> PDF',
+        className: 'btn btn-outline-danger',
+        exportOptions: { columns: ':visible' },
+        customize: function(doc) {
+          doc.content[1].table.widths = ['auto','auto','auto','auto','auto','auto','auto','auto','auto'];
+          doc.styles.tableHeader.alignment = 'center';
+        }
+      },
+      {
+        extend: 'print',
+        text: '<i class="ti ti-printer"></i> Print',
+        className: 'btn btn-outline-info',
+        exportOptions: { columns: ':visible' }
+      },
+      'colvis'
+    ],
+    columnDefs: [
+      { targets: [5,6,7], className: 'dt-body-right' },
+      { targets: '_all', className: 'dt-head-center' },
+      { 
+        targets: 4, 
+        render: function(data, type, row) {
+          if (type === 'export') {
+            return data.toLowerCase() === 'buy' ? 'Purchase' : 'Sale';
+          }
+          return data;
+        }
+      }
+    ],
+    language: {
+      search: "_INPUT_",
+      searchPlaceholder: "Search...",
+      paginate: {
+        previous: '<i class="ti ti-chevron-left"></i>',
+        next: '<i class="ti ti-chevron-right"></i>'
+      }
+    },
+    responsive: true,
+    stateSave: true,
+    pageLength: 25,
+    order: [[0, 'desc']],
+  });
+
+  // Initialize datepickers
+  $('#date_from, #date_to').flatpickr({
+    dateFormat: "Y-m-d",
+    allowInput: true
+  });
+
+  // Initialize Select2
+  $('#material, #transaction_type').select2({
+    theme: "bootstrap-5",
+    width: '100%',
+    placeholder: "Select an option",
+    allowClear: true
+  });
+});
+</script>
+{% endblock %}

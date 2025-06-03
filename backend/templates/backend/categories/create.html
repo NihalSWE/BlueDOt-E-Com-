@@ -1,0 +1,160 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block custom_css %}
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/datatables-rowgroup-bs5/rowgroup.bootstrap5.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/maxLength/maxLength.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/select2/select2.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/quill/typography.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/highlight/highlight.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/quill/katex.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/quill/editor.css' %}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+{% endblock %}
+
+{% block content %}
+    <div class="row gy-6">
+        
+        <form action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- Multi Column with Form Separator -->
+            <div class="card mb-6 px-6">
+                <h5 class="card-header">Add a Category/Subcategory</h5>
+                <div class="row g-6">
+                    <div class="col-md-6">
+                        <div class="form-floating form-floating-outline">
+                            <input type="text" id="multicol-first-name" name="name" class="form-control" placeholder="John" />
+                            <label for="multicol-first-name">Category Name</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating form-floating-outline">
+                            <select id="multicol-country" class="select2 form-select" name="parent_category" data-allow-clear="true">
+                                <option value="{{ parent_category.id }}">Select Parent Category</option>
+                                {% for parent_category in parent_categories %}
+                                    <option value="{{ parent_category.id }}">{{ parent_category.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="multicol-country">Parent Category</label>
+                        </div>
+                    </div>
+
+                    <div class="form-floating form-floating-outline mb-6">
+                        <div>
+                            <label for="description">Category Description</label>
+                        </div>
+                        <textarea
+                          class="form-control h-px-100"
+                          id="description"
+                          name="description"
+                          placeholder="Comments here..."
+                          style="min-height: 400px"></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating form-floating-outline">
+                            <input type="file" id="image-upload" name="image" class="form-control" accept="image/*" />
+                            <label for="image-upload">Category Image</label>
+                        </div>
+                        <div class="image-preview mt-3" id="image-preview">
+                            <img id="image-preview-placeholder" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22300%22%20height%3D%22200%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20300%20200%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_1899b7b8b4e%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A15pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_1899b7b8b4e%22%3E%3Crect%20width%3D%22300%22%20height%3D%22200%22%20fill%3D%22%23EEEEEE%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22110.5%22%20y%3D%22107.1%22%3E300x200%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E" class="img-thumbnail" style="width: 100%; height: 200px; object-fit: contain; background-color: #f8f9fa;">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating form-floating-outline">
+                            <input type="file" id="banner-upload" name="banner_image" class="form-control" accept="image/*" />
+                            <label for="banner-upload">Banner Image</label>
+                        </div>
+                        <div class="image-preview mt-3" id="banner-preview">
+                            <img id="banner-preview-placeholder" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22300%22%20height%3D%22200%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20300%20200%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_1899b7b8b4f%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A15pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_1899b7b8b4f%22%3E%3Crect%20width%3D%22300%22%20height%3D%22200%22%20fill%3D%22%23EEEEEE%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22110.5%22%20y%3D%22107.1%22%3E300x200%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E" class="img-thumbnail" style="width: 100%; height: 200px; object-fit: contain; background-color: #f8f9fa;">
+                        </div>
+                    </div>
+                </div>
+                <div class="py-6">
+                    <button type="submit" class="btn btn-primary me-4">Submit</button>
+                    <button type="reset" class="btn btn-outline-secondary">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block custom_js %}
+<script src="https://cdn.ckeditor.com/ckeditor5/35.3.0/classic/ckeditor.js"></script>
+<!-- Vendors JS -->
+<script src="{% static 'assets/vendor/libs/cleave-zen/cleave-zen.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/flatpickr.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/select2/select2.js' %}"></script>
+<script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
+
+<script src="{% static 'assets/vendor/libs/quill/katex.js' %}"></script>
+<script src="{% static 'assets//vendor/libs/highlight/highlight.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/quill/quill.js' %}"></script>
+
+<script src="{% static 'assets/js/form-layouts.js' %}"></script>
+<script src="{% static 'assets/js/forms-editors.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+
+<script>
+    let editorInstance;
+
+    ClassicEditor
+        .create(document.querySelector('#description'))
+        .then(editor => {
+            editorInstance = editor; // Store the editor instance
+        })
+        .catch(error => {
+            console.error('CKEditor initialization error:', error);
+        });
+</script>
+
+<script>
+    // Image preview functionality
+    document.getElementById('image-upload').addEventListener('change', function(e) {
+        const preview = document.getElementById('image-preview');
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(event) {
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            img.className = 'img-thumbnail';
+            img.style = 'width: 100%; height: 200px; object-fit: contain;';
+            
+            preview.innerHTML = '';
+            preview.appendChild(img);
+        }
+        
+        if (file) {
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    document.getElementById('banner-upload').addEventListener('change', function(e) {
+        const preview = document.getElementById('banner-preview');
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(event) {
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            img.className = 'img-thumbnail';
+            img.style = 'width: 100%; height: 200px; object-fit: contain;';
+            
+            preview.innerHTML = '';
+            preview.appendChild(img);
+        }
+        
+        if (file) {
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}

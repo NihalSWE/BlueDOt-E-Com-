@@ -1,0 +1,455 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    .supplier-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: none;
+        transition: all 0.3s;
+    }
+    .supplier-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    .card-header-supplier {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        background-color: #f8fafc;
+        border-radius: 10px 10px 0 0 !important;
+    }
+    .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        margin-right: 5px;
+    }
+    .table-responsive {
+        border-radius: 0 0 10px 10px;
+    }
+ 
+    #supplierTable thead th {
+        border: 1px solid #dee2e6 !important;
+        background-color:rgb(142, 158, 173);
+    }
+    #supplierTable tbody td {
+        border: 1px solid #dee2e6 !important;
+    }
+    .dataTables_wrapper .dataTables_filter input {
+        border-radius: 6px;
+        padding: 5px 10px;
+        border: 1px solid #dee2e6;
+    }
+    .dataTables_wrapper .dataTables_length select {
+        border-radius: 6px;
+        padding: 5px;
+        border: 1px solid #dee2e6;
+    }
+    .badge-status {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+    }
+</style>
+
+<div class="card supplier-card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center border-0 py-3 card-header-supplier">
+        <div>
+            <h5 class="card-title mb-1 fw-semibold text-primary"><i class="fas fa-truck me-2"></i> Supplier Management</h5>
+            <p class="mb-0 text-muted">Manage your suppliers and their information</p>
+        </div>
+        <div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#supplierModal" onclick="openCreateModal()">
+                <i class="fas fa-plus me-2"></i> Add Supplier
+            </button>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="supplierTable" style="width:100%">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>SLID</th>
+                        <th>Company Name</th>
+                        <th>Contact Person</th>
+                        <th>Mobile</th>
+                        <th>Email</th>
+                        <th>Reg. Date</th>
+                        <th>Due</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for supplier in suppliers %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                     <td><span class="badge bg-danger">{{ supplier.prs_slid }}</span></td>
+
+                        <td>
+                            <strong>{{ supplier.prs_name }}</strong>
+                            {% comment %} {% if supplier.prs_website %}
+                            <br><small class="text-muted"><a href="{{ supplier.prs_website }}" target="_blank">{{ supplier.prs_website }}</a></small>
+                            {% endif %} {% endcomment %}
+                        </td>
+                        <td>{{ supplier.prs_person|default:"-" }}</td>
+                        <td>
+                            {% if supplier.prs_mobile %}
+                            <a href="tel:{{ supplier.prs_mobile }}">{{ supplier.prs_mobile }}</a>
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if supplier.prs_email %}
+                            <a href="mailto:{{ supplier.prs_email }}">{{ supplier.prs_email }}</a>
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>{{ supplier.prs_reg_date|date:"Y-m-d" }}</td>
+                        <td>
+                            <span class="badge {% if supplier.open_sdue > 0 %}bg-label-danger{% else %}bg-label-success{% endif %} badge-status">
+                                ${{ supplier.open_sdue|default:0|floatformat:2 }}
+                            </span>
+                        </td>
+                 <td class="action-buttons">
+    <div class="btn-group btn-group-sm" role="group">
+        <a href="{% url 'supplier_detail' supplier.prs_slid %}" class="btn btn-outline-primary" title="View Details">
+            <i class="fas fa-eye"></i>
+        </a>
+        <button type="button" class="btn btn-outline-info" onclick="openEditModal('{{ supplier.prs_slid }}')" title="Edit">
+            <i class="fas fa-edit"></i>
+        </button>
+        <button type="button" class="btn btn-outline-danger" onclick="deleteSupplier('{{ supplier.prs_slid }}')" title="Delete">
+            <i class="fas fa-trash-alt"></i>
+        </button>
+    </div>
+</td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Supplier Modal for Create & Edit -->
+<div class="modal fade" id="supplierModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="supplierForm">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-truck me-2"></i> <span id="modalTitle">Add New Supplier</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body row g-3">
+                    <input type="hidden" id="modalAction" value="create">
+                    <input type="hidden" id="prs_slid">
+
+                    <div class="col-md-6">
+                        <label for="prs_name" class="form-label">Company Name <span class="text-danger">*</span></label>
+                        <input type="text" id="prs_name" class="form-control" required>
+                        <div class="invalid-feedback">Please provide a company name</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="prs_person" class="form-label">Contact Person</label>
+                        <input type="text" id="prs_person" class="form-control">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="prs_mobile" class="form-label">Mobile</label>
+                        <input type="text" id="prs_mobile" class="form-control" placeholder="e.g. +1 234 567 8900">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="prs_phone" class="form-label">Phone</label>
+                        <input type="text" id="prs_phone" class="form-control" placeholder="e.g. +1 234 567 8900">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="prs_email" class="form-label">Email</label>
+                        <input type="email" id="prs_email" class="form-control" placeholder="e.g. contact@company.com">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="prs_website" class="form-label">Website</label>
+                        <div class="input-group">
+                            <span class="input-group-text">https://</span>
+                            <input type="text" id="prs_website" class="form-control" placeholder="company.com">
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="prs_address" class="form-label">Address</label>
+                        <textarea id="prs_address" class="form-control" rows="2" placeholder="Full address including city and country"></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="prs_complain_number" class="form-label">Complain Number</label>
+                        <input type="text" id="prs_complain_number" class="form-control">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="prs_reg_date" class="form-label">Registration Date</label>
+                        <input type="date" id="prs_reg_date" class="form-control">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="open_sdue" class="form-label">Opening Due ($)</label>
+                        <input type="number" id="open_sdue" class="form-control" step="0.01" min="0" value="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i> Save Supplier
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+
+<script>
+// Initialize DataTable
+$(document).ready(function() {
+    const table = $('#supplierTable').DataTable({
+        dom: '<"top"<"row"<"col-md-6"B><"col-md-6"f>>>rt<"bottom"<"row"<"col-md-6"l><"col-md-6"p>>><"clear">',
+        buttons: [
+            {
+                extend: 'copy',
+                className: 'btn btn-sm btn-outline-secondary',
+                text: '<i class="fas fa-copy me-2"></i>Copy',
+                exportOptions: {
+                    columns: ':not(:last-child)'
+                }
+            },
+            {
+                extend: 'csv',
+                className: 'btn btn-sm btn-outline-info',
+                text: '<i class="fas fa-file-csv me-2"></i>CSV',
+                exportOptions: {
+                    columns: ':not(:last-child)'
+                }
+            },
+            {
+                extend: 'excel',
+                className: 'btn btn-sm btn-outline-success',
+                text: '<i class="fas fa-file-excel me-2"></i>Excel',
+                exportOptions: {
+                    columns: ':not(:last-child)'
+                }
+            },
+            {
+                extend: 'print',
+                className: 'btn btn-sm btn-outline-info',
+                text: '<i class="fas fa-print me-2"></i>Print',
+                exportOptions: {
+                    columns: ':not(:last-child)'
+                }
+            }
+        ],
+        responsive: true,
+        order: [[1, 'asc']],
+        columnDefs: [
+            { responsivePriority: 1, targets: 0 },
+            { responsivePriority: 2, targets: 2 },
+            { responsivePriority: 3, targets: -1 }
+        ],
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search suppliers...",
+            lengthMenu: "Show _MENU_ suppliers per page",
+            zeroRecords: "No suppliers found",
+            info: "Showing _START_ to _END_ of _TOTAL_ suppliers",
+            infoEmpty: "No suppliers available",
+            infoFiltered: "(filtered from _MAX_ total suppliers)"
+        }
+    });
+
+    // Apply search on each column
+    $('.dataTables_filter input').addClass('form-control').attr('placeholder', 'Search...');
+    $('.dataTables_length select').addClass('form-select form-select-sm');
+});
+
+// CSRF helper for Django
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+// Open modal for creating new supplier
+function openCreateModal() {
+    document.getElementById('modalAction').value = 'create';
+    document.getElementById('modalTitle').textContent = 'Add New Supplier';
+    document.getElementById('supplierForm').reset();
+    document.getElementById('prs_slid').value = '';
+    document.getElementById('prs_reg_date').value = new Date().toISOString().slice(0, 10);
+    const supplierModal = new bootstrap.Modal(document.getElementById('supplierModal'));
+    supplierModal.show();
+}
+
+// Open modal for editing existing supplier
+function openEditModal(slid) {
+    fetch(`/admin-dashboard/suppliers/${slid}/update/`, {
+        headers: { 'X-CSRFToken': csrftoken }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Failed to fetch supplier data');
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById('modalAction').value = 'edit';
+        document.getElementById('modalTitle').textContent = 'Edit Supplier';
+        document.getElementById('prs_slid').value = data.prs_slid || '';
+        document.getElementById('prs_name').value = data.prs_name || '';
+        document.getElementById('prs_person').value = data.prs_person || '';
+        document.getElementById('prs_mobile').value = data.prs_mobile || '';
+        document.getElementById('prs_phone').value = data.prs_phone || '';
+        document.getElementById('prs_email').value = data.prs_email || '';
+        document.getElementById('prs_website').value = data.prs_website ? data.prs_website.replace('https://', '') : '';
+        document.getElementById('prs_address').value = data.prs_address || '';
+        document.getElementById('prs_complain_number').value = data.prs_complain_number || '';
+        document.getElementById('prs_reg_date').value = data.prs_reg_date ? data.prs_reg_date.slice(0,10) : '';
+        document.getElementById('open_sdue').value = data.open_sdue ?? 0;
+        const supplierModal = new bootstrap.Modal(document.getElementById('supplierModal'));
+        supplierModal.show();
+    })
+    .catch(error => {
+        console.error('Error loading supplier data:', error);
+        alert('Error loading supplier data: ' + error.message);
+    });
+}
+
+// Delete supplier by slid
+function deleteSupplier(slid) {
+    if (!confirm('Are you sure you want to delete this supplier? This action cannot be undone.')) return;
+
+    fetch(`/admin-dashboard/suppliers/${slid}/delete/`, {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': csrftoken }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Delete request failed');
+        return response.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            showToast('Supplier deleted successfully', 'success');
+            $('#supplierTable').DataTable().ajax.reload(null, false);
+        } else {
+            throw new Error(data.message || 'Delete failed');
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting supplier:', error);
+        showToast('Error deleting supplier: ' + error.message, 'error');
+    });
+}
+
+// Form submission handler
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('supplierForm');
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            return;
+        }
+
+        const action = document.getElementById('modalAction').value;
+        const slid = document.getElementById('prs_slid').value;
+
+        // Prepare data
+        let website = document.getElementById('prs_website').value.trim();
+        if (website && !website.startsWith('http')) {
+            website = 'https://' + website;
+        }
+
+        const data = {
+            prs_name: document.getElementById('prs_name').value.trim(),
+            prs_person: document.getElementById('prs_person').value.trim(),
+            prs_mobile: document.getElementById('prs_mobile').value.trim(),
+            prs_phone: document.getElementById('prs_phone').value.trim(),
+            prs_email: document.getElementById('prs_email').value.trim(),
+            prs_website: website,
+            prs_address: document.getElementById('prs_address').value.trim(),
+            prs_complain_number: document.getElementById('prs_complain_number').value.trim(),
+            prs_reg_date: document.getElementById('prs_reg_date').value,
+            open_sdue: parseFloat(document.getElementById('open_sdue').value) || 0
+        };
+
+        const url = action === 'create'
+            ? '/admin-dashboard/suppliers/create/'
+            : `/admin-dashboard/suppliers/${slid}/update/`;
+        const method = action === 'create' ? 'POST' : 'PUT';
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify(data)
+        })
+        .then(async response => {
+            if (!response.ok) {
+                let err = {message: 'Server error'};
+                try {
+                    err = await response.json();
+                } catch {}
+                throw new Error(err.message || 'Server error');
+            }
+            return response.json();
+        })
+        .then(result => {
+            if (result.status === 'success') {
+                showToast('Supplier saved successfully', 'success');
+                const supplierModalEl = document.getElementById('supplierModal');
+                const supplierModal = bootstrap.Modal.getInstance(supplierModalEl);
+                supplierModal.hide();
+                $('#supplierTable').DataTable().ajax.reload(null, false);
+            } else {
+                throw new Error(result.message || 'Save failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving supplier:', error);
+            showToast('Error saving supplier: ' + error.message, 'error');
+        });
+    });
+});
+
+// Helper function to show toast notifications
+function showToast(message, type = 'success') {
+    // You can implement a toast notification system here
+    // For simplicity, we'll use alert for now
+    alert(message);
+}
+</script>
+{% endblock %}

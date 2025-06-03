@@ -67,6 +67,92 @@
     .btn-primary:hover {
         background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
     }
+    
+    /* New styles for multiple Q&A functionality */
+    .qa-pair {
+        border: 1px solid #e3e6f0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #f8f9fc;
+        position: relative;
+    }
+    .qa-pair-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .qa-pair-title {
+        font-weight: 600;
+        color: #667eea;
+        margin: 0;
+        flex-grow: 1;
+    }
+    .remove-qa-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .remove-qa-btn:hover {
+        background: #c82333;
+        transform: scale(1.1);
+    }
+    .add-more-btn {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s ease;
+    }
+    .add-more-btn:hover {
+        background: linear-gradient(135deg, #1e7e34 0%, #1a9477 100%);
+        transform: translateY(-1px);
+    }
+    .qa-counter {
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    .modal-lg {
+        max-width: 900px;
+    }
+    #qaContainer {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+    #qaContainer::-webkit-scrollbar {
+        width: 6px;
+    }
+    #qaContainer::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    #qaContainer::-webkit-scrollbar-thumb {
+        background: #667eea;
+        border-radius: 10px;
+    }
 </style>
 {% endblock %}
 
@@ -80,28 +166,6 @@
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#faqModal">
             <i class="fas fa-plus"></i> Add New FAQ
         </button>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="row">
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="faq-stats text-center">
-                <div class="h4 mb-1">{{ total_faqs }}</div>
-                <div class="small">Total FAQs</div>
-            </div>
-        </div>
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="faq-stats text-center">
-                <div class="h4 mb-1">{{ active_faqs }}</div>
-                <div class="small">Active FAQs</div>
-            </div>
-        </div>
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="faq-stats text-center">
-                <div class="h4 mb-1">{{ total_faqs|add:"-1"|add:active_faqs }}</div>
-                <div class="small">Inactive FAQs</div>
-            </div>
-        </div>
     </div>
 
     <!-- FAQ List -->
@@ -151,7 +215,7 @@
     </div>
 </div>
 
-<!-- FAQ Modal -->
+<!-- Enhanced FAQ Modal -->
 <div class="modal fade" id="faqModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -165,27 +229,54 @@
                     <input type="hidden" id="faqId" name="faq_id">
                     <input type="hidden" id="formAction" name="action" value="create">
 
-                    <div class="mb-3">
-                        <label for="section_title" class="form-label">Section Title</label>
-                        <input type="text" class="form-control" id="section_title" name="section_title" maxlength="255">
+                    <!-- Section Info -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="section_title" class="form-label">Section Title</label>
+                            <input type="text" class="form-control" id="section_title" name="section_title" maxlength="255">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="image" class="form-label">Background/Side Image</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                            <small class="form-text text-muted">Image will be resized to 400x218</small>
+                        </div>
                     </div>
 
+                    <!-- Q&A Pairs Container -->
                     <div class="mb-3">
-                        <label for="image" class="form-label">Background/Side Image</label>
-                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                        <small class="form-text text-muted">Image will be resized to 400x218</small>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <label class="form-label mb-0">
+                                <i class="fas fa-comments text-primary"></i> Questions & Answers
+                            </label>
+                            <button type="button" class="add-more-btn" id="addMoreQA">
+                                <i class="fas fa-plus"></i> Add More Q&A
+                            </button>
+                        </div>
+                        
+                        <div id="qaContainer">
+                            <!-- Initial Q&A Pair -->
+                            <div class="qa-pair" data-qa-index="0">
+                                <div class="qa-pair-header">
+                                    <div class="d-flex align-items-center">
+                                        <div class="qa-counter">1</div>
+                                        <h6 class="qa-pair-title">Question & Answer Pair</h6>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Question *</label>
+                                    <input type="text" class="form-control question-input" required maxlength="500" placeholder="Enter your question here...">
+                                </div>
+                                
+                                <div class="mb-0">
+                                    <label class="form-label">Answer *</label>
+                                    <textarea class="form-control answer-input" rows="3" required placeholder="Enter the answer here..."></textarea>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="question" class="form-label">Question *</label>
-                        <input type="text" class="form-control" id="question" name="question" required maxlength="500">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="answer" class="form-label">Answer *</label>
-                        <textarea class="form-control" id="answer" name="answer" rows="4" required></textarea>
-                    </div>
-
+                    <!-- Settings -->
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -208,7 +299,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save FAQ</button>
+                    <button type="submit" class="btn btn-primary">Save FAQ(s)</button>
                 </div>
             </form>
         </div>
@@ -219,9 +310,155 @@
 {% block custom_js %}
 <script>
 $(document).ready(function() {
+    let qaCounter = 1;
+
+    // Add More Q&A functionality
+    $('#addMoreQA').on('click', function() {
+        const newQAPair = `
+            <div class="qa-pair" data-qa-index="${qaCounter}">
+                <div class="qa-pair-header">
+                    <div class="d-flex align-items-center">
+                        <div class="qa-counter">${qaCounter + 1}</div>
+                        <h6 class="qa-pair-title">Question & Answer Pair</h6>
+                    </div>
+                    <button type="button" class="remove-qa-btn" onclick="removeQAPair(this)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Question *</label>
+                    <input type="text" class="form-control question-input" required maxlength="500" placeholder="Enter your question here...">
+                </div>
+                
+                <div class="mb-0">
+                    <label class="form-label">Answer *</label>
+                    <textarea class="form-control answer-input" rows="3" required placeholder="Enter the answer here..."></textarea>
+                </div>
+            </div>
+        `;
+        
+        $('#qaContainer').append(newQAPair);
+        qaCounter++;
+        
+        // Scroll to the new Q&A pair
+        const container = document.getElementById('qaContainer');
+        container.scrollTop = container.scrollHeight;
+        
+        // Add animation to new pair
+        $('#qaContainer .qa-pair:last-child').hide().fadeIn(300);
+    });
+
+    // Remove Q&A Pair function
+    window.removeQAPair = function(button) {
+        if ($('.qa-pair').length > 1) {
+            $(button).closest('.qa-pair').fadeOut(300, function() {
+                $(this).remove();
+                updateQACounters();
+            });
+        } else {
+            alert('At least one Question & Answer pair is required!');
+        }
+    };
+
+    // Update Q&A counters after removal
+    function updateQACounters() {
+        $('.qa-pair').each(function(index) {
+            $(this).attr('data-qa-index', index);
+            $(this).find('.qa-counter').text(index + 1);
+        });
+        qaCounter = $('.qa-pair').length;
+    }
+
+    // Enhanced form submission
     $('#faqForm').on('submit', function(e) {
         e.preventDefault();
-        const formData = new FormData(this);
+        
+        // Validate that all questions and answers are filled
+        let isValid = true;
+        let emptyFields = [];
+        
+        $('.question-input').each(function(index) {
+            if (!$(this).val().trim()) {
+                isValid = false;
+                emptyFields.push(`Question ${index + 1}`);
+            }
+        });
+        
+        $('.answer-input').each(function(index) {
+            if (!$(this).val().trim()) {
+                isValid = false;
+                emptyFields.push(`Answer ${index + 1}`);
+            }
+        });
+        
+        if (!isValid) {
+            alert('Please fill in all required fields: ' + emptyFields.join(', '));
+            return;
+        }
+        
+        // Create FormData and manually collect Q&A data
+        const formData = new FormData();
+        
+        // Add CSRF token
+        formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+        
+        // Add basic form fields
+        formData.append('action', $('#formAction').val());
+        formData.append('faq_id', $('#faqId').val());
+        formData.append('section_title', $('#section_title').val());
+        formData.append('order', $('#order').val());
+        formData.append('is_active', $('#is_active').is(':checked') ? 'on' : '');
+        
+        // Add image if present
+        const imageFile = $('#image')[0].files[0];
+        if (imageFile) {
+            formData.append('image', imageFile);
+        }
+        
+        // Collect all questions and answers
+        const questions = [];
+        const answers = [];
+        
+        $('.question-input').each(function() {
+            const question = $(this).val().trim();
+            if (question) {
+                questions.push(question);
+            }
+        });
+        
+        $('.answer-input').each(function() {
+            const answer = $(this).val().trim();
+            if (answer) {
+                answers.push(answer);
+            }
+        });
+        
+        // Add questions and answers as individual form fields
+        questions.forEach((question, index) => {
+            formData.append(`question_${index}`, question);
+        });
+        
+        answers.forEach((answer, index) => {
+            formData.append(`answer_${index}`, answer);
+        });
+        
+        // Add counts
+        formData.append('qa_count', questions.length);
+        formData.append('questions_count', questions.length);
+        formData.append('answers_count', answers.length);
+        
+        // For backwards compatibility, also add the first Q&A as the main question/answer
+        if (questions.length > 0 && answers.length > 0) {
+            formData.append('question', questions[0]);
+            formData.append('answer', answers[0]);
+        }
+        
+        // Debug: Log form data contents
+        console.log('Form Data Contents:');
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
         
         $.ajax({
             url: '{% url "Ourfaq_faqs" %}',
@@ -229,7 +466,11 @@ $(document).ready(function() {
             data: formData,
             processData: false,
             contentType: false,
+            beforeSend: function() {
+                $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+            },
             success: function(response) {
+                console.log('Success response:', response);
                 if (response.success) {
                     $('#faqModal').modal('hide');
                     location.reload();
@@ -238,12 +479,21 @@ $(document).ready(function() {
                     alert('Error: ' + response.message);
                 }
             },
-            error: function() {
-                alert('An error occurred. Please try again.');
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+                alert('An error occurred. Please check the console for details.');
+            },
+            complete: function() {
+                $('button[type="submit"]').prop('disabled', false).html('Save FAQ(s)');
             }
         });
     });
 
+    // Edit FAQ functionality (modified for single Q&A for now)
     $('.edit-faq').on('click', function() {
         const faqId = $(this).data('id');
 
@@ -261,16 +511,22 @@ $(document).ready(function() {
                     $('#faqModalTitle').text('Edit FAQ');
                     $('#faqId').val(faq.id);
                     $('#formAction').val('update');
-                    $('#question').val(faq.question);
-                    $('#answer').val(faq.answer);
+                    $('#section_title').val(faq.section_title || '');
                     $('#order').val(faq.order);
                     $('#is_active').prop('checked', faq.is_active);
+                    
+                    // Reset Q&A container and add the existing question/answer
+                    resetQAContainer();
+                    $('.question-input:first').val(faq.question);
+                    $('.answer-input:first').val(faq.answer);
+                    
                     $('#faqModal').modal('show');
                 }
             }
         });
     });
 
+    // Delete FAQ functionality
     $('.delete-faq').on('click', function() {
         const faqId = $(this).data('id');
 
@@ -293,13 +549,40 @@ $(document).ready(function() {
         }
     });
 
+    // Reset modal when closed
     $('#faqModal').on('hidden.bs.modal', function() {
         $('#faqForm')[0].reset();
         $('#faqModalTitle').text('Add New FAQ');
         $('#faqId').val('');
         $('#formAction').val('create');
         $('#is_active').prop('checked', true);
+        resetQAContainer();
     });
+
+    // Reset Q&A container to initial state
+    function resetQAContainer() {
+        $('#qaContainer').html(`
+            <div class="qa-pair" data-qa-index="0">
+                <div class="qa-pair-header">
+                    <div class="d-flex align-items-center">
+                        <div class="qa-counter">1</div>
+                        <h6 class="qa-pair-title">Question & Answer Pair</h6>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Question *</label>
+                    <input type="text" class="form-control question-input" required maxlength="500" placeholder="Enter your question here...">
+                </div>
+                
+                <div class="mb-0">
+                    <label class="form-label">Answer *</label>
+                    <textarea class="form-control answer-input" rows="3" required placeholder="Enter the answer here..."></textarea>
+                </div>
+            </div>
+        `);
+        qaCounter = 1;
+    }
 });
 </script>
 {% endblock %}

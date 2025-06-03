@@ -1,0 +1,366 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+
+<style>
+    .financial-card {
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: none;
+        transition: all 0.3s;
+    }
+    .financial-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    .card-header-financial {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        background-color: #f8fafc;
+        border-radius: 12px 12px 0 0 !important;
+    }
+    .positive-value {
+        color: #10b981;
+        font-weight: 600;
+    }
+    .negative-value {
+        color: #ef4444;
+        font-weight: 600;
+    }
+    .summary-card {
+        border-left: 4px solid;
+    }
+    .summary-revenue {
+        border-left-color: #3b82f6;
+    }
+    .summary-cogs {
+        border-left-color: #ef4444;
+    }
+    .summary-gross {
+        border-left-color: #10b981;
+    }
+    .summary-net {
+        border-left-color: #8b5cf6;
+    }
+    .chart-container {
+        position: relative;
+        height: 350px;
+    }
+    .profit-indicator {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+    }
+    .trend-up {
+        color: #10b981;
+    }
+    .trend-down {
+        color: #ef4444;
+    }
+</style>
+
+<div class="card financial-card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center border-0 py-3 card-header-financial">
+        <div>
+            <h5 class="card-title mb-1 fw-semibold text-primary"><i class="fas fa-chart-line me-2"></i> Profit & Loss Report</h5>
+            <p class="mb-0 text-muted">Financial performance from {{ date_from }} to {{ date_to }}</p>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="exportToCSV()">
+                <i class="fas fa-file-export me-2"></i> Export
+            </button>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <!-- Date Filter Form -->
+        <form method="get" class="mb-4">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label for="date_from" class="form-label">From Date</label>
+                    <input type="date" name="date_from" id="date_from" 
+                           class="form-control" value="{{ date_from }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="date_to" class="form-label">To Date</label>
+                    <input type="date" name="date_to" id="date_to" 
+                           class="form-control" value="{{ date_to }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-filter me-2"></i> Apply
+                    </button>
+                    <a href="{% url 'profit_loss_report' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-sync-alt me-2"></i> Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card summary-card summary-revenue h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3">Total Revenue</h6>
+                        <h3 class="mb-1">${{ revenue }}</h3>
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-arrow-up trend-up me-1"></i>
+                            All sales transactions
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card summary-card summary-cogs h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3">Cost of Goods Sold</h6>
+                        <h3 class="mb-1 negative-value">(${{ cogs }})</h3>
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-arrow-down trend-down me-1"></i>
+                            Material costs
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card summary-card summary-gross h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3">Gross Profit</h6>
+                        <h3 class="mb-1 positive-value">${{ gross_profit }}</h3>
+                        <p class="text-muted mb-0">
+                            <span class="profit-indicator" style="background-color: #10b981;"></span>
+                            {{ gross_margin }}% margin
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card summary-card summary-net h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3">Net Profit</h6>
+                        <h3 class="mb-1 {% if net_profit >= 0 %}positive-value{% else %}negative-value{% endif %}">
+                            ${{ net_profit }}
+                        </h3>
+                        <p class="text-muted mb-0">
+                            <span class="profit-indicator" 
+                                  style="background-color: {% if net_profit >= 0 %}#10b981{% else %}#ef4444{% endif %};"></span>
+                            {{ net_margin }}% margin
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profit & Loss Statement -->
+        <div class="card mb-4 financial-card">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i> Profit & Loss Statement</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold">Revenue</td>
+                                <td class="text-end">${{ revenue }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Cost of Goods Sold</td>
+                                <td class="text-end negative-value">(${{ cogs }})</td>
+                            </tr>
+                            <tr class="table-active">
+                                <td class="fw-bold">Gross Profit</td>
+                                <td class="text-end fw-bold positive-value">${{ gross_profit }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Operating Expenses</td>
+                                <td class="text-end negative-value">(${{ total_expenses }})</td>
+                            </tr>
+                            <tr class="table-active">
+                                <td class="fw-bold">Net Profit</td>
+                                <td class="text-end fw-bold {% if net_profit >= 0 %}positive-value{% else %}negative-value{% endif %}">
+                                    ${{ net_profit }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Trends Chart -->
+        <div class="card mb-4 financial-card">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Monthly Trends</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="monthlyTrendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Data Table -->
+        <div class="card financial-card">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-table me-2"></i> Monthly Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="monthlyDataTable" class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Month</th>
+                                <th class="text-end">Revenue</th>
+                                <th class="text-end">COGS</th>
+                                <th class="text-end">Gross Profit</th>
+                                <th class="text-end">Gross Margin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for month in monthly_data %}
+                            <tr>
+                                <td>{{ month.month|date:"F Y" }}</td>
+                                <td class="text-end">${{ month.revenue }}</td>
+                                <td class="text-end negative-value">(${{ month.cogs }})</td>
+                                <td class="text-end {% if month.gross >= 0 %}positive-value{% else %}negative-value{% endif %}">
+                                    ${{ month.gross }}
+                                </td>
+                                <td class="text-end">
+                                    {% if month.revenue > 0 %}
+                                        {{ month.gross_margin }}%
+                                    {% else %}
+                                        0.00%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Initialize DataTable
+    $('#monthlyDataTable').DataTable({
+        order: [[0, 'desc']],
+        dom: '<"top"f>rt<"bottom"lip><"clear">',
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search months...",
+        }
+    });
+
+    // Monthly Trends Chart
+    const ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
+    const monthlyData = {
+        labels: [
+            {% for month in monthly_data %}
+                "{{ month.month|date:'M Y' }}",
+            {% endfor %}
+        ],
+        datasets: [
+            {
+                label: 'Revenue',
+                data: [
+                    {% for month in monthly_data %}
+                        {{ month.revenue }},
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 2,
+                tension: 0.3
+            },
+            {
+                label: 'COGS',
+                data: [
+                    {% for month in monthly_data %}
+                        {{ month.cogs }},
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(239, 68, 68, 0.5)',
+                borderColor: 'rgba(239, 68, 68, 1)',
+                borderWidth: 2,
+                tension: 0.3
+            },
+            {
+                label: 'Gross Profit',
+                data: [
+                    {% for month in monthly_data %}
+                        {{ month.gross }},
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(16, 185, 129, 0.5)',
+                borderColor: 'rgba(16, 185, 129, 1)',
+                borderWidth: 2,
+                tension: 0.3
+            }
+        ]
+    };
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: monthlyData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: false,
+                },
+                y: {
+                    stacked: false,
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += '$' + context.parsed.y.toLocaleString();
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+
+function exportToCSV() {
+    // Add export parameter to URL and submit form
+    const url = new URL(window.location.href);
+    url.searchParams.set('export', 'csv');
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}

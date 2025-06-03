@@ -17,7 +17,8 @@
                 <div class="row align-items-center">
                     <div class="col-xl-2 col-lg-6 col-md-6 col-sm-6 col-5">
                         <div class="tp-header-2-logo">
-                            <a href="index.html"><img src="{% static 'assets/img/logo/logo_text.png'%}" alt=""></a>
+                      <a href="/"><img src="{% static 'assets/img/logo/logo.png' %}" alt="" style="width: 100px; height: 100px;"></a>
+
                         </div>
                     </div>
                     <div class="col-xl-5 d-none d-xl-block">
@@ -36,6 +37,7 @@
                                         </ul> {% endcomment %}
                                     </li>
                                     <li><a href="{% url 'aboutUs' %}">About Us</a></li>
+                                    <li><a href="{% url 'blog' %}">Blog</a></li>
                                     <li><a href="{% url 'faq' %}">Our Faq</a></li>
                                     <li class="has-dropdown"><a href="{% url 'contact' %}">Contact</a></li>
                                 </ul>

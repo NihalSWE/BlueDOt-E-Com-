@@ -7,26 +7,29 @@
 <!-- breadcrumb area start -->
 <section class="tp-breadcrumb-area tp-slider-spacing-inner p-relative z-index-1">
     <div class="tp-breadcrumb-bg-shape">
-        <img class="tp-breadcrumb-bg-shape-1" src="{% static 'assets/img/breadcrumb/breadcrumb-shape1.png' %}" alt="">
-        <img class="tp-breadcrumb-bg-shape-2" src="{% static 'assets/img/breadcrumb/breadcrumb-shape2.png' %}" alt="">
-        <img class="tp-breadcrumb-bg-shape-3" src="{% static 'assets/img/breadcrumb/breadcrumb-shape3.png' %}" alt="">
-        <img class="tp-breadcrumb-bg-shape-4" src="{% static 'assets/img/breadcrumb/breadcrumb-shape4.png' %}" alt="">
-        <img class="tp-breadcrumb-bg-shape-5" src="{% static 'assets/img/breadcrumb/breadcrumb-shape5.png' %}" alt="">
+      {% if banner.background_image %}
+        <img class="tp-breadcrumb-bg-shape-1" src="{{ banner.background_image.url }}" alt="">
+      {% else %}
+        <img class="tp-breadcrumb-bg-shape-1" src="{% static 'assets/img/breadcrumb/default-banner.jpg' %}" alt="Default Banner">
+      {% endif %}
     </div>
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col-xl-5">
-                <div class="tp-breadcrumb-content">
-                    <h2 class="tp-breadcrumb-title tp-split-text right">Shop Details</h2>
-                    <p class="tp-breadcrumb-body">
-                        <span><a class="home" href="{% url 'home' %}">Home <span class="spacing">_</span> </a></span>Shop Details
-                    </p>
-                </div>
-            </div>
+      <div class="row align-items-center">
+        <div class="col-xl-5">
+          <div class="tp-breadcrumb-content">
+            <h2 class="tp-breadcrumb-title tp-split-text right">{{ banner.title }}</h2>
+            <p class="tp-breadcrumb-body">
+              <span>
+                <a class="home" href="{% url 'home' %}">Home <span class="spacing">_</span> </a>
+              </span>
+              {{ banner.subtitle }}
+            </p>
+          </div>
         </div>
+      </div>
     </div>
-</section>
-<!-- breadcrumb area end -->
+  </section>
+  <!-- breadcrumb area end -->
 {% endblock breadcrumb %}
 
 {% block content %}  
@@ -37,20 +40,33 @@
             <div class="col-xl-6 col-lg-5">
                 <div class="product__details-thumb-tab wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s">
                     <div class="product__details-thumb tp-costom-wrapper-hover fix w-img p-relative">
-                        <div class="tp-costom-inner-hover fix">
-                            <img src="{% static 'assets/img/shop/product-details-bag-img.png' %}" alt="">
-                        </div>
+                        <div class="product-image-wrapper">
+                            <!-- Main thumbnail -->
+                            <a href="{% url 'product_detail' slug=product.slug %}">
+                              <img src="{{ product.thumbnail.url }}" alt="{{ product.name }}" class="main-thumbnail" id="mainProductImage">
+                            </a>
+                          </div>
                         <div class="product__details-thumb-popup-btn">
-                            <a class="popup-image" href="{% static 'assets/img/shop/product-details-bag-img.jpg' %}">
+                            <a class="popup-image" href="{{ product.thumbnail.url }}" >
                                 <i class="flaticon-search"></i>
                             </a>
                         </div>
+                    </div>
+                    <div class="thumbnail-gallery horizontal-gallery d-flex" style="gap: 60px;;">
+                        {% for image in product.images.all %}
+    <img src="{{ image.image.url }}" 
+         alt="Extra Image"
+         class="gallery-thumb switch-image"
+         data-src="{{ image.image.url }}"
+         style="width: 120px; height: 150px; object-fit: cover; border: 1px solid #ddd;">
+{% endfor %}
+
                     </div>
                 </div>
             </div>
             <div class="col-xl-6 col-lg-7">
                 <div class="product__details-wrapper ml-70">
-                    <h3 class="product__details-title wow fadeInUp">Hoodie PSD Mockup</h3>
+                    <h3 class="product__details-title wow fadeInUp">{{ product.name }}</h3>
                     <div class="product__details-rating mb-25 d-flex align-items-center">
                         <div class="product__rating product__rating-2 d-flex wow fadeInUp">
                             <span><i class="fa-solid fa-star-sharp"></i></span>
@@ -64,16 +80,12 @@
                         </div>
                     </div>
                     <div class="product__details-price wow fadeInUp">
-                        <span class="product__details-ammount new-ammount">$199.00</span>
+                        <span class="product__details-ammount new-ammount">{{ product.base_price }}</span>
                     </div>
                     <div class="product__details-paragraph wow fadeInUp">
-                        <p>In today’s online world, a brand’s success lies in combining <br>
-                            technological planning and social strategies to draw <br>
-                            customers in–and keep them coming back</p>
+                        <p><td>{{ product.description|slice:":160" }}{% if product.description|length > 160 %}...{% endif %}</td></p>
                     </div>
                     <div class="product__details-content mb-30 wow fadeInUp">
-                        <h4>Size & Fit</h4>
-                        <span>The model (height 6′) is perfect for you</span>
                     </div>
                     <div class="product__details-button-item d-flex mb-35">
                         <div class="product__details-quantity wow fadeInUp">
@@ -91,14 +103,8 @@
                             <a class="tp-btn" href="{% url 'cart' %}"><span>Add to Cart</span></a>
                         </div>
                     </div>
-                    <div class="product__details-sku wow fadeInUp">
-                        <h5><span>SKU:</span> 124224</h5>
-                    </div>
                     <div class="product__details-catagory wow fadeInUp">
-                        <h5><span>Category:</span> Crux Indoor Fast and Easy</h5>
-                    </div>
-                    <div class="product__details-tag wow fadeInUp">
-                        <h5><span>Tag:</span> accessories, business</h5>
+                        <h5><span>Category:</span> {{ product.category }}</h5>
                     </div>
                     <div class="product__details-socials d-flex align-items-center mt-40 wow fadeInUp">
                         <span>Share:</span>
@@ -115,9 +121,9 @@
 
         <div class="row mb-50">
             <div class="product__details-description wow fadeInUp">
-                <h3 class="product__details-description-title">Our Description</h3>
+                <h3 class="product__details-description-title">Product Description</h3>
                 <p class="product__details-description-paragraph">
-                    At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti...
+                    {{ product.description|safe }}
                 </p>
             </div>
         </div>
@@ -179,4 +185,19 @@
 <!-- product details area end -->
 {% endblock content %}
 
-{% block custom_js %}{% endblock custom_js %}
+{% block custom_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const thumbnails = document.querySelectorAll('.switch-image');
+      const mainImage = document.getElementById('mainProductImage');
+  
+      thumbnails.forEach(thumb => {
+        thumb.addEventListener('click', function () {
+          const newSrc = this.getAttribute('data-src');
+          mainImage.setAttribute('src', newSrc);
+        });
+      });
+    });
+  </script>
+
+{% endblock custom_js %}

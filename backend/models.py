@@ -8,6 +8,44 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.text import slugify
+from backend.utils.slug_utils import generate_unique_slug
+from django.utils import timezone
+from django.core.files.storage import default_storage
+from io import BytesIO
+from django.core.files.base import ContentFile
+
+
+
+
+def banner_image_upload_path(instance, filename):
+    # Extract file extension
+    ext = os.path.splitext(filename)[-1]  # includes the dot (e.g., .jpg)
+    name_slug = slugify(instance.name)
+
+    # Build base name
+    base_filename = f"{name_slug}-banner_image"
+
+    # Check if it's a new instance or an update
+    if instance.pk and instance.banner_image:
+        # If updating, retain the same number part but update the extension
+        current_name = os.path.basename(instance.banner_image.name)
+        number_part = '01'  # default
+        parts = current_name.replace(f"{base_filename}-", '').split('.')
+        if parts and parts[0].isdigit():
+            number_part = parts[0]
+
+        filename = f"{base_filename}-{number_part}{ext}"
+    else:
+        # New upload, determine number based on existing files
+        directory = "category_images/"
+        existing_files = default_storage.listdir(directory)[1]  # Get files list
+        count = len([f for f in existing_files if f.startswith(f"{base_filename}-")])
+        number_part = str(count + 1).zfill(2)
+        filename = f"{base_filename}-{number_part}{ext}"
+
+    return os.path.join("category_images", filename)
+
 
 
 class UserManager(BaseUserManager):
@@ -108,23 +146,139 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.name
+
+
+
+class Category(models.Model):
+    STATUS_CHOICES = (
+        ('1', 'Active'),
+        ('0', 'Inactive'),
+    )
+
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    slug = models.SlugField(unique=True)
+    meta_keys = models.CharField(max_length=255, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active')
+    codes = models.CharField(max_length=50, unique=True, help_text="Unique identifier for the category")
+    position = models.PositiveIntegerField(default=0)
+    meta_title = models.CharField(max_length=255, blank=True, null=True)
+    meta_description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='category_images/', blank=True, null=True)
+    banner_image = models.ImageField(upload_to=banner_image_upload_path, blank=True, null=True)
+    parent_category = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='subcategories',
+        help_text="If this is a subcategory, select the parent category"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
+    def generate_unique_slug(instance, model_class, slug_field_name='slug'):
+        """
+        Generate a unique slug for an instance based on its name.
+        """
+        base_slug = slugify(instance.name)
+        slug = base_slug
+        index = 1
+
+        # Get field to check uniqueness on
+        slug_field = model_class._meta.get_field(slug_field_name).attname
+
+        # Check for uniqueness
+        while model_class.objects.filter(**{slug_field: slug}).exclude(pk=instance.pk).exists():
+            slug = f"{base_slug}-{index}"
+            index += 1
+
+        return slug
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)  # Save to get pk first if new
+
+        if not self.slug:
+            self.slug = generate_unique_slug(self, Category)
+        
+        if is_new or not self.codes:
+            if self.parent_category:
+                self.codes = f"{self.parent_category.codes}{str(self.pk).zfill(2)}"
+            else:
+                self.codes = str(self.pk).zfill(2)
+        
+        super().save(update_fields=['slug', 'codes'])
+        
+
+    def __str__(self):
+        return self.name
 
 
+
+class Brand(models.Model):
+    STATUS_CHOICES = (
+        (1, 'Active'),
+        (0, 'Inactive'),
+    )
+    name = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    image = models.CharField(max_length=255, null=True, blank=True)
+    status = models.SmallIntegerField(choices=STATUS_CHOICES, default=1)
+    created_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    def __str__(self):
+        return self.name or "Unnamed Brand"
+    
+    
 class Product(models.Model):
     name = models.CharField(max_length=255)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, related_name='products')
+    brand = models.ForeignKey('Brand', on_delete=models.SET_NULL, null=True, related_name='products')
+    slug = models.SlugField(unique=True, blank=True)
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
     estimated_material_quantity = models.DecimalField(
-        max_digits=10, decimal_places=2, help_text="Rough estimate of total material required"
+        max_digits=10, decimal_places=2, blank=True, null=True, help_text="Rough estimate of total material required"
     )
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # M2M through table
+    # Required thumbnail image
+    thumbnail = models.ImageField(upload_to='product_thumbnails/', help_text="Main thumbnail image (required)")
+
+    # Many-to-Many for materials
     materials = models.ManyToManyField('Material', through='ProductMaterial')
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = self.generate_unique_slug(Product)
+        super().save(*args, **kwargs)
+
+    def generate_unique_slug(self, model_class, slug_field_name='slug'):
+        from django.utils.text import slugify
+
+        base_slug = slugify(self.name)
+        slug = base_slug
+        index = 1
+        slug_field = model_class._meta.get_field(slug_field_name).attname
+
+        while model_class.objects.filter(**{slug_field: slug}).exclude(pk=self.pk).exists():
+            slug = f"{base_slug}-{index}"
+            index += 1
+        return slug
+
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='product_images/')
+    alt_text = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f"Image for {self.product.name}"
+    
+    
     
     
 class MeasurementType(models.Model):
@@ -343,14 +497,14 @@ class BlogComment(models.Model):
         return f"Comment by {self.name} on {self.blog.title}"
     
     
-# -----------------------Home-----
+# -----------------------
 # Home Banner Slider
 class HomeSlider(models.Model):
     title = models.CharField(max_length=200)
     subtitle = models.CharField(max_length=200, blank=True)
     image = models.ImageField(upload_to='slider/')
     button_text = models.CharField(max_length=50, default="Start Your Projects")
-    button_link = models.CharField(max_length=255, blank=True)
+    button_link = models.CharField(max_length=200, default="#")
     created_at = models.DateTimeField(auto_now_add=True)  # track creation time
 
     class Meta:
@@ -358,24 +512,7 @@ class HomeSlider(models.Model):
         
     def __str__(self):
         return self.title
-   
-#Home page 1st 2 cards
-class CenterCard(models.Model):
-    subtitle = models.CharField(max_length=100, default="LATEST DESIGN")
-    title = models.CharField(max_length=200)
-    button_text = models.CharField(max_length=100, default="Shop Now")
-    button_link = models.URLField(default="#")
-    image = models.ImageField(upload_to='center_cards/')
-    order = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        ordering = ['order']
-
-    def __str__(self):
-        return self.title
-   
-   
- 
+    
     
 # Contact Page banner   
 class ContactUsBanner(models.Model):
@@ -588,6 +725,7 @@ class ChooseUsItem(models.Model):
         except Exception as e:
             print(f"Error resizing icon image: {e}")
 
+
 from urllib.parse import urlparse, parse_qs
 class FAQSection(models.Model):
     # Left side video and skills
@@ -619,7 +757,6 @@ class FAQSection(models.Model):
     stat_title = models.CharField(max_length=100, default="Smooth Automation")
     stat_count = models.PositiveIntegerField(default=428)
     stat_description = models.CharField(max_length=150, default="Printing Specialist")
-
     # Right side section title and subtitle
     section_subtitle = models.CharField(
         max_length=255,
@@ -633,10 +770,8 @@ class FAQSection(models.Model):
         blank=True,
         null=True
     )
-
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-
         if self.video_thumbnail:
             try:
                 img = Image.open(self.video_thumbnail.path)
@@ -645,7 +780,6 @@ class FAQSection(models.Model):
                 img.save(self.video_thumbnail.path)
             except Exception as e:
                 print(f"Error resizing image: {e}")
-
     def get_embed_video_url(self):
         """Return embed-friendly video URL for YouTube"""
         try:
@@ -660,23 +794,18 @@ class FAQSection(models.Model):
         except:
             pass
         return ''
-
     def __str__(self):
         return f"FAQ Section - {self.section_title or 'Untitled'}"
-    
-
-
 class FAQItem(models.Model):
     faq_section = models.ForeignKey(
-        FAQSection, 
-        related_name='faq_items', 
+        FAQSection,
+        related_name='faq_items',
         on_delete=models.CASCADE
     )
     question = models.CharField(max_length=255)
     answer = models.TextField()
     # Track whether FAQ is open by default
     is_expanded = models.BooleanField(default=False)
-
     def __str__(self):
         return self.question
     
@@ -690,8 +819,7 @@ class PracticeArea(models.Model):
     def __str__(self):
         return self.heading
     
-    
-    
+
 # Our Faq
 class OurfaqBanner(models.Model):
     title = models.CharField(max_length=255)
@@ -756,3 +884,347 @@ class FAQ(models.Model):
                     img.save(img_path)
             except Exception as e:
                 print(f"Error resizing image: {e}")
+                
+                
+#Home page 1st 2 cards
+class CenterCard(models.Model):
+    subtitle = models.CharField(max_length=100, default="LATEST DESIGN")
+    title = models.CharField(max_length=200)
+    button_text = models.CharField(max_length=100, default="Shop Now")
+    button_link = models.URLField(default="#")
+    image = models.ImageField(upload_to='center_cards/')
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.title
+    
+
+
+
+class PartyRegSupplier(models.Model):
+    prs_slid = models.CharField(max_length=15, primary_key=True)
+    prs_name = models.CharField(max_length=50)
+    prs_address = models.CharField(max_length=50)
+    prs_person = models.CharField(max_length=50)
+    prs_mobile = models.CharField(max_length=50)
+    prs_phone = models.CharField(max_length=50, null=True, blank=True)
+    prs_email = models.CharField(max_length=50, null=True, blank=True)
+    prs_website = models.CharField(max_length=50, null=True, blank=True)
+    prs_complain_number = models.CharField(max_length=20, null=True, blank=True)
+
+    prs_reg_date = models.CharField(max_length=10, null=True, blank=True)
+    loginidno = models.CharField(max_length=25, null=True, blank=True)
+    open_sdue = models.CharField(max_length=20, null=True, blank=True)
+
+    def __str__(self):
+        return self.prs_name
+    
+
+
+
+class MaterialType(models.Model):
+    TypeName = models.CharField(max_length=255)
+    adminid = models.IntegerField(null=True, blank=True)  # nullable integer field
+
+    def __str__(self):
+        return self.TypeName
+    
+
+
+class Measurement(models.Model):
+    name = models.CharField(max_length=50, unique=True)  # e.g., Weight, Length, Volume, Count
+    product_id = models.ForeignKey(Product, on_delete=models.SET_NULL, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Unit(models.Model):
+    name = models.CharField(max_length=50, unique=True)  # e.g., Kilogram, Meter, Litre
+    symbol = models.CharField(max_length=10, unique=True)  # e.g., kg, m, L, pcs
+
+    def __str__(self):
+        return f"{self.name} ({self.symbol})"
+    
+    
+
+class MaterialRegistration(models.Model):
+    mr_supplier = models.ForeignKey(
+        'PartyRegSupplier', 
+        null=True, 
+        on_delete=models.CASCADE, 
+        db_column='mr_supplier_id'
+    )
+    mr_type = models.ForeignKey(
+        'MaterialType', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        db_column='mr_type'
+    )
+    mr_quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1)
+    unit = models.ForeignKey(Unit, on_delete=models.PROTECT)
+    mr_material_name = models.CharField(max_length=255)
+    mr_material_details = models.TextField(null=True, blank=True)
+    mr_buy_price = models.DecimalField(max_digits=10, decimal_places=2)
+    mr_sell_price = models.DecimalField(max_digits=10, decimal_places=2)
+    adminid = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return self.mr_material_name
+
+
+class MaterialInventoryDetail(models.Model):
+    mid_party = models.ForeignKey('PartyRegSupplier', on_delete=models.CASCADE, related_name='inventory_details')  # Supplier or customer
+    mid_entry_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='entered_inventory')
+    mid_material = models.ForeignKey('MaterialRegistration', on_delete=models.CASCADE, related_name='inventory_entries')
+    mid_invoice_id = models.CharField(max_length=100)
+    
+    order_id = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True)
+
+    mid_buy_quentity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    mid_buy_prices = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    mid_buy_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    mid_sell_quentity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    mid_sell_prices = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    mid_sell_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    mid_exp_date = models.DateField(null=True, blank=True)
+    mid_entry_date = models.DateTimeField(default=timezone.now,null=True)
+
+    mid_deal_type = models.CharField(max_length=10, choices=[('buy', 'Buy'), ('sell', 'Sell')])
+
+    adminid = models.IntegerField(null=True, blank=True)  # if using custom tracking dsfsd
+
+    due_discount = models.DecimalField(max_digits=10,  decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"Inventory #{self.id} - Material: {self.mid_material.mr_material_name}"
+    
+
+
+class InvWarehouse(models.Model):
+    invw_id = models.AutoField(primary_key=True)
+    invw_name = models.CharField(max_length=255)
+    invw_code = models.CharField(max_length=100, unique=True)
+    invw_address = models.TextField(blank=True, null=True)
+    invw_city = models.CharField(max_length=100, blank=True, null=True)
+    invw_state = models.CharField(max_length=100, blank=True, null=True)
+    invw_postal_code = models.CharField(max_length=20, blank=True, null=True)
+    invw_country = models.CharField(max_length=100, blank=True, null=True)
+
+    invw_contact_person = models.CharField(max_length=100, blank=True, null=True)
+    invw_contact_phone = models.CharField(max_length=20, blank=True, null=True)
+    invw_contact_email = models.EmailField(max_length=255, blank=True, null=True)
+
+    invw_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_warehouses')
+    invw_status = models.IntegerField(choices=[(0, 'Inactive'), (1, 'Active')], default=1)
+
+    invw_created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='warehouses_created')
+    invw_updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='warehouses_updated')
+
+    invw_created_at = models.DateTimeField(auto_now_add=True)
+    invw_updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'inv_warehouse'
+
+    def __str__(self):
+        return f"{self.invw_name} ({self.invw_code})"
+    
+    
+class CustomerInfo(models.Model):
+    CustomerID = models.CharField(max_length=50)
+    CustomerName = models.CharField(max_length=50)
+    CustomerAddress = models.CharField(max_length=250)
+    CustomerEmail = models.CharField(max_length=25,null=True)
+    CustomerContact = models.CharField(max_length=25)
+    RegDate = models.DateField()
+    dabite = models.CharField(max_length=100,null=True)
+    cradit = models.CharField(max_length=100,null=True)
+    adminid = models.IntegerField(null=True)
+    type = models.CharField(max_length=25,null=True)
+    open_due = models.CharField(max_length=100,null=True)  # Assuming it's varchar like the others
+
+    def __str__(self):
+        return self.CustomerName
+
+    class Meta:
+        db_table = 'customer_info'
+        
+        
+        
+        
+class HomeCTA(models.Model):
+    sub_title = models.CharField(max_length=255, default='BEST SELLER PRODUCTS')
+    title = models.CharField(max_length=255, default='Discover Our Best Selling Product You Need')
+    button_text = models.CharField(max_length=100, default='Make an Order')
+    button_link = models.CharField(max_length=100,default='#')
+    image = models.ImageField(upload_to='home/cta/', blank=True, null=True)
+
+    def __str__(self):
+        return "Home CTA Section"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.image:
+            image_path = self.image.path
+            img = Image.open(image_path)
+
+            # Resize to (1486 x 539) using high-quality LANCZOS filter
+            output_size = (692, 500)
+            img = img.convert("RGB")
+            img = img.resize(output_size, Image.LANCZOS)
+            img.save(image_path)    
+    
+ 
+class PricingCard(models.Model):
+    sub_title = models.CharField(max_length=255, default="GET 30% OFF TODAY")
+    title = models.CharField(max_length=255, default="Nice Colorful Bag Printing")
+    price_text = models.CharField(max_length=255, default="Start selling")
+    price_value = models.CharField(max_length=100, default="$235.00")
+    button_text = models.CharField(max_length=50, default="Shop Now")
+    button_link = models.CharField(max_length=255, default="#")  # using CharField instead of URLField
+    image = models.ImageField(upload_to='pricing_card/')
+
+    def save(self, *args, **kwargs):
+        # Resize image to 556x540 using LANCZOS
+        if self.image:
+            img = Image.open(self.image)
+            img = img.convert("RGB")
+            img = img.resize((570, 448), Image.LANCZOS)
+
+            buffer = BytesIO()
+            img.save(fp=buffer, format='JPEG')
+            self.image.save(self.image.name, ContentFile(buffer.getvalue()), save=False)
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title 
+    
+    
+#------Blog Banner---      
+class BlogBanner(models.Model):
+    title = models.CharField(max_length=255)
+    subtitle = models.TextField(blank=True, null=True)
+    background_image = models.ImageField(upload_to='Blog_banner/')
+    def __str__(self):
+        return self.title
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # First save to get the file on disk
+        if self.background_image:
+            image_path = self.background_image.path
+            with Image.open(image_path) as img:
+                # Force resize to 1920x570 (may distort if original ratio differs)
+                resized_img = img.resize((1920, 570), Image.LANCZOS)
+                resized_img.save(image_path, quality=90, optimize=True)
+                
+#----Blog model---
+# models.py
+
+from django.utils.text import slugify
+from ckeditor.fields import RichTextField
+from django.utils import timezone
+
+class BlogPost(models.Model):
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True, blank=True)
+    description = RichTextField(
+    max_length=5000,
+    blank=True,
+    help_text="Blog content with rich text editor"
+)
+
+    image = models.ImageField(upload_to='blog/', help_text="Blog thumbnail image")
+    category = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True, 
+                               related_name='blog_posts', help_text="Select product category")
+    author = models.CharField(max_length=100, default="Admin")
+    date = models.DateField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+        verbose_name = "Blog Post"
+        verbose_name_plural = "Blog Posts"
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        # Generate slug if not provided
+        if not self.slug:
+            self.slug = self.generate_unique_slug()
+        
+        # Resize image
+        if self.image:
+            img = Image.open(self.image)
+            img = img.convert('RGB')
+            img = img.resize((730, 410), Image.LANCZOS)
+            buffer = BytesIO()
+            img.save(fp=buffer, format='JPEG', quality=85)
+            self.image.save(self.image.name, ContentFile(buffer.getvalue()), save=False)
+        
+        super().save(*args, **kwargs)
+
+    def generate_unique_slug(self):
+        base_slug = slugify(self.title)
+        slug = base_slug
+        index = 1
+        
+        while BlogPost.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+            slug = f"{base_slug}-{index}"
+            index += 1
+        return slug
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('blog_details', kwargs={'slug': self.slug})
+
+    def get_category_name(self):
+        return self.category.name if self.category else "General"
+
+    def get_short_description(self):
+        """Return first 150 characters of description without HTML tags"""
+        from django.utils.html import strip_tags
+        clean_text = strip_tags(self.description)
+        return clean_text[:150] + "..." if len(clean_text) > 120 else clean_text      
+       
+       
+#Blogpost Coments
+class BlogComment(models.Model):
+    blog = models.ForeignKey('BlogPost', on_delete=models.CASCADE, related_name='comments')
+    name = models.CharField(max_length=100)
+    email = models.EmailField(blank=True, null=True)
+    number = models.CharField(max_length=20, blank=True, null=True, help_text="Optional phone number")
+    website = models.URLField(blank=True, null=True)
+    message = models.TextField(default="No message",max_length=5000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Comment by {self.name} on {self.blog}'
+       
+       
+       
+              
+                
+class ProductBanner(models.Model):
+    title = models.CharField(max_length=255)
+    subtitle = models.TextField(blank=True, null=True)
+    background_image = models.ImageField(upload_to='contact_banner/')
+    def __str__(self):
+        return self.title
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # First save to get the file on disk
+        if self.background_image:
+            image_path = self.background_image.path
+            with Image.open(image_path) as img:
+                # Force resize to 1920x570 (may distort if original ratio differs)
+                resized_img = img.resize((1920, 570), Image.LANCZOS)
+                resized_img.save(image_path, quality=90, optimize=True)

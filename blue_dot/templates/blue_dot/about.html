@@ -211,9 +211,9 @@
                                         <div class="tp-about-2-skill fix pb-20">
                                             <label class="tp-about-2-label">{{ faq_section.skill1_name }}</label>
                                             <div class="progress tp-about-2-progress two">
-                                                <div class="progress-bar tp-about-2-progress-bar two wow slideInLeft" 
-                                                     data-wow-duration="1s" data-wow-delay=".8s" role="progressbar" 
-                                                     aria-label="Example with label" style="width: {{ faq_section.skill1_progress }}%; visibility: visible; animation-duration: 1s; animation-delay: 0.8s; animation-name: slideInLeft;" 
+                                                <div class="progress-bar tp-about-2-progress-bar two wow slideInLeft"
+                                                     data-wow-duration="1s" data-wow-delay=".8s" role="progressbar"
+                                                     aria-label="Example with label" style="width: {{ faq_section.skill1_progress }}%; visibility: visible; animation-duration: 1s; animation-delay: 0.8s; animation-name: slideInLeft;"
                                                      aria-valuenow="{{ faq_section.skill1_progress }}" aria-valuemin="0" aria-valuemax="100">
                                                     <span class="progresscounter two">{{ faq_section.skill1_progress }}%</span>
                                                 </div>
@@ -222,9 +222,9 @@
                                         <div class="tp-about-2-skill fix pb-20">
                                             <label class="tp-about-2-label">{{ faq_section.skill2_name }}</label>
                                             <div class="progress tp-about-2-progress two">
-                                                <div class="progress-bar tp-about-2-progress-bar two wow slideInLeft" 
-                                                     data-wow-duration="1s" data-wow-delay=".8s" role="progressbar" 
-                                                     aria-label="Example with label" style="width: {{ faq_section.skill2_progress }}%; visibility: visible; animation-duration: 1s; animation-delay: 0.8s; animation-name: slideInLeft;" 
+                                                <div class="progress-bar tp-about-2-progress-bar two wow slideInLeft"
+                                                     data-wow-duration="1s" data-wow-delay=".8s" role="progressbar"
+                                                     aria-label="Example with label" style="width: {{ faq_section.skill2_progress }}%; visibility: visible; animation-duration: 1s; animation-delay: 0.8s; animation-name: slideInLeft;"
                                                      aria-valuenow="{{ faq_section.skill2_progress }}" aria-valuemin="0" aria-valuemax="100">
                                                     <span class="progresscounter two">{{ faq_section.skill2_progress }}%</span>
                                                 </div>
@@ -263,17 +263,17 @@
                                         {% for faq_item in faq_items %}
                                             <div class="tp-faq-2-accordion-item accordion-item mb-10">
                                                 <h2 class="accordion-header tp-faq-2-accordion-header">
-                                                    <button class="tp-faq-2-accordion-title accordion-button {% if not faq_item.is_expanded %}collapsed{% endif %}" 
-                                                            type="button" data-bs-toggle="collapse" 
-                                                            data-bs-target="#flush-collapse{{ forloop.counter }}" 
-                                                            aria-expanded="{% if faq_item.is_expanded %}true{% else %}false{% endif %}" 
+                                                    <button class="tp-faq-2-accordion-title accordion-button {% if not faq_item.is_expanded %}collapsed{% endif %}"
+                                                            type="button" data-bs-toggle="collapse"
+                                                            data-bs-target="#flush-collapse{{ forloop.counter }}"
+                                                            aria-expanded="{% if faq_item.is_expanded %}true{% else %}false{% endif %}"
                                                             aria-controls="flush-collapse{{ forloop.counter }}">
                                                         {{ faq_item.question }}
                                                         <span class="tp-faq-2-accordion-btn"></span>
                                                     </button>
                                                 </h2>
-                                                <div id="flush-collapse{{ forloop.counter }}" 
-                                                     class="accordion-collapse collapse {% if faq_item.is_expanded %}show{% endif %}" 
+                                                <div id="flush-collapse{{ forloop.counter }}"
+                                                     class="accordion-collapse collapse {% if faq_item.is_expanded %}show{% endif %}"
                                                      data-bs-parent="#accordionFlushExample">
                                                     <div class="tp-faq-2-accordion-pera accordion-body">
                                                         {{ faq_item.answer|linebreaks }}
@@ -310,6 +310,10 @@
                 <!-- faq area end -->
 
 
+
+
+
+              
                 {% endblock content %}
 
                 {% block custom_js %}{% endblock custom_js %}

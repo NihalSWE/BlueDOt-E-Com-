@@ -1,0 +1,215 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block custom_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .card {
+        border: 1px solid #e3e6f0;
+        border-radius: 0.35rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+
+    .card-header {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+        padding: 0.75rem 1.25rem;
+        color: #4e73df;
+        font-weight: bold;
+        border-radius: 0.35rem 0.35rem 0 0;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .btn-success {
+        background-color: #1cc88a;
+        border-color: #1cc88a;
+    }
+
+    .btn-success:hover {
+        background-color: #17a673;
+        border-color: #17a673;
+    }
+
+    .modal-content {
+        border: none;
+        border-radius: 0.35rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+
+    .modal-header {
+        background-color: #4e73df;
+        color: white;
+        border-bottom: none;
+        border-radius: 0.35rem 0.35rem 0 0;
+        padding: 1rem 1.5rem;
+    }
+
+    .modal-title {
+        font-weight: bold;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #e3e6f0;
+        padding: 1rem 1.5rem;
+        justify-content: flex-end;
+    }
+
+    .form-label {
+        font-weight: bold;
+        color: #2e2e2e;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+
+    .text-danger.small {
+        font-size: 0.8rem;
+    }
+
+    .img-thumbnail {
+        padding: 0.25rem;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        max-width: 100%;
+        height: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Call To Action Section</h1>
+        <button type="button" class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#ctaModal">
+            <i class="fas fa-plus fa-sm text-white-50"></i> {% if cta %}Update CTA{% else %}Create CTA{% endif %}
+        </button>
+    </div>
+
+    {% if cta %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Call To Action Preview</h6>
+        </div>
+        <div class="card-body text-center">
+            {% if cta.sub_title %}
+<h5 class="text-muted">{{ cta.sub_title }}</h5>
+{% endif %}
+{% if cta.title %}
+<h3 class="font-weight-bold text-dark">{{ cta.title }}</h3>
+{% endif %}
+{% if cta.button_text and cta.button_link %}
+<a href="{{ cta.button_link }}" class="btn btn-primary btn-sm mt-3 shadow-sm">{{ cta.button_text }}</a>
+{% endif %}
+{% if cta.image %}
+<div class="mt-3">
+    <img src="{{ cta.image.url }}" class="img-fluid rounded shadow-sm" style="max-height: 150px;">
+</div>
+{% endif %}
+
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        No Call To Action content has been created yet. Click the button above to add one.
+    </div>
+    {% endif %}
+
+    <div class="modal fade" id="ctaModal" tabindex="-1" aria-labelledby="ctaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title font-weight-bold" id="ctaModalLabel">
+                            {% if cta %}Update{% else %}Create{% endif %} Call To Action
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+<!-- Sub Title -->
+<div class="col-md-6 mb-3">
+    <label class="form-label" for="{{ form.sub_title.id_for_label }}">Sub Title</label>
+    {{ form.sub_title }}
+    {% for error in form.sub_title.errors %}
+        <div class="text-danger small">{{ error }}</div>
+    {% endfor %}
+</div>
+
+<!-- Title -->
+<div class="col-md-6 mb-3">
+    <label class="form-label" for="{{ form.title.id_for_label }}">Title</label>
+    {{ form.title }}
+    {% for error in form.title.errors %}
+        <div class="text-danger small">{{ error }}</div>
+    {% endfor %}
+</div>
+
+<!-- Button Text -->
+<div class="col-md-6 mb-3">
+    <label class="form-label" for="{{ form.button_text.id_for_label }}">Button Text</label>
+    {{ form.button_text }}
+    {% for error in form.button_text.errors %}
+        <div class="text-danger small">{{ error }}</div>
+    {% endfor %}
+</div>
+
+<!-- Button Link -->
+<div class="col-md-6 mb-3">
+    <label class="form-label" for="{{ form.button_link.id_for_label }}">Button Link</label>
+    {{ form.button_link }}
+    {% for error in form.button_link.errors %}
+        <div class="text-danger small">{{ error }}</div>
+    {% endfor %}
+</div>
+
+<!-- Image Upload -->
+<div class="col-md-12 mb-3">
+    <label class="form-label" for="{{ form.image.id_for_label }}">Image (692x500)</label>
+    {{ form.image }}
+    {% if cta and cta.image %}
+    <div class="mt-2">
+        <img src="{{ cta.image.url }}" class="img-thumbnail shadow-sm" style="max-width: 300px;">
+    </div>
+    {% endif %}
+    {% for error in form.image.errors %}
+        <div class="text-danger small">{{ error }}</div>
+    {% endfor %}
+</div>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary shadow-sm"><i class="fas fa-save fa-sm text-white-50"></i> Save Changes</button>
+                        <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal"><i class="fas fa-times fa-sm text-white-50"></i> Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" integrity="sha512-1ycn6IcaQQmQa7KBw0YJ/yZ4JuypcGIEnECPPm+fHfhJYvhEo2PmOwtzXLDrauA6jXXl2mUJ2GN7hcFXm9CL8mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% endblock %}

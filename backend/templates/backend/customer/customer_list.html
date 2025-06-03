@@ -1,0 +1,314 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Custom CSS -->
+<style>
+  .customer-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
+    border: none;
+  }
+  .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eaeaea;
+    border-radius: 10px 10px 0 0 !important;
+  }
+  .table th {
+    background-color: #f1f5fd;
+    color: #3b3b3b;
+    font-weight: 600;
+    border-top: 1px solid #eaeaea;
+  }
+  .table td {
+    vertical-align: middle;
+  }
+  .badge-retail {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+  .badge-wholesale {
+    background-color: #e8f5e9;
+    color: #388e3c;
+  }
+  .action-btns .btn {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.875rem;
+    margin-right: 5px;
+  }
+  .dataTables_wrapper .dataTables_filter input {
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+  }
+  .dataTables_length select {
+    border-radius: 5px;
+    border: 1px solid #ddd;
+  }
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .customer-name-cell {
+    display: flex;
+    align-items: center;
+  }
+</style>
+
+<div class="card customer-card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="card-title mb-0 fw-semibold">
+        <i class="fas fa-users me-2"></i>Customer Management
+      </h5>
+      <small class="text-muted">Manage all your customers in one place</small>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+      <i class="fas fa-plus me-2"></i>Add Customer
+    </button>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table id="customerTable" class="table table-hover" style="width:100%">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Customer</th>
+            <th>Contact Info</th>
+            <th>Address</th>
+            <th>Registered</th>
+            <th>Type</th>
+            <th>Balance</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for customer in customers %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              <div class="customer-name-cell">
+                <div class="avatar">
+                  {{ customer.CustomerName|first|upper }}
+                </div>
+                <div>
+                  <h6 class="mb-0">{{ customer.CustomerName }}</h6>
+                  <small class="text-muted">ID: {{ customer.CustomerID }}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div>
+                <i class="fas fa-phone-alt me-2 text-primary"></i>{{ customer.CustomerContact|default:"-" }}
+              </div>
+              <div class="mt-1">
+                <i class="fas fa-envelope me-2 text-primary"></i>{{ customer.CustomerEmail|default:"-" }}
+              </div>
+            </td>
+            <td>
+              <div class="text-truncate" style="max-width: 200px;" title="{{ customer.CustomerAddress }}">
+                {{ customer.CustomerAddress|default:"-" }}
+              </div>
+            </td>
+            <td>{{ customer.RegDate|date:"M d, Y" }}</td>
+            <td>
+              <span class="badge rounded-pill {% if customer.type == 'retail' %}badge-retail{% else %}badge-wholesale{% endif %}">
+                {{ customer.type|title }}
+              </span>
+            </td>
+            <td>
+              <span class="fw-bold {% if customer.open_due > 0 %}text-danger{% else %}text-success{% endif %}">
+                ${{ customer.open_due|floatformat:2 }}
+              </span>
+            </td>
+            <td class="action-btns">
+              <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editCustomerModal{{ customer.id }}">
+                <i class="fas fa-edit"></i>
+              </button>
+              <form action="{% url 'customer_delete' customer.id %}" method="POST" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this customer?')">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Customer Modal -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form action="{% url 'customer_create' %}" method="POST">
+        {% csrf_token %}
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Add New Customer</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="CustomerID" class="form-label">Customer ID</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light">CUS-</span>
+                <input type="text" id="CustomerID" name="CustomerID" class="form-control" value="{{ next_customer_id|stringformat:'08d' }}" readonly>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="CustomerName" class="form-label">Full Name <span class="text-danger">*</span></label>
+              <input type="text" id="CustomerName" name="CustomerName" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label for="CustomerContact" class="form-label">Phone Number</label>
+              <input type="text" id="CustomerContact" name="CustomerContact" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="CustomerEmail" class="form-label">Email Address</label>
+              <input type="email" id="CustomerEmail" name="CustomerEmail" class="form-control">
+            </div>
+            <div class="col-12">
+              <label for="CustomerAddress" class="form-label">Address</label>
+              <textarea id="CustomerAddress" name="CustomerAddress" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label for="RegDate" class="form-label">Registration Date</label>
+              <input type="date" id="RegDate" name="RegDate" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="type" class="form-label">Customer Type <span class="text-danger">*</span></label>
+              <select id="type" name="type" class="form-select" required>
+                <option value="">Select Type</option>
+                <option value="retail">Retail Customer</option>
+                <option value="wholesale">Wholesale Customer</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="open_due" class="form-label">Opening Balance</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" step="0.01" id="open_due" name="open_due" class="form-control" value="0.00">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Customer Modals -->
+{% for customer in customers %}
+<div class="modal fade" id="editCustomerModal{{ customer.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form action="{% url 'customer_update' customer.id %}" method="POST">
+        {% csrf_token %}
+        <div class="modal-header bg-warning text-white">
+          <h5 class="modal-title"><i class="fas fa-user-edit me-2"></i>Edit Customer</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="CustomerID_{{ customer.id }}" class="form-label">Customer ID</label>
+              <input type="text" id="CustomerID_{{ customer.id }}" name="CustomerID" class="form-control" value="{{ customer.CustomerID }}" readonly>
+            </div>
+            <div class="col-md-6">
+              <label for="CustomerName_{{ customer.id }}" class="form-label">Full Name <span class="text-danger">*</span></label>
+              <input type="text" id="CustomerName_{{ customer.id }}" name="CustomerName" class="form-control" value="{{ customer.CustomerName }}" required>
+            </div>
+            <div class="col-md-6">
+              <label for="CustomerContact_{{ customer.id }}" class="form-label">Phone Number</label>
+              <input type="text" id="CustomerContact_{{ customer.id }}" name="CustomerContact" class="form-control" value="{{ customer.CustomerContact }}">
+            </div>
+            <div class="col-md-6">
+              <label for="CustomerEmail_{{ customer.id }}" class="form-label">Email Address</label>
+              <input type="email" id="CustomerEmail_{{ customer.id }}" name="CustomerEmail" class="form-control" value="{{ customer.CustomerEmail }}">
+            </div>
+            <div class="col-12">
+              <label for="CustomerAddress_{{ customer.id }}" class="form-label">Address</label>
+              <textarea id="CustomerAddress_{{ customer.id }}" name="CustomerAddress" class="form-control" rows="2">{{ customer.CustomerAddress }}</textarea>
+            </div>
+            <div class="col-md-6">
+              <label for="RegDate_{{ customer.id }}" class="form-label">Registration Date</label>
+              <input type="date" id="RegDate_{{ customer.id }}" name="RegDate" class="form-control" value="{{ customer.RegDate|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-6">
+              <label for="type_{{ customer.id }}" class="form-label">Customer Type <span class="text-danger">*</span></label>
+              <select id="type_{{ customer.id }}" name="type" class="form-select" required>
+                <option value="retail" {% if customer.type == 'retail' %}selected{% endif %}>Retail Customer</option>
+                <option value="wholesale" {% if customer.type == 'wholesale' %}selected{% endif %}>Wholesale Customer</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="open_due_{{ customer.id }}" class="form-label">Opening Balance</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" step="0.01" id="open_due_{{ customer.id }}" name="open_due" class="form-control" value="{{ customer.open_due|floatformat:2 }}">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-warning text-white">Update Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<!-- DataTables Configuration -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('#customerTable').DataTable({
+      responsive: true,
+      dom: '<"top"<"row"<"col-md-6"l><"col-md-6"f>>>rt<"bottom"<"row"<"col-md-6"i><"col-md-6"p>>>',
+      pageLength: 10,
+      lengthMenu: [[5, 10, 25, 50, 100], [5, 10, 25, 50, 100]],
+      language: {
+        search: "_INPUT_",
+        searchPlaceholder: "Search customers...",
+        lengthMenu: "Show _MENU_ customers per page",
+        info: "Showing _START_ to _END_ of _TOTAL_ customers",
+        infoEmpty: "No customers found",
+        infoFiltered: "(filtered from _MAX_ total customers)"
+      },
+      initComplete: function() {
+        $('.dataTables_filter input').addClass('form-control');
+        $('.dataTables_length select').addClass('form-select');
+      },
+      columnDefs: [
+        { responsivePriority: 1, targets: 1 }, // Customer name
+        { responsivePriority: 2, targets: 2 }, // Contact info
+        { responsivePriority: 3, targets: -1 }, // Actions
+        { orderable: false, targets: -1 } // Disable sorting on Actions
+      ]
+    });
+  });
+</script>
+{% endblock %}
