@@ -601,7 +601,7 @@ class ContactUsBanner(models.Model):
             image_path = self.background_image.path
             with Image.open(image_path) as img:
                 # Force resize to 1920x570 (may distort if original ratio differs)
-                resized_img = img.resize((1920, 570), Image.LANCZOS)
+                resized_img = img.resize((1920, 300), Image.LANCZOS)
                 resized_img.save(image_path, quality=90, optimize=True)
                 
                 

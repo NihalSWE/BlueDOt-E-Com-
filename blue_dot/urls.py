@@ -28,6 +28,7 @@ urlpatterns = [
     path('faq/',views.faq,name='faq'),
     path('error/',views.error,name='error'),
     
+    
 ]
 
 

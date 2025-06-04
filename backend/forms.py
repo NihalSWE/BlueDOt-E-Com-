@@ -229,13 +229,4 @@ class BlogPostForm(forms.ModelForm):
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         
-class ProductReviewForm(forms.ModelForm):
-    class Meta:
-        model = ProductReview
-        fields = ['name', 'email', 'rating', 'comment']
-        widgets = {
-                'comment': forms.Textarea(attrs={'placeholder': 'Write Your Comment*', 'class': 'form-control'}),
-                'name': forms.TextInput(attrs={'placeholder': 'Your Name*', 'class': 'form-control'}),
-                'email': forms.EmailInput(attrs={'placeholder': 'Your Email*', 'class': 'form-control'}),
-                'rating': forms.RadioSelect(choices=[(i, f"{i} Star{'s' if i > 1 else ''}") for i in range(1, 6)]),
-}
+ 

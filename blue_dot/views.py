@@ -15,12 +15,14 @@ def home(request):
     products = Product.objects.order_by('-created_at')[:8]
     home_cta = HomeCTA.objects.first()  # Get the CTA (assuming one exists)
     pricing_card = PricingCard.objects.first()  # Fetch the PricingCard content
+    category_products = Product.objects.order_by('-created_at')[:4]
     return render(request, 'blue_dot/index.html', {
         'sliders': sliders,
         'center_cards': center_cards,
         'products': products,
         'home_cta':home_cta,
         'pricing_card':pricing_card,
+        'category_products':category_products
     })
     
 
@@ -201,3 +203,7 @@ def faq(request):
 
 def error(request):
     return render(request, 'blue_dot/error.html')
+
+
+
+
