@@ -1,0 +1,328 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block custom_css %}
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/datatables-rowgroup-bs5/rowgroup.bootstrap5.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/maxLength/maxLength.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/select2/select2.css' %}" />
+
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/quill/typography.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/highlight/highlight.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/quill/katex.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/quill/editor.css' %}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+<style>
+    
+    
+    .table thead th {
+        vertical-align: middle;
+        text-align: start;
+    }
+    
+    .quantity-input {
+        width: 80px;
+        display: inline-block;
+    }
+
+    tbody tr td input{
+        height: 20px !important;
+    }
+
+    tbody tr td select{
+        height: 33px;
+        padding: 5px 15px !important;
+    }
+    
+    .selected-items {
+        border: 1px solid #e3e6f0;
+        border-radius: 0.35rem;
+        padding: 1.25rem;
+        background-color: #f8f9fc;
+    }
+    
+    #selectedItemsTable tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+    
+    .remove-btn {
+        color: #e74a3b;
+        cursor: pointer;
+    }
+    
+    .remove-btn:hover {
+        color: #be2617;
+    }
+
+    #selectedItemsTable {
+        width: 100% !important;
+        table-layout: fixed;
+    }
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+    }
+</style>
+    
+{% endblock %}
+
+{% block content %}
+    <div class="row gy-6">
+        
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Create New Order</h6>
+                </div>
+                {% if messages %}
+                    <div>
+                        {% for message in messages %}
+                        <div class="alert 
+                            {% if message.tags == 'error' %}alert-danger
+                            {% elif message.tags == 'success' %}alert-success
+                            {% elif message.tags == 'warning' %}alert-warning
+                            {% else %}alert-info{% endif %}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="card-body">
+                    <h2 class="card-header" style="border-bottom: 1px solid #d5d5d5; margin-bottom: 50px;">Update the Order</h2>
+                    <form id="orderForm" method="POST">
+                        {% csrf_token %}
+                        <div class="row g-6">
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <select id="customer" class="select2 form-select" name="customer" data-allow-clear="true" required>
+                                        <option value="">Select Customer</option>
+                                        {% for customer in customers %}
+                                            <option value="{{ customer.id }}" {% if customer.id == order.customer.id %}selected{% endif %}>
+                                                {{ customer.CustomerName }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="multicol-country">Customer<span style="color: red;">*</span></label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Materials Table -->
+                        <div class="table-responsive mt-4">
+                            <table class="table table-bordered table-hover" id="materialsTable">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th width="2%">#</th>
+                                        <th width="25%">Product</th>
+                                        <th width="15%">Quantity</th>
+                                        <th width="15%">Price</th>
+                                        <th width="15%">Notes</th>
+                                        <th width="10%">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in products %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ product.name }}</td>
+                                        <td>
+                                            <input type="number" min="1" class="form-control quantity-input" 
+                                                data-product="{{ product.id }}"
+                                                data-price="{{ product.base_price }}"
+                                                placeholder="Qty">
+                                        </td>
+                                        <td class="price">${{ product.base_price }}</td>
+                                        <td>
+                                            <textarea class="form-control product-notes" 
+                                                    data-product="{{ product.id }}"
+                                                    placeholder="Product notes..."></textarea>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-primary add-btn" 
+                                                    data-product="{{ product.id }}">
+                                                <i class="fas fa-plus"></i> Add
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Selected Items Table -->
+                        <div class="selected-items mt-4">
+                            <h5 class="mb-3">Selected Products</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered w-100" id="selectedItemsTable">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th width="25%">Product</th>
+                                            <th width="15%">Quantity</th>
+                                            <th width="15%">Price</th>
+                                            <th width="15%">Total</th>
+                                            <th width="15%">Notes</th>
+                                            <th width="10%">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in order_items %}
+                                            {% with total=item.quantity|floatformat:2|floatformat:"2"|floatformat:"2"|floatformat:"2" %}
+                                                <tr data-product="{{ item.product.id }}">
+                                                    <td>{{ item.product.name }}</td>
+                                                    <td>{{ item.quantity }}</td>
+                                                    <td>৳{{ item.product.base_price|floatformat:2 }}</td>
+                                                    <td>
+                                                        {% widthratio item.quantity 1 item.product.base_price as total %}
+                                                        ৳{{ total|floatformat:2 }}
+                                                    </td>
+                                                    <td>{{ item.notes }}</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-danger remove-btn">
+                                                            <span style="color: white; font-size: 20px;"><i class="fa-solid fa-xmark"></i></span>
+                                                        </button>
+                                                    </td>
+                                                    <input type="hidden" name="products[]" value="{{ item.product.id }}">
+                                                    <input type="hidden" name="quantities[]" value="{{ item.quantity }}">
+                                                    <input type="hidden" name="notes[]" value="{{ item.notes }}">
+                                                </tr>
+                                            {% endwith %}
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="3" class="text-right"><strong>Grand Total</strong></td>
+                                            <td id="grandTotal" style="font-weight: 600;">$0.00</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Notes -->
+                        <div class="form-group row mt-4">
+                            <label for="notes" class="col-sm-2 col-form-label">Notes</label>
+                            <div class="col-sm-10">
+                                <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="form-group row mt-4">
+                            <div class="col-sm-10 offset-sm-2">
+                                <button type="submit" class="btn btn-primary">Create Order</button>
+                                <a href="{% url 'order_list' %}" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block custom_js %}
+<script src="https://cdn.ckeditor.com/ckeditor5/35.3.0/classic/ckeditor.js"></script>
+<!-- Vendors JS -->
+<script src="{% static 'assets/vendor/libs/cleave-zen/cleave-zen.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/flatpickr.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/select2/select2.js' %}"></script>
+<script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
+
+<script src="{% static 'assets/vendor/libs/quill/katex.js' %}"></script>
+<script src="{% static 'assets//vendor/libs/highlight/highlight.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/quill/quill.js' %}"></script>
+
+<script src="{% static 'assets/js/form-layouts.js' %}"></script>
+<script src="{% static 'assets/js/forms-editors.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+
+<script>
+$(document).ready(function() {
+    // Initialize Select2 for customer dropdown
+    $('.select2').select2();
+
+    updateGrandTotal();
+
+    // Add material to selected items
+    $('.add-btn').click(function() {
+        const productId = $(this).data('product');
+        const row = $(this).closest('tr');
+        const quantity = row.find('.quantity-input').val();
+        const productName = row.find('td:eq(1)').text();
+        const price = parseFloat(row.find('.price').text().replace('$', ''));
+        const notes = row.find('.product-notes').val(); // Get the product notes
+        
+        if (!quantity || quantity <= 0) {
+            alert('Please enter a valid quantity');
+            return;
+        }
+        
+        // Check if already added
+        if ($(`#selectedItemsTable tr[data-product="${productId}"]`).length > 0) {
+            alert('This product is already added to the order');
+            return;
+        }
+        
+        const total = price * quantity;
+        
+        // Add to selected items table with notes
+        $('#selectedItemsTable tbody').append(`
+            <tr data-product="${productId}">
+                <td>${productName}</td>
+                <td>${quantity}</td>
+                <td>$${price.toFixed(2)}</td>
+                <td>$${total.toFixed(2)}</td>
+                <td>${notes}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-danger remove-btn">
+                        <span style="color: white; font-size: 20px;"><i class="fa-solid fa-xmark"></i></span>
+                    </button>
+                </td>
+                <input type="hidden" name="products[]" value="${productId}">
+                <input type="hidden" name="quantities[]" value="${quantity}">
+                <input type="hidden" name="notes[]" value="${notes}">
+            </tr>
+        `);
+        
+        // Update grand total
+        updateGrandTotal();
+    });
+    
+    // Remove material from selected items
+    $(document).on('click', '.remove-btn', function() {
+        $(this).closest('tr').remove();
+        updateGrandTotal();
+    });
+    
+
+    // Update grand total function to use correct column index
+    function updateGrandTotal() {
+        let grandTotal = 0;
+        $('#selectedItemsTable tbody tr').each(function() {
+            const totalText = $(this).find('td:eq(3)').text().replace(/[^\d.-]/g, ''); // remove non-numeric characters
+            const total = parseFloat(totalText) || 0;
+            grandTotal += total;
+        });
+        $('#grandTotal').text('৳' + grandTotal.toFixed(2));
+    }
+    
+    // Form submission
+    $('#orderForm').submit(function(e) {
+        if ($('#selectedItemsTable tbody tr').length === 0) {
+            e.preventDefault();
+            alert('Please add at least one material to the order');
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -388,7 +388,6 @@
     }
 
 
-
   </style>
 {% endblock custom_css %}
 
@@ -448,12 +447,12 @@
                     </div>
                     <div class="thumbnail-gallery horizontal-gallery d-flex" style="gap: 60px;;">
                         {% for image in product.images.all %}
-    <img src="{{ image.image.url }}" 
-         alt="Extra Image"
-         class="gallery-thumb switch-image"
-         data-src="{{ image.image.url }}"
-         style="width: 120px; height: 150px; object-fit: cover; border: 1px solid #ddd;">
-{% endfor %}
+                            <img src="{{ image.image.url }}" 
+                                alt="Extra Image"
+                                class="gallery-thumb switch-image"
+                                data-src="{{ image.image.url }}"
+                                style="width: 120px; height: 150px; object-fit: cover; border: 1px solid #ddd;">
+                        {% endfor %}
 
                     </div>
                 </div>
@@ -474,29 +473,36 @@
                         </div>
                     </div>
                     <div class="product__details-price wow fadeInUp">
-                        <span class="product__details-ammount new-ammount">{{ product.base_price }}</span>
+                        <span class="product__details-ammount new-ammount">{% if product.final_price < product.base_price %}
+                          <span style="text-decoration: line-through; color: #999;">৳ {{ product.base_price }}</span>
+                          <span style="color: #E60000; font-weight: bold;">৳ {{ product.final_price }}</span>
+                      {% else %}
+                          ৳ {{ product.base_price }}
+                      {% endif %}
+</span>
                     </div>
                     <div class="product__details-paragraph wow fadeInUp">
                         <p><td>{{ product.description|slice:":160" }}{% if product.description|length > 160 %}...{% endif %}</td></p>
                     </div>
                     <div class="product__details-content mb-30 wow fadeInUp">
                     </div>
-                    <div class="product__details-button-item d-flex mb-35">
+                    <form method="POST" action="{% url 'add_to_cart' slug=product.slug %}">
+                      {% csrf_token %}
+                      <div class="product__details-button-item d-flex mb-35">
                         <div class="product__details-quantity wow fadeInUp">
-                            <div class="product__details-quantitys p-relative z-index-11">
-                                <input class="tp-cart-input" type="text" value="1">
-                                <span class="tp-cart-minus">
-                                    <i class="fa-solid fa-chevron-up"></i>
-                                </span>
-                                <span class="tp-cart-plus">
-                                    <i class="fa-solid fa-chevron-down"></i>
-                                </span>
-                            </div>
+                          <div class="product__details-quantitys p-relative z-index-11">
+                            <input class="tp-cart-input" type="number" name="quantity" id="productQty" value="1" min="1">
+                            
+                          </div>
                         </div>
                         <div class="product__details-btn ml-15">
-                            <a class="tp-btn" href="{% url 'cart' %}"><span>Add to Cart</span></a>
+                          <button type="submit" class="tp-btn" >
+                            <span>Add to Cart</span>
+                          </button>
                         </div>
-                    </div>
+                      </div>
+                    </form>
+                    
                     <div class="product__details-catagory wow fadeInUp">
                         <h5><span>Category:</span> {{ product.category }}</h5>
                     </div>
@@ -625,12 +631,14 @@
       });
     });
   </script>
-  
+
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
       const thumbnails = document.querySelectorAll('.switch-image');
       const mainImage = document.getElementById('mainProductImage');
-  
+
       thumbnails.forEach(thumb => {
         thumb.addEventListener('click', function () {
           const newSrc = this.getAttribute('data-src');

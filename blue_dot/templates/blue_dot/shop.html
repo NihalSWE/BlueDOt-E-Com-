@@ -413,22 +413,6 @@
                                  <a href="#">{{ category.name }}</a>
                               </div>
                            {% endfor %}
-                            
-                            {% comment %} <div class="tp-shop-sidebar-category-item">
-                                <a href="shop-details.html">Kids T-Shirt</a>
-                            </div>
-                            <div class="tp-shop-sidebar-category-item">
-                                <a href="shop-details.html">Long Sleeves</a>
-                            </div>
-                            <div class="tp-shop-sidebar-category-item">
-                                <a href="shop-details.html">Sweater</a>
-                            </div>
-                            <div class="tp-shop-sidebar-category-item">
-                                <a href="shop-details.html">Product Design</a>
-                            </div>
-                            <div class="tp-shop-sidebar-category-item">
-                                <a href="shop-details.html">Flyer Design </a>
-                            </div> {% endcomment %}
                         </div>
                     </div>
                     <div class="tp-shop-sidebar-price mb-30 wow fadeInUp">
@@ -471,16 +455,6 @@
                               {% endfor %}
                         </div>
                     </div>
-                    <!--Tags-->
-                    {% comment %} <div class="tp-shop-sidebar-tag tagcloud wow fadeInUp">
-                        <h4 class="tp-shop-sidebar-title mb-25">Tag</h4>
-                        <a href="shop-details.html">Design</a>
-                        <a href="shop-details.html">Content</a>
-                        <a href="shop-details.html">Development</a>
-                        <a href="shop-details.html">Ui/Ux</a>
-                        <a href="shop-details.html">Tech</a>
-                        <a href="shop-details.html">Innovation</a>
-                    </div> {% endcomment %}
                     <img src="{{ recent_product.thumbnail.url }}" alt="{{ recent_product.name }}">
                 </div>
             </div>
@@ -519,11 +493,14 @@
                            <div class="product_wrapper two mb-30">
                                  <div class="product__item p-relative">
                                     <div class="product__top-brand d-flex justify-content-between mb-15">
-                                          {% comment %} <div class="product__top-name">
-                                             <span>Mug</span>
-                                          </div> {% endcomment %}
                                           <div class="product__top-price">
-                                             <a href="cart.html">৳ {{ product.base_price }}</a>
+                                             <a href="cart.html">{% if product.final_price < product.base_price %}
+                                              <span style="text-decoration: line-through; color: #999;">৳ {{ product.base_price }}</span>
+                                              <span style="color: #E60000; font-weight: bold;">৳ {{ product.final_price }}</span>
+                                          {% else %}
+                                              ৳ {{ product.base_price }}
+                                          {% endif %}
+</a>
                                           </div>
                                     </div>
                                     <div class="product__thumb w-img p-relative fix mb-10">

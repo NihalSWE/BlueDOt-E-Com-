@@ -51,6 +51,7 @@ urlpatterns = [
     path('product-create/',views.product_create,name='product_create'),
     path('category-update/<int:pk>/',views.update_category,name='update_category'),
     path('product_banner',views.product_banner,name='product_banner'),
+    path('product_review',views.product_review,name='product_review'),
     # Products urls
     
     # Brands urls
@@ -63,15 +64,16 @@ urlpatterns = [
     
     # Order urls
     path('order_list',views.order_list,name='order_list'),
-    path('create-order',views.create_order,name='create_order'),
+    path('initial-orders',views.initial_orders,name='initial_orders'),
+    path('initial-order-create',views.initial_order_create,name='initial_order_create'),
+    path('initial-order-update/<int:id>/',views.initial_order_update,name='initial_order_update'),
+    path('approve-order/<int:id>',views.approve_order,name='approve_order'),
     # Order urls
     
     
     path('product_list/',views.product_list,name='product_list'),
     path('add_product/',views.add_product,name='add_product'),
     path('category_list',views.category_list,name='category_list'),
-    path('product_review',views.product_review,name='product_review'),
-    
     
     path('order_detail',views.order_detail,name='order_detail'),
     path('customer_list',views.customer_list,name='customer_list'),
@@ -147,7 +149,19 @@ path('material-purchases/', views.material_purchase_list, name='material_purchas
     path('pricing_card',views.pricing_card,name='pricing_card'),
     
     
-    # Blog urls
+    
+    path('discount-categories/', views.discount_category_list, name='discount_category_list'),
+    path('discount-categories/create/', views.discount_category_create, name='discount_category_create'),
+    path('discount-categories/update/<int:pk>/', views.discount_category_update, name='discount_category_update'),
+    path('discount-categories/delete/<int:pk>/', views.discount_category_delete, name='discount_category_delete'),
+    # Discount URLs
+    path('discounts/', views.discount_list, name='discount_list'),
+    path('discounts/create/', views.discount_create, name='discount_create'),
+    path('discounts/update/<int:pk>/', views.discount_update, name='discount_update'),
+    path('discounts/delete/<int:pk>/', views.discount_delete, name='discount_delete'),
+    
+    
+     # Blog urls
     path('blog_banner/', views.blog_banner, name='blog_banner'),
     path('blog_post/', views.blog_post, name='blog_post'),
     path('blog_post/create/', views.create_or_update_post, name='blog_create'),
@@ -158,20 +172,11 @@ path('material-purchases/', views.material_purchase_list, name='material_purchas
     
     path('blog_comments',views.blog_comments,name='blog_comments'),
     
-    
     # Blog urls
+
     
-    
-    #discount
-    path('discount-categories/', views.discount_category_list, name='discount_category_list'),
-    path('discount-categories/create/', views.discount_category_create, name='discount_category_create'),
-    path('discount-categories/update/<int:pk>/', views.discount_category_update, name='discount_category_update'),
-    path('discount-categories/delete/<int:pk>/', views.discount_category_delete, name='discount_category_delete'),
-    # Discount URLs
-    path('discounts/', views.discount_list, name='discount_list'),
-    path('discounts/create/', views.discount_create, name='discount_create'),
-    path('discounts/update/<int:pk>/', views.discount_update, name='discount_update'),
-    path('discounts/delete/<int:pk>/', views.discount_delete, name='discount_delete'),
-    #discount
+    #cart
+    path('cart_banner',views.cart_banner,name="cart_banner"),
+    #cart
     
 ]

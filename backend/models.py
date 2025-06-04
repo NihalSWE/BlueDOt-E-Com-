@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.core.files.storage import default_storage
 from io import BytesIO
 from django.core.files.base import ContentFile
+from decimal import Decimal
 
 
 
@@ -258,25 +259,63 @@ class Product(models.Model):
             start_date__lte=timezone.now(),
             end_date__gte=timezone.now()
         ).first()
+        
+    @property
+    def best_active_discount(self):
+        now = timezone.now()
+        # Filter discounts linked to this product with active category and status
+        active_discounts = self.discounts.filter(
+            status=1,
+            category__status=1,
+            category__start_date__lte=now,
+            category__end_date__gte=now
+        )
+        if not active_discounts.exists():
+            return None
+        
+        # Find the discount with max monetary value for this product
+        best_discount = None
+        max_discount_amount = Decimal('0')
+        for discount in active_discounts:
+            if discount.discount_type == 'flat':
+                amount = discount.discount_value
+            elif discount.discount_type == 'percent':
+                amount = (discount.discount_value / 100) * self.base_price
+            else:
+                amount = Decimal('0')
+
+            if amount > max_discount_amount:
+                max_discount_amount = amount
+                best_discount = discount
+
+        return best_discount
+
     @property
     def final_price(self):
-        """
-        Calculate final price after discount.
-        """
+        # Priority 1: apply best active discount from Discount model if any
+        best_discount = self.best_active_discount
+        if best_discount:
+            if best_discount.discount_type == 'flat':
+                return max(self.base_price - best_discount.discount_value, 0)
+            elif best_discount.discount_type == 'percent':
+                discount_amount = (best_discount.discount_value / 100) * self.base_price
+                return max(self.base_price - discount_amount, 0)
+
+        # Priority 2: fallback to product-level discount
         if self.discount_type == 'flat' and self.discount_value:
             return max(self.base_price - self.discount_value, 0)
         elif self.discount_type == 'percent' and self.discount_value:
             discount_amount = (self.discount_value / 100) * self.base_price
             return max(self.base_price - discount_amount, 0)
-        return self.base_price
+    
     def __str__(self):
         return self.name
-    def __str__(self):
-        return self.name
+    
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = self.generate_unique_slug(Product)
         super().save(*args, **kwargs)
+        
     def generate_unique_slug(self, model_class, slug_field_name='slug'):
         from django.utils.text import slugify
         base_slug = slugify(self.name)
@@ -287,6 +326,11 @@ class Product(models.Model):
             slug = f"{base_slug}-{index}"
             index += 1
         return slug
+    
+    
+    
+    
+    
 class DiscountCategory(models.Model):
     STATUS_CHOICES = (
         (1, 'Active'),
@@ -298,6 +342,12 @@ class DiscountCategory(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=1)  # 1 = Active, 0 = Inactive
+    slug = models.SlugField(unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
     def __str__(self):
         return self.name
     def is_active(self):
@@ -317,14 +367,9 @@ class Discount(models.Model):
     discount_value = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=1)  # 1 = Active, 0 = Inactive
     def __str__(self):
-        return f"{self.category.name} - {self.discount_value} {self.get_discount_type_display()}"
-
-
-
-
-
-
-
+        return f"{self.category.name} - {self.discount_value} {self.get_discount_type_display()}" 
+    
+    
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
@@ -334,22 +379,7 @@ class ProductImage(models.Model):
     def __str__(self):
         return f"Image for {self.product.name}"
     
-
-from django.core.validators import MinValueValidator, MaxValueValidator
-
-class ProductReview(models.Model):
-    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='reviews')
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    comment = models.TextField()
-    rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Review by {self.name} - {self.product.name}"
-
-
-  
+    
     
     
 class MeasurementType(models.Model):
@@ -403,14 +433,19 @@ class ProductMaterial(models.Model):
 
 class Order(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('processing', 'Processing'),
-        ('completed', 'Completed'),
-        ('cancelled', 'Cancelled'),
+        (0, 'Pending'),
+        (1, 'Approved'),
+        (2, 'Processing'),
+        (3, 'Completed'),
+        (4, 'Cancelled'),
+        (5, 'Not Viewed'),
     ]
 
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    customer = models.ForeignKey('CustomerInfo', on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    order_date = models.DateField(null=True, blank=True)  # NEW FIELD
+    notes = models.TextField(blank=True, null=True)  # ← Add this line
+    invoice_id = models.CharField(max_length=20, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -421,6 +456,7 @@ class Order(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    notes = models.TextField(blank=True, null=True)
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
@@ -437,9 +473,19 @@ class OrderSpecification(models.Model):
         return f"Specs for Order #{self.order.id}"
     
     
+
+class Unit(models.Model):
+    name = models.CharField(max_length=50, unique=True)  # e.g., Kilogram, Meter, Litre
+    symbol = models.CharField(max_length=10, unique=True)  # e.g., kg, m, L, pcs
+
+    def __str__(self):
+        return f"{self.name} ({self.symbol})"
+    
+    
 class MaterialUsage(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    unit = models.ForeignKey(Unit, on_delete=models.PROTECT)  # NEW FIELD
     quantity_used = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
@@ -601,7 +647,7 @@ class ContactUsBanner(models.Model):
             image_path = self.background_image.path
             with Image.open(image_path) as img:
                 # Force resize to 1920x570 (may distort if original ratio differs)
-                resized_img = img.resize((1920, 300), Image.LANCZOS)
+                resized_img = img.resize((1920, 570), Image.LANCZOS)
                 resized_img.save(image_path, quality=90, optimize=True)
                 
                 
@@ -867,6 +913,9 @@ class FAQSection(models.Model):
         return ''
     def __str__(self):
         return f"FAQ Section - {self.section_title or 'Untitled'}"
+    
+    
+    
 class FAQItem(models.Model):
     faq_section = models.ForeignKey(
         FAQSection,
@@ -1012,13 +1061,6 @@ class Measurement(models.Model):
     def __str__(self):
         return self.name
 
-
-class Unit(models.Model):
-    name = models.CharField(max_length=50, unique=True)  # e.g., Kilogram, Meter, Litre
-    symbol = models.CharField(max_length=10, unique=True)  # e.g., kg, m, L, pcs
-
-    def __str__(self):
-        return f"{self.name} ({self.symbol})"
     
     
 
@@ -1040,7 +1082,7 @@ class MaterialRegistration(models.Model):
     mr_material_name = models.CharField(max_length=255)
     mr_material_details = models.TextField(null=True, blank=True)
     mr_buy_price = models.DecimalField(max_digits=10, decimal_places=2)
-    mr_sell_price = models.DecimalField(max_digits=10, decimal_places=2)
+    mr_sell_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     adminid = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
@@ -1071,7 +1113,8 @@ class MaterialInventoryDetail(models.Model):
     adminid = models.IntegerField(null=True, blank=True)  # if using custom tracking dsfsd
 
     due_discount = models.DecimalField(max_digits=10,  decimal_places=2, default=0)
-    mid_debit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
+    id_debit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     mid_credit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def __str__(self):
@@ -1181,7 +1224,8 @@ class PricingCard(models.Model):
         return self.title 
     
     
-#------Blog Banner---      
+    
+    
 class BlogBanner(models.Model):
     title = models.CharField(max_length=255)
     subtitle = models.TextField(blank=True, null=True)
@@ -1197,7 +1241,25 @@ class BlogBanner(models.Model):
                 resized_img = img.resize((1920, 570), Image.LANCZOS)
                 resized_img.save(image_path, quality=90, optimize=True)
                 
-#----Blog model---
+                
+                
+class ProductBanner(models.Model):
+    title = models.CharField(max_length=255)
+    subtitle = models.TextField(blank=True, null=True)
+    background_image = models.ImageField(upload_to='contact_banner/')
+    def __str__(self):
+        return self.title
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # First save to get the file on disk
+        if self.background_image:
+            image_path = self.background_image.path
+            with Image.open(image_path) as img:
+                # Force resize to 1920x570 (may distort if original ratio differs)
+                resized_img = img.resize((1920, 570), Image.LANCZOS)
+                resized_img.save(image_path, quality=90, optimize=True)
+                
+                
+
 # models.py
 
 from django.utils.text import slugify
@@ -1282,22 +1344,60 @@ class BlogComment(models.Model):
 
     def __str__(self):
         return f'Comment by {self.name} on {self.blog}'
-       
-       
-       
-              
-                
-class ProductBanner(models.Model):
+    
+    
+from django.core.validators import MinValueValidator, MaxValueValidator
+class ProductReview(models.Model):
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='reviews')
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    comment = models.TextField()
+    rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"Review by {self.name} - {self.product.name}"
+    
+    
+    
+# Contact Page banner   
+class CartBanner(models.Model):
     title = models.CharField(max_length=255)
     subtitle = models.TextField(blank=True, null=True)
     background_image = models.ImageField(upload_to='contact_banner/')
+
     def __str__(self):
         return self.title
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)  # First save to get the file on disk
+
         if self.background_image:
             image_path = self.background_image.path
             with Image.open(image_path) as img:
                 # Force resize to 1920x570 (may distort if original ratio differs)
-                resized_img = img.resize((1920, 570), Image.LANCZOS)
+                resized_img = img.resize((1920, 300), Image.LANCZOS)
                 resized_img.save(image_path, quality=90, optimize=True)
+                
+                
+                
+
+from decimal import Decimal
+class AddCart(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Cart item: {self.product.name} (Qty: {self.quantity})"
+
+    @property
+    def final_price(self):
+        return self.product.final_price  # Uses Product model's discount logic
+
+    @property
+    def total_cost(self):
+        if self.product.final_price is not None:
+            return self.quantity * self.product.final_price
+        return Decimal('0.00')  # Fallback to avoid TypeError
+
+    

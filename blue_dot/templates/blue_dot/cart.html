@@ -1,33 +1,394 @@
 {% extends "blue_dot/base.html" %}
 {% load static %}
 
-{% block custom_css %}{% endblock custom_css %}
+{% block custom_css %}
+/* Modern Breadcrumb Area - Max 300px height with background banner */
+.tp-breadcrumb-area {
+  position: relative;
+  height: 300px;
+  max-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
+/* Dynamic background image from Django */
+.tp-breadcrumb-area[data-bg] {
+  background-image: var(--bg-image);
+}
+
+.tp-slider-spacing-inner {
+  padding: 0;
+}
+
+.p-relative {
+  position: relative;
+}
+
+.z-index-1 {
+  z-index: 1;
+}
+
+/* Remove the old background shape structure */
+.tp-breadcrumb-bg-shape {
+  display: none;
+}
+
+/* Modern overlay with gradient */
+.tp-breadcrumb-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0.4) 50%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+  z-index: 1;
+}
+
+/* Animated pattern overlay */
+.tp-breadcrumb-area::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  z-index: 1;
+  animation: shimmer 3s ease-in-out infinite alternate;
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.3; }
+  100% { opacity: 0.6; }
+}
+
+.tp-breadcrumb-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #fff;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.tp-breadcrumb-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  line-height: 1.1;
+  color: #fff;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+}
+
+.tp-breadcrumb-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 2px;
+}
+
+.tp-split-text.right {
+  animation: slideInUp 1s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tp-breadcrumb-body {
+  font-size: 1.2rem;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  animation: fadeIn 1.2s ease-out 0.3s both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.tp-breadcrumb-body .home {
+  color: #fff;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tp-breadcrumb-body .home:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  color: #fff;
+  text-decoration: none;
+}
+
+.tp-breadcrumb-body .spacing {
+  margin: 0 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.5rem;
+  font-weight: 300;
+}
+
+.current-page {
+  color: #ffd700;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .tp-breadcrumb-area {
+    height: 280px;
+  }
+  
+  .tp-breadcrumb-title {
+    font-size: 3rem;
+  }
+  
+  .tp-breadcrumb-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .tp-breadcrumb-area {
+    height: 260px;
+  }
+  
+  .tp-breadcrumb-title {
+    font-size: 2.5rem;
+    margin-bottom: 1.2rem;
+  }
+  
+  .tp-breadcrumb-body {
+    font-size: 1.1rem;
+  }
+  
+  .tp-breadcrumb-content {
+    padding: 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .tp-breadcrumb-area {
+    height: 240px;
+  }
+  
+  .tp-breadcrumb-title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .tp-breadcrumb-body {
+    font-size: 1rem;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .tp-breadcrumb-body .spacing {
+    display: none;
+  }
+  
+  .tp-breadcrumb-content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .tp-breadcrumb-area {
+    height: 220px;
+  }
+  
+  .tp-breadcrumb-title {
+    font-size: 1.8rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .tp-breadcrumb-body {
+    font-size: 0.9rem;
+  }
+  
+  .tp-breadcrumb-body .home {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tp-breadcrumb-area {
+    height: 200px;
+  }
+  
+  .tp-breadcrumb-title {
+    font-size: 1.5rem;
+  }
+  
+  .tp-breadcrumb-body {
+    font-size: 0.85rem;
+  }
+  
+  .tp-breadcrumb-content {
+    padding: 0.8rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .tp-breadcrumb-area {
+    height: 180px;
+  }
+  
+  .tp-breadcrumb-title {
+    font-size: 1.3rem;
+    margin-bottom: 0.6rem;
+  }
+  
+  .tp-breadcrumb-body {
+    font-size: 0.8rem;
+  }
+  
+  .tp-breadcrumb-title::after {
+    width: 40px;
+    height: 2px;
+  }
+}
+
+/* Container adjustments */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 10px;
+  }
+}
+
+/* Row adjustments */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -15px;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+/* Column adjustments */
+[class*="col-"] {
+  padding: 0 15px;
+  width: 100%;
+}
+
+@media (min-width: 1200px) {
+  .col-xl-5 { width: 41.666667%; }
+}
+
+@media (min-width: 992px) {
+  .col-lg-6 { width: 50%; }
+}
+
+@media (min-width: 768px) {
+  .col-md-8 { width: 66.666667%; }
+}
+
+/* Remove text centering for larger screens */
+@media (min-width: 769px) {
+  .tp-breadcrumb-content {
+    text-align: left;
+  }
+  
+  .tp-breadcrumb-body {
+    justify-content: flex-start;
+  }
+  
+  .tp-breadcrumb-title::after {
+    left: 0;
+    transform: none;
+  }
+}
+{% endblock custom_css %}
 
 {% block breadcrumb %}
+
 <!-- breadcrumb area start -->
-<section class="tp-breadcrumb-area tp-slider-spacing-inner p-relative z-index-1">
-    <div class="tp-breadcrumb-bg-shape">
-        <img class="tp-breadcrumb-bg-shape-1" src="{% static 'assets/img/breadcrumb/breadcrumb-shape1.png' %}" alt="">
-        <img class="tp-breadcrumb-bg-shape-2" src="{% static 'assets/img/breadcrumb/breadcrumb-shape2.png' %}" alt="">
-        <img class="tp-breadcrumb-bg-shape-3" src="{% static 'assets/img/breadcrumb/breadcrumb-shape3.png' %}" alt="">
-        <img class="tp-breadcrumb-bg-shape-4" src="{% static 'assets/img/breadcrumb/breadcrumb-shape4.png' %}" alt="">
-        <img class="tp-breadcrumb-bg-shape-5" src="{% static 'assets/img/breadcrumb/breadcrumb-shape5.png' %}" alt="">
-    </div>
+<section class="tp-breadcrumb-area tp-slider-spacing-inner p-relative z-index-1" 
+         style="{% if banner.background_image %}background-image: url('{{ banner.background_image.url }}');{% else %}background-image: url('{% static 'assets/img/breadcrumb/default-banner.jpg' %}');{% endif %}     
+    background-repeat: no-repeat;
+    padding: 0px;
+    height: 300px;
+    background-position: center center;
+    background-size: 100% 300px;">
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col-xl-5">
-                <div class="tp-breadcrumb-content">
-                    <h2 class="tp-breadcrumb-title tp-split-text right">Cart Page</h2>
-                    <p class="tp-breadcrumb-body">
-                        <span><a class="home" href="{% url 'home' %}">Home <span class="spacing">_</span></a></span>
-                        Cart Page
-                    </p>
-                </div>
+      <div class="row align-items-center">
+        <div class="col-xl-5 col-lg-6 col-md-8 col-12">
+          <div class="tp-breadcrumb-content">
+            <h2 class="tp-breadcrumb-title tp-split-text right">{{ banner.title }}</h2>
+            <div class="tp-breadcrumb-body">
+              <a class="home" href="{% url 'home' %}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                Home
+              </a>
+              <span class="spacing">→</span>
+              <span class="current-page">{{ banner.subtitle }}</span>
             </div>
+          </div>
         </div>
+      </div>
     </div>
 </section>
 <!-- breadcrumb area end -->
+  
 {% endblock breadcrumb %}
 
 {% block content %}
@@ -50,52 +411,44 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                {% for item in cart_items %}
                                 <tr>
-                                    <td class="product-thumbnail">
-                                        <a href="#"><img src="{% static 'assets/img/shop/product-details-sm-2.jpg' %}" alt=""></a>
-                                    </td>
-                                    <td class="product-name"><a href="#">Jogar shoes</a></td>
-                                    <td class="product-price"><span class="amount">$199.00</span></td>
-                                    <td class="product-quantity text-center">
-                                        <div class="tp-shop-quantity">
-                                            <div class="tp-quantity p-relative">
-                                                <div class="qty_button cart-minus tp-cart-minus"><i class="fal fa-minus"></i></div>
-                                                <input type="text" value="1">
-                                                <div class="qty_button cart-plus tp-cart-plus"><i class="fal fa-plus"></i></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="product-subtotal"><span class="amount">$199.00</span></td>
-                                    <td class="product-remove"><a href="#"><i class="fa fa-times"></i></a></td>
+                                  <td class="product-thumbnail">
+                                    <a href="#"><img src="{{ item.product.thumbnail.url }}" alt="{{ item.product.name }}"></a>
+                                  </td>
+                                  <td class="product-name"><a href="#">{{ item.product.name }}</a></td>
+                                  <td class="product-price">
+                                    <span class="amount">${{ item.final_price }}</span>
+                                  </td>
+                                  
+                                  <td class="product-quantity text-center">
+                                    <div class="tp-shop-quantity">
+                                      <div class="tp-quantity p-relative">
+                                        <div class="qty_button cart-minus tp-cart-minus"><i class="fal fa-minus"></i></div>
+                                        <input type="text" value="{{ item.quantity }}" readonly>
+                                        <div class="qty_button cart-plus tp-cart-plus"><i class="fal fa-plus"></i></div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td class="product-subtotal"><span class="amount">${{ item.total_cost }}</span></td>
+                                  <td class="product-remove">
+                                    <a href="{% url 'remove_from_cart' slug=item.product.slug %}">
+                                      <i class="fa fa-times"></i>
+                                    </a>
+                                  </td>
+                                  
                                 </tr>
-                                <tr>
-                                    <td class="product-thumbnail">
-                                        <a href="#"><img src="{% static 'assets/img/shop/product-details-sm-3.jpg' %}" alt=""></a>
-                                    </td>
-                                    <td class="product-name"><a href="#">Alarm clock</a></td>
-                                    <td class="product-price"><span class="amount">$120.00</span></td>
-                                    <td class="product-quantity text-center">
-                                        <div class="tp-shop-quantity">
-                                            <div class="tp-quantity p-relative">
-                                                <div class="qty_button cart-minus tp-cart-minus"><i class="fal fa-minus"></i></div>
-                                                <input type="text" value="1">
-                                                <div class="qty_button cart-plus tp-cart-plus"><i class="fal fa-plus"></i></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="product-subtotal"><span class="amount">$120.00</span></td>
-                                    <td class="product-remove"><a href="#"><i class="fa fa-times"></i></a></td>
-                                </tr>
-                            </tbody>
+                                {% empty %}
+                                <tr><td colspan="6">Your cart is empty.</td></tr>
+                                {% endfor %}
+                              </tbody>
+                              
                         </table>
                     </div>
                     <div class="row">
                         <div class="col-12">
                             <div class="coupon-all wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s">
-                                <div class="coupon d-flex align-items-center justify-content-between">
-                                    <input type="text" class="#coupon-code" placeholder="coupon code">
-                                    <button class="tp-btn" type="submit"><span>Apply</span></button>
-                                </div>
+                               
                                 <div class="coupon2">
                                     <button class="tp-btn theme-bg" name="update_cart" type="submit"><span>Update cart</span></button>
                                 </div>
@@ -107,10 +460,11 @@
                             <div class="cart-page-total wow fadeInUp" data-wow-delay=".5s" data-wow-duration="1s">
                                 <h2>Cart totals</h2>
                                 <ul class="mb-20">
-                                    <li>Subtotal <span>$250.00</span></li>
-                                    <li>Total <span>$250.00</span></li>
-                                </ul>
-                                <a class="tp-btn theme-bg text-center w-100" href="{% url 'checkout' %}"><span>Proceed to checkout</span></a>
+                                    <li>Subtotal <span>${{ subtotal }}</span></li>
+                                    <li>Total <span>${{ total }}</span></li>
+                                  </ul>
+                                  
+                                <a class="tp-btn theme-bg text-center w-100" href="{% url 'cart_checkout' %}"><span>Proceed to checkout</span></a>
                             </div>
                         </div>
                     </div>

@@ -1,0 +1,129 @@
+{% extends "blue_dot/base.html" %}
+{% load static %}
+
+{% block custom_css %}{% endblock custom_css %}
+
+{% block breadcrumb %}
+<!-- breadcrumb area start -->
+<section class="tp-breadcrumb-area tp-slider-spacing-inner p-relative z-index-1">
+   <div class="tp-breadcrumb-bg-shape">
+     {% if banner.background_image %}
+       <img class="tp-breadcrumb-bg-shape-1" src="{{ banner.background_image.url }}" alt="">
+     {% else %}
+       <img class="tp-breadcrumb-bg-shape-1" src="{% static 'assets/img/breadcrumb/default-banner.jpg' %}" alt="Default Banner">
+     {% endif %}
+   </div>
+   <div class="container">
+     <div class="row align-items-center">
+       <div class="col-xl-5">
+         <div class="tp-breadcrumb-content">
+           <h2 class="tp-breadcrumb-title tp-split-text right">{{ banner.title }}</h2>
+           <p class="tp-breadcrumb-body">
+             <span>
+               <a class="home" href="{% url 'home' %}">Home <span class="spacing">_</span> </a>
+             </span>
+             {{ banner.subtitle }}
+           </p>
+         </div>
+       </div>
+     </div>
+   </div>
+ </section>
+<!-- breadcrumb area end -->
+{% endblock breadcrumb %}
+
+{% block content %}
+<!-- shop-product area start -->
+<section class="tp-shop-area pt-120 pb-120">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar if any -->
+
+            <div class="col-xl-9 col-lg-8">
+                <!-- Filters if any -->
+
+                <div class="row align-items-end mb-30">
+                    {% for product in products %}
+                        <div class="col-xl-4 col-lg-6 col-md-6">
+                            <div class="product_wrapper two mb-30">
+                                <div class="product__item p-relative">
+                                    <div class="product__top-brand d-flex justify-content-between mb-15">
+                                        <div class="product__top-price">
+                                            <a href="{% url 'product_detail' slug=product.slug %}">
+                                                {% if product.final_price < product.base_price %}
+                                                    <span style="text-decoration: line-through; color: #999;">৳ {{ product.base_price }}</span>
+                                                    <span style="color: #e60000; font-weight: bold;">৳ {{ product.final_price }}</span>
+                                                {% else %}
+                                                    ৳ {{ product.base_price }}
+                                                {% endif %}
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="product__thumb w-img p-relative fix mb-10">
+                                        <a href="{% url 'product_detail' slug=product.slug %}">
+                                            <img src="{{ product.thumbnail.url }}" alt="{{ product.name }}">
+                                        </a>
+
+                                        {% if product.discount_percent > 0 %}
+                                            <div style="position: absolute; top: 10px; left: 10px; background: #e60000; color: white; padding: 5px 8px; font-weight: bold; font-size: 14px; border-radius: 3px; z-index: 10;">
+                                                {{ product.discount_percent }}% OFF
+                                            </div>
+                                        {% endif %}
+
+                                        <div class="product__action d-flex flex-column flex-wrap">
+                                            <button type="button" class="product-action-btn">
+                                                <i class="fa fa-heart"></i>
+                                            </button>
+                                            <a href="{% url 'product_detail' slug=product.slug %}" class="product-action-btn">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="product__content text-center">
+                                        <h4 class="product__title">
+                                            <a href="{% url 'product_detail' slug=product.slug %}">{{ product.name }}</a>
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <p>No products available at the moment.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="basic-pagination text-center mt-20">
+                            {% if products.has_other_pages %}
+                                <nav>
+                                    <ul>
+                                        {% if products.has_previous %}
+                                            <li><a href="?page={{ products.previous_page_number }}"><i class="fa fa-angle-left"></i></a></li>
+                                        {% endif %}
+                                        {% for i in products.paginator.page_range %}
+                                            {% if products.number == i %}
+                                                <li><span class="current">{{ i }}</span></li>
+                                            {% else %}
+                                                <li><a href="?page={{ i }}">{{ i }}</a></li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if products.has_next %}
+                                            <li><a href="?page={{ products.next_page_number }}"><i class="fa fa-angle-right"></i></a></li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+<!-- shop-product area end -->
+{% endblock content %}

@@ -18,9 +18,7 @@ import csv
 from datetime import datetime, timedelta
 from django.db.models import Sum, F, ExpressionWrapper, DecimalField
 from django.db.models.functions import TruncMonth, TruncYear
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from django.views.decorators.http import require_http_methods
+from django.db import transaction
 
 
 
@@ -364,34 +362,408 @@ def contactUs_msg(request):
 def order_list(request):
     return render(request, 'backend/orders/order_list.html')
 
+# def create_order(request):
+#     customers = CustomerInfo.objects.all()
+#     products = Product.objects.all()
+#     materials = MaterialRegistration.objects.all()
+#     units = Unit.objects.all()
+    
+#     if request.method == 'POST':
+#         try:
+#             customer_id = int(request.POST.get('customer'))
+#             order_date = request.POST.get('order_date')
+#             notes = request.POST.get('notes', '')
+#             product_id = int(request.POST.get('product_id', ''))
+#             materials_ids = request.POST.getlist('materials[]')
+#             units_ids = request.POST.getlist('units[]')
+#             quantities = request.POST.getlist('quantities[]')
+            
+#             if customer_id and product_id:
+#                 customer = Customer.objects.filter(id=customer_id).first()
+#                 product = Product.objects.filter(id=product_id).first()
+                
+#                 return messages.error(request, f'Error creating order: {str(e)}')
+            
+#             if customer and product:
+#                 # Create the order
+#                 order = Order.objects.create(
+#                     customer_id=customer_id,
+#                     order_date=order_date,
+#                     notes=notes,
+#                     status='pending'
+#                 )
+                
+#                 # Add order items
+#                 for material_id, unit_id, quantity in zip(materials_ids, units_ids, quantities):
+#                     OrderItem.objects.create(
+#                         order=order,
+#                         material_id=material_id,
+#                         unit_id=unit_id,
+#                         quantity=quantity
+#                     )
+            
+#             return redirect('order_list')
+            
+#         except Exception as e:
+#             messages.error(request, f'Error creating order: {str(e)}')
+    
+#     context = {
+#         'customers': customers,
+#         'products': products,
+#         'materials': materials,
+#         'units': units,
+#     }
+    
+#     return render(request, 'backend/orders/create.html', context)
 
-def create_order(request):
+
+def initial_orders(request):
     customers = CustomerInfo.objects.all()
     products = Product.objects.all()
-    materials = MaterialRegistration.objects.all()
     
-    print('Customer objects: ', customers)
-    print()
+    orders = Order.objects.all().select_related('customer').prefetch_related('items__product')
+    
+    user_type = 2
     
     context = {
         'customers': customers,
         'products': products,
-        'materials': materials,
+        'orders': orders,
+        'user_type': user_type,
     }
+    return render(request, 'backend/orders/initial_orders.html', context)
+
+
+def initial_order_create(request):
+    customers = CustomerInfo.objects.all()
+    products = Product.objects.all()
     
-    return render(request, 'backend/orders/create.html', context)
+    if request.method == 'POST':
+        try:
+            # Get form data
+            customer_id = request.POST.get('customer')
+            order_notes = request.POST.get('notes', '')
+            
+            # Validate customer
+            if not customer_id:
+                messages.error(request, 'Please select a customer')
+                return redirect('initial_order_create')
+            
+            # Create the order
+            order = Order.objects.create(
+                customer_id=customer_id,
+                order_date=timezone.now(),
+                status='pending',
+                notes=order_notes
+            )
+            
+            # Get product data from the form
+            product_ids = request.POST.getlist('products[]')
+            quantities = request.POST.getlist('quantities[]')
+            product_notes = request.POST.getlist('notes[]')
+            
+            # Validate products
+            if not product_ids:
+                order.delete()  # Rollback if no products
+                messages.error(request, 'Please add at least one product to the order')
+                return redirect('initial_order_create')
+            
+            # Create order items with notes
+            for product_id, quantity, note in zip(product_ids, quantities, product_notes):
+                try:
+                    product = Product.objects.get(id=product_id)
+                    OrderItem.objects.create(
+                        order=order,
+                        product=product,
+                        quantity=quantity,
+                        notes=note  # Add product-specific notes
+                    )
+                except Product.DoesNotExist:
+                    continue
+            
+            messages.success(request, 'Order created successfully!')
+            return redirect('initial_orders')
+            
+        except Exception as e:
+            messages.error(request, f'Error creating order: {str(e)}')
+            return redirect('initial_order_create')
+    
+    context = {
+        'customers': customers,
+        'products': products,
+    }
+    return render(request, 'backend/orders/approve_order.html', context)
+
+
+def initial_order_update(request, id):
+    order = get_object_or_404(Order, id=id)
+    customers = CustomerInfo.objects.all()
+    products = Product.objects.all()
+
+    if request.method == 'POST':
+        product_ids = request.POST.getlist('products[]')
+        quantities = request.POST.getlist('quantities[]')
+        notes = request.POST.getlist('notes[]')
+
+        if not product_ids:
+            messages.error(request, 'Please select at least one product.')
+        else:
+            try:
+                # Clear existing items for this order
+                OrderItem.objects.filter(order=order).delete()
+
+                # Add updated items
+                for i in range(len(product_ids)):
+                    product = get_object_or_404(Product, id=product_ids[i])
+                    quantity = int(quantities[i])
+                    note = notes[i]
+
+                    OrderItem.objects.create(
+                        order=order,
+                        product=product,
+                        quantity=quantity,
+                        notes=note
+                    )
+
+                messages.success(request, 'Order updated successfully.')
+                return redirect('initial_order_update', id=order.id)
+            except Exception as e:
+                messages.error(request, f"An error occurred: {str(e)}")
+
+    # Prepare selected items for pre-population in table
+    order_items = OrderItem.objects.filter(order=order).select_related('product')
+    selected_items = []
+    for item in order_items:
+        selected_items.append({
+            'product': item.product,
+            'quantity': item.quantity,
+            'notes': item.notes,
+            'total': item.quantity * item.product.base_price
+        })
+
+    return render(request, 'backend/orders/initial_order_update.html', {
+        'order': order,
+        'products': products,
+        'customers': customers,
+        'order_items': selected_items,
+    })
+
+
+# def approve_order(request, id):
+#     order = Order.objects.filter(id=id).first()
+#     customers = CustomerInfo.objects.all()
+#     products = Product.objects.all()
+#     materials = MaterialRegistration.objects.all()
+#     units = Unit.objects.all()
+    
+#     if not order:
+#         messages.error(request, 'Order not found.')
+#         raise ValueError("Missing Order.")
+    
+#     order_items = order.items.all()
+#     print('order_items: ', order_items)
+        
+
+#     if request.method == 'POST':
+#         try:
+#             customer_id = request.POST.get('customer')
+#             product_id = request.POST.get('product_id')
+#             order_date = request.POST.get('order_date')
+#             notes = request.POST.get('notes', '')
+#             materials_ids = request.POST.getlist('materials[]')
+#             units_ids = request.POST.getlist('units[]')
+#             quantities = request.POST.getlist('quantities[]')
+
+#             # Basic Validation
+#             if not customer_id:
+#                 messages.error(request, "Customer is required.")
+#                 raise ValueError("Missing customer.")
+
+#             if not product_id:
+#                 messages.error(request, "Product is required.")
+#                 raise ValueError("Missing product.")
+
+#             if not materials_ids:
+#                 messages.error(request, "At least one material is required.")
+#                 raise ValueError("Missing materials.")
+
+#             if len(materials_ids) != len(units_ids) or len(materials_ids) != len(quantities):
+#                 messages.error(request, "Each material must have corresponding unit and quantity.")
+#                 raise ValueError("Material/Unit/Quantity mismatch.")
+
+#             customer = CustomerInfo.objects.filter(id=customer_id).first()
+#             product = Product.objects.filter(id=product_id).first()
+
+#             if not customer or not product:
+#                 messages.error(request, "Invalid customer or product.")
+#                 raise ValueError("Invalid customer/product.")
+
+#             # Create Order
+#             order = Order.objects.create(
+#                 customer=customer,
+#                 status='pending',
+#                 notes=notes,
+#             )
+
+#             # Add Order Item
+#             OrderItem.objects.create(
+#                 order=order,
+#                 product=product,
+#                 quantity=1
+#             )
+
+#             # Add Material Usage
+#             for material_id, unit_id, qty in zip(materials_ids, units_ids, quantities):
+#                 if not qty or float(qty) <= 0:
+#                     messages.warning(request, f"Skipped material ID {material_id} due to invalid quantity.")
+#                     continue
+
+#                 material = MaterialRegistration.objects.filter(id=material_id).first()
+#                 unit = Unit.objects.filter(id=unit_id).first()
+
+#                 if not material or not unit:
+#                     messages.warning(request, f"Invalid material or unit for ID {material_id}, {unit_id}. Skipped.")
+#                     continue
+
+#                 MaterialUsage.objects.create(
+#                     order=order,
+#                     material=material,
+#                     unit=unit,
+#                     quantity_used=qty
+#                 )
+
+#                 # Log inventory usage
+#                 InventoryLog.objects.create(
+#                     material=material,
+#                     change_type='out',
+#                     quantity_changed=qty,
+#                     reference=f"Order #{order.id}"
+#                 )
+
+#             messages.success(request, "Order created successfully.")
+#             return redirect('order_list')
+
+#         except Exception as e:
+#             messages.error(request, f"Error creating order: {str(e)}")
+
+#     context = {
+#         'customers': customers,
+#         'products': products,
+#         'materials': materials,
+#         'units': units,
+#         'order_items': order_items,
+#     }
+#     return render(request, 'backend/orders/approve_order.html', context)
+
+
+def approve_order(request, id):
+    order = Order.objects.filter(id=id).first()
+    if not order:
+        messages.error(request, 'Order not found.')
+        return redirect('order_list')
+
+    customers = CustomerInfo.objects.all()
+    products = Product.objects.all()
+    materials = MaterialRegistration.objects.all()
+    units = Unit.objects.all()
+    order_items = order.items.all()
+
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                customer_id = request.POST.get('customer')
+                product_id = request.POST.get('product_id')
+                order_date = request.POST.get('order_date')
+                notes = request.POST.get('notes', '')
+                materials_ids = request.POST.getlist('materials[]')
+                units_ids = request.POST.getlist('units[]')
+                quantities = request.POST.getlist('quantities[]')
+
+                # Validation
+                if not customer_id or not product_id:
+                    messages.error(request, "Customer and Product are required.")
+                    raise ValueError("Missing customer/product.")
+
+                if not materials_ids:
+                    messages.error(request, "At least one material is required.")
+                    raise ValueError("Missing materials.")
+
+                if len(materials_ids) != len(units_ids) or len(materials_ids) != len(quantities):
+                    messages.error(request, "Each material must have corresponding unit and quantity.")
+                    raise ValueError("Material/Unit/Quantity mismatch.")
+
+                customer = CustomerInfo.objects.filter(id=customer_id).first()
+                product = Product.objects.filter(id=product_id).first()
+
+                if not customer or not product:
+                    messages.error(request, "Invalid customer or product.")
+                    raise ValueError("Invalid customer/product.")
+
+                # Update order
+                order.customer = customer
+                order.notes = notes
+                order.order_date = order_date
+                order.status = '1'  # Approved
+                order.save()
+
+                # Remove previous OrderItems and MaterialUsage
+                order.items.all().delete()
+                MaterialUsage.objects.filter(order=order).delete()
+
+                # Add new OrderItem
+                OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    quantity=1
+                )
+
+                # Add Material Usages
+                for material_id, unit_id, qty in zip(materials_ids, units_ids, quantities):
+                    if not qty or float(qty) <= 0:
+                        messages.warning(request, f"Skipped material ID {material_id} due to invalid quantity.")
+                        continue
+
+                    material = MaterialRegistration.objects.filter(id=material_id).first()
+                    unit = Unit.objects.filter(id=unit_id).first()
+
+                    if not material or not unit:
+                        messages.warning(request, f"Invalid material or unit for ID {material_id}, {unit_id}. Skipped.")
+                        continue
+
+                    MaterialUsage.objects.create(
+                        order=order,
+                        material=material,
+                        unit=unit,
+                        quantity_used=qty
+                    )
+
+                    InventoryLog.objects.create(
+                        material=material,
+                        change_type='out',
+                        quantity_changed=qty,
+                        reference=f"Order #{order.id}"
+                    )
+
+                messages.success(request, "Order approved and updated successfully.")
+                return redirect('order_list')
+
+        except Exception as e:
+            messages.error(request, f"Error approving order: {str(e)}")
+
+    context = {
+        'order': order,
+        'customers': customers,
+        'products': products,
+        'materials': materials,
+        'units': units,
+        'order_items': order_items,
+    }
+    return render(request, 'backend/orders/approve_order.html', context)
 
 
 
 def product_list(request):
     return render(request, 'backend/product-list.html')
-
-def product_review(request):
-    reviews = ProductReview.objects.select_related('product').order_by('-created_at')
-    return render(request, 'backend/products/reviews.html', {'reviews': reviews})
-
-
-
 
 def add_product(request):
     return render(request, 'backend/product-add.html')
@@ -1080,11 +1452,13 @@ def material_list(request):
     materials = MaterialRegistration.objects.select_related('mr_supplier', 'mr_type').all()
     suppliers = PartyRegSupplier.objects.all()
     types = MaterialType.objects.all()
+    units = Unit.objects.all()
     
     return render(request, 'backend/material/material_list.html', {
         'materials': materials,
         'suppliers': suppliers,
         'types': types,
+        'units': units,
     })
 # Create a new material
 
@@ -1098,14 +1472,19 @@ def material_create(request):
         name = request.POST.get('mr_material_name')
         details = request.POST.get('mr_material_details')
         buy_price = request.POST.get('mr_buy_price')
-        sell_price = request.POST.get('mr_sell_price')
+        sell_price = request.POST.get('mr_sell_price', '').strip()
+        unit_id = int(request.POST.get('unit'))
+        
+        sell_price = None if sell_price == '' else sell_price
+        
+        unit = Unit.objects.get(id=unit_id)
 
         # Optional fields for inventory (adjust as per your form or defaults)
         invoice_id = request.POST.get('mid_invoice_id', 'Initial Purchase')
         buy_quantity = request.POST.get('mid_buy_quentity', 0)
         buy_paid = request.POST.get('mid_buy_paid', 0)
 
-        if name and buy_price and sell_price and supplier_id:
+        if name and buy_price and supplier_id:
             material = MaterialRegistration(
                 mr_supplier_id=supplier_id,
                 mr_type_id=type_id,
@@ -1113,6 +1492,7 @@ def material_create(request):
                 mr_material_details=details,
                 mr_buy_price=buy_price,
                 mr_sell_price=sell_price,
+                unit=unit,
                 adminid=request.user.id if request.user.is_authenticated else None
             )
             material.save()
@@ -1931,137 +2311,6 @@ def blog_banner(request):
     })
     
     
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from django.views.decorators.http import require_http_methods
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-import json
-import os
-import uuid
-
-def blog_post(request):
-    posts = BlogPost.objects.all().order_by('-id')  # Order by newest first
-    # Get categories instead of products for the dropdown
-    categories = Category.objects.all()  # Assuming you have a Category model
-    form = BlogPostForm()
-    return render(request, 'backend/Blog/post.html', {
-        'posts': posts,
-        'categories': categories,  # Changed from 'products' to 'categories'
-        'form': form
-    })
-
-@require_http_methods(["POST"])
-def create_or_update_post(request):
-    try:
-        post_id = request.POST.get('id')
-        
-        if post_id:
-            # Update existing post
-            instance = get_object_or_404(BlogPost, id=post_id)
-            form = BlogPostForm(request.POST, request.FILES, instance=instance)
-        else:
-            # Create new post
-            form = BlogPostForm(request.POST, request.FILES)
-
-        if form.is_valid():
-            post = form.save()
-            return JsonResponse({
-                'success': True, 
-                'message': 'Post saved successfully',
-                'post_id': post.id
-            })
-        else:
-            return JsonResponse({
-                'success': False, 
-                'errors': form.errors,
-                'message': 'Form validation failed'
-            })
-    except Exception as e:
-        return JsonResponse({
-            'success': False, 
-            'error': str(e),
-            'message': 'An error occurred while saving the post'
-        })
-
-def get_post(request, id):
-    try:
-        post = get_object_or_404(BlogPost, id=id)
-        data = {
-            'id': post.id,
-            'title': post.title,
-            'author': post.author,
-            'category': post.category.id,  # Send category ID for the select dropdown
-            'description': post.description,
-            'is_active': post.is_active,
-        }
-        return JsonResponse(data)
-    except Exception as e:
-        return JsonResponse({
-            'success': False, 
-            'error': str(e),
-            'message': 'Failed to retrieve post'
-        })
-
-@require_http_methods(["POST"])
-def delete_post(request, id):
-    try:
-        post = get_object_or_404(BlogPost, id=id)
-        post.delete()
-        return JsonResponse({
-            'success': True,
-            'message': 'Post deleted successfully'
-        })
-    except Exception as e:
-        return JsonResponse({
-            'success': False, 
-            'error': str(e),
-            'message': 'Failed to delete post'
-        })
-
-# CKEditor image upload handler
-@csrf_exempt
-def ckeditor_upload(request):
-    if request.method == 'POST' and request.FILES.get('upload'):
-        upload = request.FILES['upload']
-        try:
-            import os
-            from django.conf import settings
-            from django.core.files.storage import default_storage
-            from django.core.files.base import ContentFile
-            import uuid
-            
-            # Generate unique filename to avoid conflicts
-            file_extension = os.path.splitext(upload.name)[1]
-            unique_filename = f"{uuid.uuid4()}{file_extension}"
-            
-            # Save file using Django's default storage
-            file_path = f"ckeditor_uploads/{unique_filename}"
-            saved_path = default_storage.save(file_path, ContentFile(upload.read()))
-            
-            # Get the URL for the saved file
-            file_url = default_storage.url(saved_path)
-            
-            return JsonResponse({
-                'uploaded': True,
-                'url': file_url
-            })
-        except Exception as e:
-            return JsonResponse({
-                'uploaded': False,
-                'error': {'message': f'Upload failed: {str(e)}'}
-            })
-    
-    return JsonResponse({
-        'uploaded': False, 
-        'error': {'message': 'No file uploaded'}
-    })
-    
-def blog_comments(request):
-    comments = BlogComment.objects.select_related('blog').all()
-    return render (request,'backend/Blog/comments.html', {'comments': comments})
-    
-    
 def product_banner(request):
     banner = ProductBanner.objects.last()
     if not banner:
@@ -2093,11 +2342,9 @@ def home_CTA(request):
         'form': form,
         'cta': cta,
     })
-
-
-
-
-
+    
+    
+    
 # Discount Category Views
 def discount_category_list(request):
     categories = DiscountCategory.objects.all()
@@ -2296,3 +2543,153 @@ def discount_delete(request, pk):
     except Exception as e:
         messages.error(request, f'Error deleting discount: {str(e)}')
         return redirect('discount_list')
+    
+    
+
+def blog_post(request):
+    posts = BlogPost.objects.all().order_by('-id')  # Order by newest first
+    # Get categories instead of products for the dropdown
+    categories = Category.objects.all()  # Assuming you have a Category model
+    form = BlogPostForm()
+    return render(request, 'backend/Blog/post.html', {
+        'posts': posts,
+        'categories': categories,  # Changed from 'products' to 'categories'
+        'form': form
+    })
+
+@require_http_methods(["POST"])
+def create_or_update_post(request):
+    try:
+        post_id = request.POST.get('id')
+        
+        if post_id:
+            # Update existing post
+            instance = get_object_or_404(BlogPost, id=post_id)
+            form = BlogPostForm(request.POST, request.FILES, instance=instance)
+        else:
+            # Create new post
+            form = BlogPostForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            post = form.save()
+            return JsonResponse({
+                'success': True, 
+                'message': 'Post saved successfully',
+                'post_id': post.id
+            })
+        else:
+            return JsonResponse({
+                'success': False, 
+                'errors': form.errors,
+                'message': 'Form validation failed'
+            })
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'error': str(e),
+            'message': 'An error occurred while saving the post'
+        })
+
+def get_post(request, id):
+    try:
+        post = get_object_or_404(BlogPost, id=id)
+        data = {
+            'id': post.id,
+            'title': post.title,
+            'author': post.author,
+            'category': post.category.id,  # Send category ID for the select dropdown
+            'description': post.description,
+            'is_active': post.is_active,
+        }
+        return JsonResponse(data)
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'error': str(e),
+            'message': 'Failed to retrieve post'
+        })
+
+@require_http_methods(["POST"])
+def delete_post(request, id):
+    try:
+        post = get_object_or_404(BlogPost, id=id)
+        post.delete()
+        return JsonResponse({
+            'success': True,
+            'message': 'Post deleted successfully'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'error': str(e),
+            'message': 'Failed to delete post'
+        })
+
+# CKEditor image upload handler
+@csrf_exempt
+def ckeditor_upload(request):
+    if request.method == 'POST' and request.FILES.get('upload'):
+        upload = request.FILES['upload']
+        try:
+            import os
+            from django.conf import settings
+            from django.core.files.storage import default_storage
+            from django.core.files.base import ContentFile
+            import uuid
+            
+            # Generate unique filename to avoid conflicts
+            file_extension = os.path.splitext(upload.name)[1]
+            unique_filename = f"{uuid.uuid4()}{file_extension}"
+            
+            # Save file using Django's default storage
+            file_path = f"ckeditor_uploads/{unique_filename}"
+            saved_path = default_storage.save(file_path, ContentFile(upload.read()))
+            
+            # Get the URL for the saved file
+            file_url = default_storage.url(saved_path)
+            
+            return JsonResponse({
+                'uploaded': True,
+                'url': file_url
+            })
+        except Exception as e:
+            return JsonResponse({
+                'uploaded': False,
+                'error': {'message': f'Upload failed: {str(e)}'}
+            })
+    
+    return JsonResponse({
+        'uploaded': False, 
+        'error': {'message': 'No file uploaded'}
+    })
+    
+def blog_comments(request):
+    comments = BlogComment.objects.select_related('blog').all()
+    return render (request,'backend/Blog/comments.html', {'comments': comments})
+
+
+def product_review(request):
+    reviews = ProductReview.objects.select_related('product').order_by('-created_at')
+    return render(request, 'backend/products/reviews.html', {'reviews': reviews})
+
+
+
+def cart_banner(request):
+    banner = CartBanner.objects.last()
+    if not banner:
+        banner = CartBanner.objects.create()
+
+    if request.method == 'POST':
+        form = AboutUsBannerForm(request.POST, request.FILES, instance=banner)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Cart banner updated successfully!')
+            return redirect('cart_banner')
+    else:
+        form = AboutUsBannerForm(instance=banner)
+
+    return render(request, 'backend/cart/banner.html', {
+        'form': form,
+        'banner': banner
+    })
+   

@@ -187,7 +187,18 @@
                                                 <span>bag</span>
                                             </div> {% endcomment %}
                                             <div class="product__top-price">
-                                                <a href="cart.html">৳ {{ product.base_price }}</a>
+                                                <a href="cart.html">{% if product.final_price < product.base_price %}
+                                                    <span style="text-decoration: line-through; color: #999;">৳ {{ product.base_price }}</span>
+                                                    <span style="color: #E60000; font-weight: bold;">৳ {{ product.final_price }}</span>
+                                                {% else %}
+                                                    ৳ {{ product.base_price }}
+                                                {% endif %}
+
+
+
+
+
+</a>
                                             </div>
                                         </div>
                                         <div class="product__thumb w-img p-relative fix mb-10">
@@ -299,7 +310,7 @@
                         <div class="row">
                             <div class="col-xl-6 col-lg-12">
                                 <div class="ttp-printing-3-wrapper tp-bg-overlay" 
-                                     style="background-image: url('{{ pricing_card.image.url }}');  min-height: 100%; background-repeat:no-repeat">
+                                     style="background-image: url('{{ pricing_card.image.url }}');  min-height: 100%;     background-repeat: no-repeat;">
                                     <div class="tp-printing-3-content text-white" style='padding: 40px;padding-right: 0px;'>
                                         <h6 class="tp-printing-3-sub-title">{{ pricing_card.sub_title }}</h6>
                                         <h4 class="tp-printing-3-title mb-35 tp-split-text right">{{ pricing_card.title }}</h4>
@@ -327,7 +338,12 @@
                                                             <span>bag</span>
                                                         </div> {% endcomment %}
                                                         <div class="product__top-price">
-                                                            <a href="cart.html">৳ {{ product.base_price }}</a>
+                                                            <a href="cart.html">{% if product.final_price < product.base_price %}
+                                                                <span style="text-decoration: line-through; color: #999;">৳ {{ product.base_price }}</span>
+                                                                <span style="color: #E60000; font-weight: bold;">৳ {{ product.final_price }}</span>
+                                                            {% else %}
+                                                                ৳ {{ product.base_price }}
+                                                            {% endif %}</a>
                                                         </div>
                                                     </div>
                                                     <div class="product__thumb w-img p-relative fix mb-10">

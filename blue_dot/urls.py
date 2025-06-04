@@ -12,10 +12,19 @@ urlpatterns = [
     path('shop/',views.shop,name='shop'),
     path('shop_details/',views.shop_details,name='shop_details'),
     path('product/<slug:slug>/', views.product_detail, name='product_detail'),
-    path('cart/',views.cart,name='cart'),
-    path('checkout/',views.checkout,name='checkout'),
+    #cart
+
+    path('add-to-cart/<slug:slug>/', views.add_to_cart, name='add_to_cart'),
+    path('cart/', views.cart, name='cart'),
+    path('cart/remove/<slug:slug>/', views.remove_from_cart, name='remove_from_cart'),
+    #cart
+    path('cart_checkout/',views.cart_checkout,name='cart_checkout'),
+    
+    # Blog
     path('blog/',views.blog,name='blog'),
     path('blog_details/<slug:slug>/',views.blog_details,name='blog_details'),
+    # Blog
+    
     path('blog_sidebar/',views.blog_sidebar,name='blog_sidebar'),
     path('contact/',views.contact,name='contact'),
     path('aboutUs/',views.aboutUs,name="aboutUs"),
@@ -27,6 +36,10 @@ urlpatterns = [
     path('project_details/',views.project_details,name='project_details'),
     path('faq/',views.faq,name='faq'),
     path('error/',views.error,name='error'),
+    
+    path('promotion',views.promotion,name='promotion'),
+    path('promotion/category/<slug:slug>/', views.category_products, name='category_products'),
+    
     
     
 ]

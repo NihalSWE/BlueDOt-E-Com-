@@ -1,0 +1,85 @@
+{% extends "blue_dot/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+
+{% endblock custom_css %}
+
+{% block breadcrumb %}
+<section class="tp-breadcrumb-area tp-slider-spacing-inner p-relative z-index-1">
+    <div class="tp-breadcrumb-bg-shape">
+        {% if banner.background_image %}
+            <img class="tp-breadcrumb-bg-shape-1" src="{{ banner.background_image.url }}" alt="">
+        {% else %}
+            <img class="tp-breadcrumb-bg-shape-1" src="{% static 'assets/img/breadcrumb/default-banner.jpg' %}" alt="Default Banner">
+        {% endif %}
+    </div>
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-xl-5">
+                <div class="tp-breadcrumb-content">
+                    <h2 class="tp-breadcrumb-title tp-split-text right">{{ banner.title|default:"Promotions" }}</h2>
+                    <p class="tp-breadcrumb-body">
+                        <span>
+                            <a class="home" href="{% url 'home' %}">Home <span class="spacing">_</span> </a>
+                        </span>
+                        {{ banner.subtitle|default:"Latest Promotions & Discounts" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock breadcrumb %}
+
+{% block content %}
+<section class="promotions-section pt-50 pb-70">
+    <div class="container">
+        <div class="row g-4">
+            {% if categories %}
+             {% for category in categories %}
+            <div class="col-xl-4 col-lg-4 col-md-6">
+                <div 
+                    class="tp-service-2-rt-wrapper glass-effect-wrapper p-relative z-index-1 wow fadeInUp"
+                    data-wow-delay=".{{ forloop.counter }}s" data-wow-duration="1s"
+                    style="
+                        {% if category.image %}
+                            background-image: url('{{ category.image.url }}');
+                        {% else %}
+                            background-image: url('{% static 'assets/img/service/service-2-box-shape.png' %}');
+                        {% endif %}
+                    "
+                >
+                    <div class="glass-content">
+                        <h4 class="tp-service-2-rt-title" style="color:#ffffff">
+                            {{ category.name }}<br>
+                            <small style="font-size: 60%;">
+                                {{ category.start_date|date:"d M" }} - {{ category.end_date|date:"d M" }}
+                            </small>
+                        </h4>
+                       <div class="tp-service-2-ri-button mt-3">
+                        <a class="tp-btn-border" href="{% url 'category_products' category.slug %}">
+                            <span>Explore Offer</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            {% else %}
+                <div class="col-12">
+                    <p class="text-center">No active promotions available.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('Promotions page loaded');
+    });
+</script>
+{% endblock custom_js %}
