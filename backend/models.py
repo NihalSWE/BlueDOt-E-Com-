@@ -1392,12 +1392,12 @@ class AddCart(models.Model):
 
     @property
     def final_price(self):
-        return self.product.final_price  # Uses Product model's discount logic
+    # Ensure safe decimal fallback
+        price = getattr(self.product, 'final_price', None)
+        if price is None:
+            price = getattr(self.product, 'base_price', 0)
+        return price or Decimal('0.00')
 
-    @property
-    def total_cost(self):
-        if self.product.final_price is not None:
-            return self.quantity * self.product.final_price
-        return Decimal('0.00')  # Fallback to avoid TypeError
+   
 
     

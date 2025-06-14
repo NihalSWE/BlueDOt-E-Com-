@@ -356,9 +356,7 @@
   }
 }
 {% endblock custom_css %}
-
 {% block breadcrumb %}
-
 <!-- breadcrumb area start -->
 <section class="tp-breadcrumb-area tp-slider-spacing-inner p-relative z-index-1" 
          style="{% if banner.background_image %}background-image: url('{{ banner.background_image.url }}');{% else %}background-image: url('{% static 'assets/img/breadcrumb/default-banner.jpg' %}');{% endif %}     
@@ -388,7 +386,6 @@
     </div>
 </section>
 <!-- breadcrumb area end -->
-  
 {% endblock breadcrumb %}
 
 {% block content %}
@@ -411,46 +408,59 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for item in cart_items %}
-                                <tr>
+                                {% for data in cart_data %}
+                                <tr data-product-id="{{ data.item.product.id }}">
                                   <td class="product-thumbnail">
-                                    <a href="#"><img src="{{ item.product.thumbnail.url }}" alt="{{ item.product.name }}"></a>
+                                    <a href="#"><img src="{{ data.item.product.thumbnail.url }}" alt="{{ data.item.product.name }}"></a>
                                   </td>
-                                  <td class="product-name"><a href="#">{{ item.product.name }}</a></td>
+                                  <td class="product-name"><a href="#">{{ data.item.product.name }}</a></td>
                                   <td class="product-price">
-                                    <span class="amount">${{ item.final_price }}</span>
+                                    <span class="amount">
+                                        {% if data.item.product.final_price < data.item.product.base_price %}
+                                            <span style="text-decoration: line-through; color: #999;">৳{{ data.item.product.base_price }}</span>
+                                            <span style="color: #E60000; font-weight: bold;">৳{{ data.item.product.final_price }}</span>
+                                        {% else %}
+                                            ৳{{ data.item.product.base_price }}
+                                        {% endif %}
+                                    </span>
                                   </td>
                                   
                                   <td class="product-quantity text-center">
                                     <div class="tp-shop-quantity">
                                       <div class="tp-quantity p-relative">
-                                        <div class="qty_button cart-minus tp-cart-minus"><i class="fal fa-minus"></i></div>
-                                        <input type="text" value="{{ item.quantity }}" readonly>
-                                        <div class="qty_button cart-plus tp-cart-plus"><i class="fal fa-plus"></i></div>
+                                        <div class="qty_button cart-minus tp-cart-minus" onclick="updateQuantity({{ data.item.product.id }}, -1)">
+                                            <i class="fal fa-minus"></i>
+                                        </div>
+                                        <input type="text" value="{{ data.item.quantity }}" readonly class="quantity-input" id="qty-{{ data.item.product.id }}">
+                                        <div class="qty_button cart-plus tp-cart-plus" onclick="updateQuantity({{ data.item.product.id }}, 1)">
+                                            <i class="fal fa-plus"></i>
+                                        </div>
                                       </div>
                                     </div>
                                   </td>
-                                  <td class="product-subtotal"><span class="amount">${{ item.total_cost }}</span></td>
+                                  <td class="product-subtotal">
+                                    <span class="amount item-total" id="total-{{ data.item.product.id }}">৳{{ data.total_cost|floatformat:2 }}
+                                    </span>
+                                  </td>
                                   <td class="product-remove">
-                                    <a href="{% url 'remove_from_cart' slug=item.product.slug %}">
+                                    <a href="{% url 'remove_from_cart' slug=data.item.product.slug %}">
                                       <i class="fa fa-times"></i>
                                     </a>
                                   </td>
-                                  
                                 </tr>
                                 {% empty %}
                                 <tr><td colspan="6">Your cart is empty.</td></tr>
                                 {% endfor %}
-                              </tbody>
-                              
+                            </tbody>
                         </table>
                     </div>
                     <div class="row">
                         <div class="col-12">
                             <div class="coupon-all wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s">
-                               
                                 <div class="coupon2">
-                                    <button class="tp-btn theme-bg" name="update_cart" type="submit"><span>Update cart</span></button>
+                                    <button class="tp-btn theme-bg" type="button" onclick="location.reload()">
+                                        <span>Update cart</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -460,11 +470,12 @@
                             <div class="cart-page-total wow fadeInUp" data-wow-delay=".5s" data-wow-duration="1s">
                                 <h2>Cart totals</h2>
                                 <ul class="mb-20">
-                                    <li>Subtotal <span>${{ subtotal }}</span></li>
-                                    <li>Total <span>${{ total }}</span></li>
-                                  </ul>
-                                  
-                                <a class="tp-btn theme-bg text-center w-100" href="{% url 'cart_checkout' %}"><span>Proceed to checkout</span></a>
+                                    <li>Subtotal <span id="cart-subtotal">৳{{ subtotal }}</span></li>
+                                    <li>Total <span id="cart-total">৳{{ total }}</span></li>
+                                </ul>
+                                <a class="tp-btn theme-bg text-center w-100" href="{% url 'cart_checkout' %}">
+                                    <span>Proceed to checkout</span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -476,4 +487,66 @@
 <!-- Cart area end -->
 {% endblock content %}
 
-{% block custom_js %}{% endblock custom_js %}
+{% block custom_js %}
+<script>
+  function updateQuantity(productId, change) {
+    const quantityInput = document.getElementById('qty-' + productId);
+    let currentQuantity = parseInt(quantityInput.value);
+    let newQuantity = currentQuantity + change;
+
+    // Don't allow quantity to go below 1
+    if (newQuantity < 1) {
+        return;
+    }
+
+    // Send AJAX request to update the cart
+    fetch('{% url "update_cart_quantity" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            'product_id': productId,
+            'quantity': newQuantity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // ✅ Only now update the UI from backend-confirmed data
+            quantityInput.value = newQuantity;
+
+            // Update item total
+            document.getElementById('total-' + productId).textContent = '৳' + data.item_total;
+
+            // Update cart totals
+            document.getElementById('cart-subtotal').textContent = '৳' + data.subtotal;
+            document.getElementById('cart-total').textContent = '৳' + data.total;
+        } else {
+            alert('Error updating cart: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Error updating cart: ' + error.message);
+    });
+}
+
+
+// Function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock custom_js %}

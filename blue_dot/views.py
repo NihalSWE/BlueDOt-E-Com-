@@ -18,13 +18,15 @@ def home(request):
     home_cta = HomeCTA.objects.first()  # Get the CTA (assuming one exists)
     pricing_card = PricingCard.objects.first()  # Fetch the PricingCard content
     category_products = Product.objects.order_by('-created_at')[:4]
+    blogs = BlogPost.objects.filter(is_active=True)
     return render(request, 'blue_dot/index.html', {
         'sliders': sliders,
         'center_cards': center_cards,
         'products': products,
         'home_cta':home_cta,
         'pricing_card':pricing_card,
-        'category_products':category_products
+        'category_products':category_products,
+        'blogs':blogs
     })
     
 
@@ -265,26 +267,41 @@ def product_detail(request, slug):
     return render(request, 'blue_dot/shop-details.html', {'product': product,'banner':banner,'reviews': reviews,'form': form,})
 
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
 def cart(request):
     banner = CartBanner.objects.first()
-    cart_items = AddCart.objects.select_related('product')
+    cart_items = AddCart.objects.select_related('product').all()
 
-    total = sum(item.total_cost for item in cart_items)
+    # Calculate totals in the view
+    cart_data = []
+    total = 0
+    
+    for item in cart_items:
+        item_total = (item.final_price or 0) * item.quantity
+
+        cart_data.append({
+            'item': item,
+            'total_cost': item_total
+        })
+        total += item_total
 
     context = {
         'banner': banner,
-        'cart_items': cart_items,
+        'cart_data': cart_data,
+        'cart_items': cart_items,  # Keep this for backward compatibility
         'subtotal': total,
         'total': total
     }
     return render(request, 'blue_dot/cart.html', context)
 
 
-
-
 def add_to_cart(request, slug):
     product = get_object_or_404(Product, slug=slug)
-    quantity = int(request.POST.get('quantity', 1))  # default to 1
+    quantity = int(request.POST.get('quantity', 1))
 
     cart_item, created = AddCart.objects.get_or_create(product=product)
     if not created:
@@ -295,9 +312,50 @@ def add_to_cart(request, slug):
 
     return redirect('cart')
 
+
 def remove_from_cart(request, slug):
+    """Remove item completely from cart"""
     product = get_object_or_404(Product, slug=slug)
-    AddCart.objects.filter(product=product).delete()
+    cart_item = get_object_or_404(AddCart, product=product)
+    cart_item.delete()
     return redirect('cart')
+
+
+@csrf_exempt
+def update_cart_quantity(request):
+    """Update cart item quantity via AJAX"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            product_id = data.get('product_id')
+            new_quantity = int(data.get('quantity'))
+
+            if new_quantity <= 0:
+                return JsonResponse({'success': False, 'error': 'Quantity must be greater than 0'})
+
+            cart_item = get_object_or_404(AddCart, product_id=product_id)
+            cart_item.quantity = new_quantity
+            cart_item.save()
+
+            # Safely compute totals
+            subtotal = 0
+            for item in AddCart.objects.select_related('product').all():
+                item_total = (item.final_price or Decimal('0.00')) * item.quantity
+                subtotal += item_total
+
+            item_total = (cart_item.final_price or Decimal('0.00')) * cart_item.quantity
+
+            return JsonResponse({
+                'success': True,
+                'item_total': str(item_total),
+                'subtotal': str(subtotal),
+                'total': str(subtotal),
+            })
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
 
 
