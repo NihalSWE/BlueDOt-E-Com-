@@ -7,7 +7,9 @@ from django.conf.urls.static import static
 
 
 urlpatterns = [
-    path('', views.deshboard, name='dashboard'),
+    path('', views.dashboard, name='dashboard'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.custom_logout_view, name='logout'),
     
     # home page
     # path('home',views.home,name='admin-home'),
@@ -16,8 +18,8 @@ urlpatterns = [
     path('home/practice-area-create/',views.practice_area_create, name='practice_area_create'),
     path('home_CTA',views.home_CTA,name='home_CTA'),
     path('pricing_card',views.pricing_card,name='pricing_card'),
-    
-    # Home
+    path('cart_banner',views.cart_banner,name="cart_banner"),
+
     path('home_centerCard',views.home_centerCard,name='home_centerCard'),
     path('home-center-card/edit/<int:card_id>/', views.edit_center_card, name='edit_center_card'),
     path('home-center-card/delete/<int:card_id>/', views.delete_center_card, name='delete_center_card'),
@@ -40,6 +42,12 @@ urlpatterns = [
     path('delete-category/<int:pk>/', views.delete_category, name='delete_category'),
     # Categories urls
     
+    # Users
+    path('user-list/', views.user_list, name='user_list'),
+    path('update-user/<int:user_id>/', views.update_user, name='update_user'),
+    path('delete-user/<int:id>/', views.delete_user, name='delete_user'), 
+    # Users
+    
     
     # Unit urls
     path('unit-list/', views.units, name='units'),
@@ -50,6 +58,7 @@ urlpatterns = [
     path('product-list/', views.product_list, name='product_list'),
     path('product-create/',views.product_create,name='product_create'),
     path('category-update/<int:pk>/',views.update_category,name='update_category'),
+    path('delete-product/<int:pk>/', views.delete_product, name='delete_product'),
     path('product_banner',views.product_banner,name='product_banner'),
     path('product_review',views.product_review,name='product_review'),
     # Products urls
@@ -68,8 +77,8 @@ urlpatterns = [
     path('initial-order-create',views.initial_order_create,name='initial_order_create'),
     path('initial-order-update/<int:id>/',views.initial_order_update,name='initial_order_update'),
     path('approve-order/<int:id>',views.approve_order,name='approve_order'),
+    path('orders/<int:order_id>/product/<int:product_id>/materials/', views.get_materials_by_product, name='get_materials_by_product'),
     # Order urls
-    
     
     path('product_list/',views.product_list,name='product_list'),
     path('add_product/',views.add_product,name='add_product'),
@@ -117,7 +126,7 @@ urlpatterns = [
     path('materials/<int:id>/update/', views.material_update, name='material_update'),  # Update a material
     path('materials/<int:id>/delete/', views.material_delete, name='material_delete'),  # Delete a material
 
-path('material-purchases/', views.material_purchase_list, name='material_purchase_list'),           # List all purchases
+    path('material-purchases/', views.material_purchase_list, name='material_purchase_list'),           # List all purchases
     path('material-purchases/create/', views.material_purchase_create, name='material_purchase_create'), # Create purchase
     path('material-purchases/<int:id>/update/', views.material_purchase_update, name='material_purchase_update'),  # Update purchase
     path('material-purchases/<int:id>/delete/', views.material_purchase_delete, name='material_purchase_delete'),  # Delete purchase
@@ -142,7 +151,7 @@ path('material-purchases/', views.material_purchase_list, name='material_purchas
     path('customer-report/', views.customer_report, name='customer_report'),
     path('reports/profit-loss/', views.profit_loss_report, name='profit_loss_report'),
     path('supplier/<str:supplier_id>/', views.supplier_detail, name='supplier_detail'),
-    
+      path('reports/daily-sell/', views.daily_sell_report, name='daily_sell_report'),
     
     
     path('home_CTA',views.home_CTA,name='home_CTA'),
@@ -171,12 +180,18 @@ path('material-purchases/', views.material_purchase_list, name='material_purchas
     path('ckeditor/upload/', views.ckeditor_upload, name='ckeditor_upload'),
     
     path('blog_comments',views.blog_comments,name='blog_comments'),
+      path('last-orders/', views.last_10_orders_api, name='api-last-orders'),
     
     # Blog urls
-
     
-    #cart
-    path('cart_banner',views.cart_banner,name="cart_banner"),
-    #cart
+     #checkout#
+    path('checkout_banner',views.checkout_banner,name='checkout_banner'),
+    path('order_summary',views.order_summary,name='order_summary'),
+    path('delete-order/', views.delete_order, name='delete_order'),
+    path('update-order-status/', views.update_order_status, name='update_order_status'),
+
+    #checkout#
+
+
     
 ]

@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/quill/katex.css' %}" />
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/quill/editor.css' %}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 
 <style>
@@ -107,18 +108,6 @@
                                         {% endfor %}
                                     </select>
                                     <label for="multicol-country">Customer</label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <select id="multicol-country" class="select2 form-select" name="product_id" data-allow-clear="true">
-                                        <option value="">Select Product</option>
-                                        {% for product in products %}
-                                            <option value="{{ product.id }}">{{ product.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <label for="multicol-country">Product</label>
                                 </div>
                             </div>
                         </div>
@@ -271,7 +260,7 @@ $(document).ready(function() {
                 <td>${notes}</td>
                 <td>
                     <button type="button" class="btn btn-sm btn-danger remove-btn">
-                        <i class="fas fa-trash"></i>
+                        <span style="color: white; font-size: 20px;"><i class="fa-solid fa-xmark"></i></span>
                     </button>
                 </td>
                 <input type="hidden" name="products[]" value="${productId}">
@@ -295,7 +284,7 @@ $(document).ready(function() {
     function updateGrandTotal() {
         let grandTotal = 0;
         $('#selectedItemsTable tbody tr').each(function() {
-            const total = parseFloat($(this).find('td:eq(3)').text().replace('৳', ''));
+            const total = parseFloat($(this).find('td:eq(3)').text().replace(/[^\d.-]/g, ''));
             grandTotal += total;
         });
         $('#grandTotal').text('৳' + grandTotal.toFixed(2));

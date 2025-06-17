@@ -55,6 +55,9 @@
     border-radius: 5px;
     padding: 5px;
   }
+  #purchaseTable th, #purchaseTable td {
+  border: 1px solid #dee2e6;
+}
 </style>
 
 <div class="card purchase-card">
@@ -141,21 +144,26 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">Material <span class="text-danger">*</span></label>
-              <select name="mid_material_id" class="form-select" required>
-                <option value="">Select Material</option>
-                {% for material in materials %}
-                <option value="{{ material.id }}">{{ material.mr_material_name }}</option>
-                {% endfor %}
-              </select>
+            <select id="materialSelect" name="mid_material_id" class="form-select" required>
+  <option value="">Select Material</option>
+  {% for material in materials %}
+  <option value="{{ material.id }}" data-unit="{{ material.unit }}">
+    {{ material.mr_material_name }}
+  </option>
+  {% endfor %}
+</select>
             </div>
             <div class="col-md-6">
               <label class="form-label">Invoice ID <span class="text-danger">*</span></label>
               <input type="text" name="mid_invoice_id" class="form-control" required>
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Quantity <span class="text-danger">*</span></label>
-              <input type="number" step="0.01" name="mid_buy_quentity" class="form-control" required>
-            </div>
+          <div class="col-md-6">
+  <label class="form-label">Quantity <span class="text-danger">*</span></label>
+  <div class="input-group">
+    <input type="number" step="0.01" name="mid_buy_quentity" class="form-control" required>
+    <span class="input-group-text" id="unitDisplay">unit</span>
+  </div>
+</div>
             <div class="col-md-6">
               <label class="form-label">Unit Price <span class="text-danger">*</span></label>
               <div class="input-group">
@@ -258,7 +266,23 @@
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+<script>
+  // Prepare a JS object with material ID → unit mapping
+  const materialUnits = {
+    {% for material in materials %}
+      "{{ material.id }}": "{{ material.unit|escapejs }}",
+    {% endfor %}
+  };
 
+  const materialSelect = document.getElementById('materialSelect');
+  const unitDisplay = document.getElementById('unitDisplay');
+
+  materialSelect.addEventListener('change', function () {
+    const selectedId = this.value;
+    const unit = materialUnits[selectedId] || 'unit';
+    unitDisplay.textContent = unit;
+  });
+</script>
 <script>
   $(document).ready(function() {
     $('#purchaseTable').DataTable({

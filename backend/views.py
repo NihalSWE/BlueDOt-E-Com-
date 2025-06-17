@@ -19,15 +19,422 @@ from datetime import datetime, timedelta
 from django.db.models import Sum, F, ExpressionWrapper, DecimalField
 from django.db.models.functions import TruncMonth, TruncYear
 from django.db import transaction
-
-
-
+from django.db.models import Count, Avg
+from django.utils.timezone import now
+from django.contrib.auth import authenticate, login, logout
+from django.views.decorators.http import require_GET
 # Create your views here.
+from decimal import Decimal, InvalidOperation
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Sum, Count, Avg
+from django.utils import timezone
+from datetime import timedelta
+from django.contrib.auth.decorators import login_required
+from collections import defaultdict
 
 
-def deshboard(request):
-    return render(request, 'backend/index.html')
 
+@login_required
+def dashboard(request):
+    now = timezone.now()
+    today = now.date()
+    current_year = now.year
+    
+    # Calculate week range
+    start_of_week = today - timedelta(days=today.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
+    
+    # Weekly sales data with correct field names
+    weekly_sales = MaterialInventoryDetail.objects.filter(
+        mid_deal_type='sell',
+        mid_entry_date__date__range=[start_of_week, end_of_week]
+    ).select_related('mid_material', 'mid_material__mr_type')
+    
+    # Calculate weekly metrics
+    weekly_metrics = weekly_sales.aggregate(
+        total_qty=Sum('mid_sell_quentity'),
+        total_earnings=Sum('mid_sell_prices'),
+        total_cost=Sum('mid_buy_prices')
+    )
+    
+    weekly_sell_qty = weekly_metrics['total_qty'] or 0
+    weekly_earnings = weekly_metrics['total_earnings'] or 0
+    weekly_profit = (weekly_earnings - (weekly_metrics['total_cost'] or 0))
+    
+    # Get top selling materials this week with correct field names
+    top_materials = weekly_sales.values(
+        'mid_material__mr_material_name',
+        'mid_material__mr_type__TypeName'  # Changed from 'name' to 'TypeName'
+    ).annotate(
+        quantity=Sum('mid_sell_quentity'),
+        earnings=Sum('mid_sell_prices')
+    ).order_by('-earnings')[:8]
+    
+    # Group top materials by category for the slider
+    material_categories = {}
+    for material in top_materials:
+        category_name = material.get('mid_material__mr_type__TypeName') or 'Other'  # Changed to TypeName
+        if category_name not in material_categories:
+            material_categories[category_name] = {
+                'total_earnings': 0,
+                'materials': []
+            }
+        material_categories[category_name]['total_earnings'] += material['earnings']
+        material_categories[category_name]['materials'].append({
+            'name': material['mid_material__mr_material_name'],
+            'quantity': material['quantity']
+        })
+    
+    # Prepare data for template
+    weekly_sales_data = []
+    for category, data in material_categories.items():
+        weekly_sales_data.append({
+            'name': category,
+            'total_earnings': data['total_earnings'],
+            'materials': data['materials'],
+            'image': f"assets/img/products/card-weekly-sales-{category.lower().replace(' ', '-')}.png"
+        })
+    # Prepare data for template
+    weekly_sales_data = []
+    for category, data in material_categories.items():
+        weekly_sales_data.append({
+            'name': category,
+            'total_earnings': data['total_earnings'],
+            'materials': data['materials'],
+            'image': f"assets/img/products/card-weekly-sales-{category.lower().replace(' ', '-')}.png"
+        })
+    
+    # All inventory calculations
+    inventory_details = MaterialInventoryDetail.objects.all()
+    total_sell_qty = inventory_details.aggregate(
+        total=Sum('mid_sell_quentity')
+    )['total'] or 0
+    
+    total_profit = inventory_details.filter(
+        mid_deal_type='sell'
+    ).aggregate(
+        profit=Sum('mid_sell_prices') - Sum('mid_buy_prices')
+    )['profit'] or 0
+    
+    # Reviews data
+    current_year_reviews = ProductReview.objects.filter(
+        created_at__year=current_year
+    )
+    total_ratings = current_year_reviews.count()
+    average_rating = current_year_reviews.aggregate(
+        avg_rating=Avg('rating')
+    )['avg_rating'] or 0
+    average_rating = round(average_rating, 2)
+    
+    # Other metrics
+    total_purchases = inventory_details.aggregate(
+        total=Sum('mid_buy_paid')
+    )['total'] or 0
+    
+    new_customers_count = CustomerInfo.objects.count() 
+    total_transactions = inventory_details.filter(
+        mid_deal_type='sell'
+    ).count()
+
+    visitor_counts = get_visitor_counts()
+    mobile_visitors = visitor_counts['mobile']
+    desktop_visitors = visitor_counts['desktop']
+    total_visitors = mobile_visitors + desktop_visitors
+    average_visitors = total_visitors / 2 
+    # Format with commas as strings
+    mobile_visitors_formatted = f"{mobile_visitors:,}"
+    desktop_visitors_formatted = f"{desktop_visitors:,}"
+    total_visitors_formatted = f"{total_visitors:,}"
+    visitor_counts = get_visitor_counts()
+    mobile_visitors = visitor_counts['mobile']
+    desktop_visitors = visitor_counts['desktop']
+
+    days = 7  # or your actual period count
+
+    average_mobile = mobile_visitors / days
+    average_desktop = desktop_visitors / days
+
+    # Format with commas and no decimals
+    mobile_visitors_formatted = f"{mobile_visitors:,}"
+    desktop_visitors_formatted = f"{desktop_visitors:,}"
+    average_mobile_formatted = f"{average_mobile:,.0f}"
+    average_desktop_formatted = f"{average_desktop:,.0f}"
+    sales_this_month = get_sales_this_month()
+
+    # Format with commas and 2 decimals
+    sales_this_month_formatted = f"{sales_this_month:,.2f}"
+    total_orders = Order.objects.count()  # total orders count
+    buy_data = (
+        MaterialInventoryDetail.objects
+        .values('mid_party__prs_name')
+        .annotate(total_buy_quantity=Sum('mid_buy_quentity'))
+        .order_by('mid_party__prs_name')
+    )
+    
+    supplier_names = [entry['mid_party__prs_name'] for entry in buy_data]
+    total_buy_quantities = [float(entry['total_buy_quantity']) for entry in buy_data]
+    customer_names, total_buy_quantities = get_customer_buy_data()
+
+    total_order_items = OrderItem.objects.count()  # total order items count
+    users = User.objects.all().order_by('-id')[:10]  # last 10 users, adjust as needed
+    last_10_orders = Order.objects.order_by('-created_at')[:10]
+    context = {
+        # Weekly sales data
+        'weekly_sell_qty': weekly_sell_qty,
+        'weekly_earnings': weekly_earnings,
+        'weekly_profit': weekly_profit,
+        'material_categories': weekly_sales_data,
+        'start_of_week': start_of_week.strftime('%b %d'),
+        'end_of_week': end_of_week.strftime('%b %d'),
+         'users': users,
+        # General metrics
+        'total_sell_qty': total_sell_qty,
+        'total_profit': total_profit,
+        'new_customers_count': new_customers_count,
+        'total_transactions': total_transactions,
+        'total_ratings': total_ratings,
+        'average_rating': average_rating,
+        'current_year': current_year,
+        'total_purchases': total_purchases,
+        'sales_this_month': sales_this_month_formatted,
+
+        'mobile_visitors': mobile_visitors_formatted,
+        'desktop_visitors': desktop_visitors_formatted,
+        'total_visitors': total_visitors_formatted,
+           'average_mobile': average_mobile_formatted,
+    'average_desktop': average_desktop_formatted,
+
+            'total_orders': total_orders,
+        'total_order_items': total_order_items,
+                'supplier_names': supplier_names,
+        'total_buy_quantities': total_buy_quantities,
+                'customer_names': customer_names,
+        'total_buy_quantities': total_buy_quantities,
+           'last_10_orders': last_10_orders,
+    
+    }
+    return render(request, 'backend/index.html', context)
+
+
+def login_view(request):
+    if request.method == 'POST':
+        email_or_username = request.POST.get('email')
+        password = request.POST.get('password')
+
+        # Try authenticating with username
+        user = authenticate(request, username=email_or_username, password=password)
+
+        # If not found, try authenticating with email
+        if user is None:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                user_obj = User.objects.get(email=email_or_username)
+                user = authenticate(request, username=user_obj.username, password=password)
+            except User.DoesNotExist:
+                user = None
+
+        if user is not None:
+            login(request, user)
+            return redirect('dashboard') 
+        else:
+            messages.error(request, 'Invalid email/username or password')
+
+    return render(request, 'backend/user_authentication/login.html')
+
+
+def custom_logout_view(request):
+    logout(request)
+    return redirect('login')
+
+@login_required
+def user_list(request):
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'create':
+            email = request.POST.get('add_email')
+            user_id = request.POST.get('add_user_id')
+            name = request.POST.get('add_name')
+            phone = request.POST.get('add_phone')
+            user_type = request.POST.get('add_user_type')
+            password = request.POST.get('add_password')
+
+            # Validate fields
+            if not all([email, user_id, name, phone, user_type, password]):
+                messages.error(request, "All fields are required.")
+                return redirect('user_list')
+
+            # Check for duplicate email or user_id
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "Email already exists.")
+                return redirect('user_list')
+
+            if User.objects.filter(user_id=user_id).exists():
+                messages.error(request, "User ID already exists.")
+                return redirect('user_list')
+
+            try:
+                user = User(
+                    email=email,
+                    user_id=user_id,
+                    username=email,  # optional, you can change
+                    phone_number=phone,
+                    user_type=int(user_type),
+                    name=name
+                )
+                user.set_password(password)
+                user.save()
+                messages.success(request, "User created successfully.")
+            except Exception as e:
+                messages.error(request, f"Error: {e}")
+
+            return redirect('user_list')
+
+    admin_users = User.objects.all()
+    return render(request, 'backend/users/user_list.html', {
+        'admin_users': admin_users,
+    })
+    
+@login_required
+def update_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        user_id_input = request.POST.get('user_id', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone_number', '').strip()
+        user_type = request.POST.get('user_type')
+        user_status = request.POST.get('user_status')
+        password = request.POST.get('password', '').strip()  # Optional password update
+
+        # Validate required fields
+        if not name or not user_id_input or not email:
+            messages.error(request, 'Name, User ID, and Email are required.')
+            return redirect('user_list')
+
+        # Check for duplicate email or user_id (excluding current user)
+        if User.objects.filter(email=email).exclude(id=user.id).exists():
+            messages.error(request, 'Email already exists.')
+            return redirect('user_list')
+
+        if User.objects.filter(user_id=user_id_input).exclude(id=user.id).exists():
+            messages.error(request, 'User ID already exists.')
+            return redirect('user_list')
+
+        # Save updated values
+        user.name = name
+        user.user_id = user_id_input
+        user.email = email
+        user.phone_number = phone
+        user.user_type = user_type
+        user.user_status = user_status
+
+        if password:
+            user.set_password(password)  # Secure password update
+
+        user.save()
+        messages.success(request, 'User updated successfully.')
+
+    return redirect('user_list')
+    
+@login_required
+def delete_user(request, id):
+    try:
+        user = User.objects.get(id=id)
+    except User.DoesNotExist:
+        messages.error(request, "User not found.")
+    
+    user.delete()
+    messages.success(request, "User deleted successfully.")
+    return redirect('user_list')
+
+@login_required
+@require_GET
+def last_10_orders_api(request):
+    # Get last 10 orders, newest first
+    last_10_orders = Order.objects.order_by('-created_at')[:10]
+
+    # Prepare data for chart: count orders by status
+    # We'll map statuses to names and count how many orders per status in these 10
+    status_map = dict(Order.STATUS_CHOICES)  # e.g. {0: 'Pending', 1: 'Approved', ...}
+
+    # Count how many orders per status in last 10 orders
+    status_counts = {key: 0 for key in status_map.keys()}
+    for order in last_10_orders:
+        # order.status might be string because CharField but your choices keys are int? 
+        # Convert to int if needed:
+        try:
+            status_key = int(order.status)
+        except:
+            status_key = order.status
+        if status_key in status_counts:
+            status_counts[status_key] += 1
+
+    # Format response data
+    response_data = {
+        'labels': [status_map[key] for key in status_counts.keys()],
+        'data': [status_counts[key] for key in status_counts.keys()],
+    }
+
+    return JsonResponse(response_data)
+@login_required
+def get_last_user():
+    return User.objects.order_by('-created_at').first()  # Or order_by('-id')
+
+def get_customer_buy_data():
+    buy_data = (
+        MaterialInventoryDetail.objects
+        .filter(mid_deal_type='buy', order_id__isnull=False)
+        .annotate(
+            customer_name=F('order_id__customer__CustomerName')
+        )
+        .values('customer_name')
+        .annotate(total_buy_quantity=Sum('mid_buy_quentity'))
+        .order_by('customer_name')
+    )
+
+    customer_names = [entry['customer_name'] or "Unknown" for entry in buy_data]
+    total_buy_quantities = [float(entry['total_buy_quantity'] or 0) for entry in buy_data]
+
+    return customer_names, total_buy_quantities
+
+def get_sales_this_month():
+    today = now()
+    current_month = today.month
+    current_year = today.year
+
+    sales_total = MaterialInventoryDetail.objects.filter(
+        mid_deal_type='sell',
+        mid_entry_date__year=current_year,
+        mid_entry_date__month=current_month
+    ).aggregate(total_sales=Sum('mid_sell_prices'))['total_sales'] or 0
+
+    return sales_total
+
+def get_visitor_counts():
+    mobile_visitors = Visitor.objects.filter(device_type='mobile').count()
+    desktop_visitors = Visitor.objects.filter(device_type='desktop').count()
+    return {
+        'mobile': mobile_visitors,
+        'desktop': desktop_visitors
+    }
+
+def get_weekly_sales_data():
+    from datetime import timedelta, date
+    today = date.today()
+    last_week = today - timedelta(days=7)
+
+    sales = (
+        MaterialInventoryDetail.objects
+        .filter(mid_deal_type='sell', mid_entry_date__date__gte=last_week)
+        .values('mid_material__mr_type__name')  # Group by material type name
+        .annotate(total_quantity=Sum('mid_sell_quentity'))
+    )
+    return sales
+@login_required
 def home_banner(request):
     # Get all sliders ordered by creation date (newest first)
     sliders = HomeSlider.objects.all().order_by('-created_at')
@@ -77,7 +484,7 @@ def home_banner(request):
     
     return render(request, 'backend/home.html', context)
 
-
+@login_required
 def home_CTA(request):
     cta = HomeCTA.objects.first()
     if request.method == "POST":
@@ -93,7 +500,7 @@ def home_CTA(request):
     })
 
 
-
+@login_required
 def home_centerCard(request):
     if request.method == 'POST':
         CenterCard.objects.create(
@@ -107,6 +514,7 @@ def home_centerCard(request):
 
     cards = CenterCard.objects.all()
     return render(request, 'backend/home_centerCard.html', {'cards': cards})
+@login_required
 def edit_center_card(request, card_id):
     card = get_object_or_404(CenterCard, id=card_id)
     if request.method == 'POST':
@@ -119,7 +527,7 @@ def edit_center_card(request, card_id):
         card.save()
         return redirect('home_centerCard')
 
-
+@login_required
 def delete_center_card(request, card_id):
     card = get_object_or_404(CenterCard, id=card_id)
     if request.method == 'POST':
@@ -129,7 +537,7 @@ def delete_center_card(request, card_id):
 # def home_CTA(request):
 #     return render (request, 'backend/home_cta.html')
 
-
+@login_required
 def practice_area(request):
     practice_areas = PracticeArea.objects.all().order_by('-created_at')
     
@@ -139,7 +547,7 @@ def practice_area(request):
     
     return render(request, 'backend/home_content/practice_area.html', context)
 
-
+@login_required
 def practice_area_create(request):
     if request.method == 'POST':
         heading = request.POST.get('heading')
@@ -150,7 +558,7 @@ def practice_area_create(request):
     
     
 
-
+@login_required
 def aboutUs_banner(request):
     banner = AboutUsBanner.objects.last()
     if not banner:
@@ -187,7 +595,7 @@ def aboutUs_aboutarea(request):
     })
 
 
-
+@login_required
 def aboutUs_callToaction(request):
     cta = CallToAction.objects.first()
 
@@ -208,7 +616,7 @@ from django.shortcuts import render, redirect
 from django.forms import modelformset_factory
 from .models import ChooseUsSection, ChooseUsItem
 from .forms import ChooseUsSectionForm, ChooseUsItemForm
-
+@login_required
 def aboutUs_chooseUs(request):
     section = ChooseUsSection.objects.last()
 
@@ -263,7 +671,7 @@ def aboutUs_chooseUs(request):
     }
     return render(request, 'backend/aboutUs_chooseUs.html', context)
 
-
+@login_required
 def aboutus_faq(request):
     faq_section = FAQSection.objects.first()
 
@@ -287,7 +695,7 @@ def aboutus_faq(request):
 
 
 
-
+@login_required
 def contactUs(request):
     banner = ContactUsBanner.objects.last()  # Get the most recently added banner
 
@@ -303,7 +711,7 @@ def contactUs(request):
         form = ContactUsBannerForm(instance=banner)
 
     return render(request, 'backend/contactus.html', {'form': form, 'banner': banner})
-
+@login_required
 def contactUs_location(request):
     locations = ContactLocation.objects.all()
 
@@ -340,7 +748,7 @@ def contactUs_location(request):
 
     # GET request - just render page
     return render(request, 'backend/contactus_location.html', {"locations": locations})
-
+@login_required
 def contactUs_msg(request):
     if request.headers.get("x-requested-with") == "XMLHttpRequest" and request.GET.get("msg_id"):
         msg_id = request.GET.get("msg_id")
@@ -358,7 +766,7 @@ def contactUs_msg(request):
     return render(request, "backend/contactus_msg.html", {"messages": messages})
 
 
-
+@login_required
 def order_list(request):
     return render(request, 'backend/orders/order_list.html')
 
@@ -416,14 +824,20 @@ def order_list(request):
     
 #     return render(request, 'backend/orders/create.html', context)
 
-
 def initial_orders(request):
     customers = CustomerInfo.objects.all()
     products = Product.objects.all()
     
     orders = Order.objects.all().select_related('customer').prefetch_related('items__product')
     
-    user_type = 2
+    user_type = None  # <-- define it early to avoid UnboundLocalError
+
+    if request.user.is_authenticated:
+        print('The user is authenticated')
+        user = request.user
+        user_type = user.user_type
+        
+    print('user in initial orders: ', user)
     
     context = {
         'customers': customers,
@@ -453,7 +867,7 @@ def initial_order_create(request):
             order = Order.objects.create(
                 customer_id=customer_id,
                 order_date=timezone.now(),
-                status='pending',
+                status=0,
                 notes=order_notes
             )
             
@@ -492,7 +906,7 @@ def initial_order_create(request):
         'customers': customers,
         'products': products,
     }
-    return render(request, 'backend/orders/approve_order.html', context)
+    return render(request, 'backend/orders/initial_order_create.html', context)
 
 
 def initial_order_update(request, id):
@@ -547,7 +961,6 @@ def initial_order_update(request, id):
         'customers': customers,
         'order_items': selected_items,
     })
-
 
 # def approve_order(request, id):
 #     order = Order.objects.filter(id=id).first()
@@ -656,14 +1069,11 @@ def initial_order_update(request, id):
 #     return render(request, 'backend/orders/approve_order.html', context)
 
 
+# Approve Order Starts
+@login_required
 def approve_order(request, id):
-    order = Order.objects.filter(id=id).first()
-    if not order:
-        messages.error(request, 'Order not found.')
-        return redirect('order_list')
-
+    order = get_object_or_404(Order, id=id)
     customers = CustomerInfo.objects.all()
-    products = Product.objects.all()
     materials = MaterialRegistration.objects.all()
     units = Unit.objects.all()
     order_items = order.items.all()
@@ -671,159 +1081,219 @@ def approve_order(request, id):
     if request.method == 'POST':
         try:
             with transaction.atomic():
-                customer_id = request.POST.get('customer')
-                product_id = request.POST.get('product_id')
-                order_date = request.POST.get('order_date')
-                notes = request.POST.get('notes', '')
-                materials_ids = request.POST.getlist('materials[]')
-                units_ids = request.POST.getlist('units[]')
-                quantities = request.POST.getlist('quantities[]')
+                _update_order_fields(order, request)
+                print( 'order status before entering: ', order.status)
 
-                # Validation
-                if not customer_id or not product_id:
-                    messages.error(request, "Customer and Product are required.")
-                    raise ValueError("Missing customer/product.")
+                for item in order_items:
+                    _process_material_usages(order, item, request)
+                    print( 'order status after saving materials: ', order.status)
 
-                if not materials_ids:
-                    messages.error(request, "At least one material is required.")
-                    raise ValueError("Missing materials.")
+                if int(order.status) == 2:
+                    print('got order_status------------------------: ', order.status)
+                    _update_inventory_details(order, request.user)
 
-                if len(materials_ids) != len(units_ids) or len(materials_ids) != len(quantities):
-                    messages.error(request, "Each material must have corresponding unit and quantity.")
-                    raise ValueError("Material/Unit/Quantity mismatch.")
+                messages.success(request, "Order approved and materials saved.")
+                return redirect('initial_orders')
 
-                customer = CustomerInfo.objects.filter(id=customer_id).first()
-                product = Product.objects.filter(id=product_id).first()
+        except Exception as exc:
+            messages.error(request, f"Error: {exc}")
+            raise
 
-                if not customer or not product:
-                    messages.error(request, "Invalid customer or product.")
-                    raise ValueError("Invalid customer/product.")
+    user_type = request.user.user_type if request.user.is_authenticated else None
 
-                # Update order
-                order.customer = customer
-                order.notes = notes
-                order.order_date = order_date
-                order.status = '1'  # Approved
-                order.save()
+    for item in order_items:
+        for usage in item.material_usages.all():
+            usage.total_price = usage.quantity_used * usage.material.mr_sell_price
 
-                # Remove previous OrderItems and MaterialUsage
-                order.items.all().delete()
-                MaterialUsage.objects.filter(order=order).delete()
+    added_materials_dict = {}
+    for item in order_items:
+        for usage in item.material_usages.all():
+            added_materials_dict[usage.material.id] = {
+                'product_id': item.product.id,
+                'product_name': item.product.name,
+                'unit_id': usage.unit.id,
+                'quantity': usage.quantity_used,
+            }
 
-                # Add new OrderItem
-                OrderItem.objects.create(
-                    order=order,
-                    product=product,
-                    quantity=1
-                )
+    product_material_map = defaultdict(list)
+    for item in order_items:
+        for usage in item.material_usages.all():
+            product_material_map[item.product.id].append(usage.material.id)
 
-                # Add Material Usages
-                for material_id, unit_id, qty in zip(materials_ids, units_ids, quantities):
-                    if not qty or float(qty) <= 0:
-                        messages.warning(request, f"Skipped material ID {material_id} due to invalid quantity.")
-                        continue
-
-                    material = MaterialRegistration.objects.filter(id=material_id).first()
-                    unit = Unit.objects.filter(id=unit_id).first()
-
-                    if not material or not unit:
-                        messages.warning(request, f"Invalid material or unit for ID {material_id}, {unit_id}. Skipped.")
-                        continue
-
-                    MaterialUsage.objects.create(
-                        order=order,
-                        material=material,
-                        unit=unit,
-                        quantity_used=qty
-                    )
-
-                    InventoryLog.objects.create(
-                        material=material,
-                        change_type='out',
-                        quantity_changed=qty,
-                        reference=f"Order #{order.id}"
-                    )
-
-                messages.success(request, "Order approved and updated successfully.")
-                return redirect('order_list')
-
-        except Exception as e:
-            messages.error(request, f"Error approving order: {str(e)}")
-
-    context = {
+    return render(request, 'backend/orders/approve_order.html', {
         'order': order,
         'customers': customers,
-        'products': products,
         'materials': materials,
         'units': units,
         'order_items': order_items,
-    }
-    return render(request, 'backend/orders/approve_order.html', context)
+        'added_materials_dict': added_materials_dict,
+        'user_type': user_type,
+        'product_material_map': dict(product_material_map),
+    })
+
+def _update_order_fields(order, request):
+    customer_id = request.POST.get('customer')
+    order_date = request.POST.get('order_date')
+    notes = request.POST.get('notes', '')
+    order_status = int(request.POST.get('order_status') or 1)
+    
+    print('order_status: ', order_status)
+
+    customer = CustomerInfo.objects.filter(id=customer_id).first()
+    if not customer:
+        raise ValueError("Customer invalid.")
+
+    order.customer = customer
+    order.order_date = order_date
+    order.notes = notes
+    order.status = order_status
+    order.save()
+
+def _process_material_usages(order, item, request):
+    prod_id = item.product.id
+
+    mat_ids = request.POST.getlist(f'materials_{prod_id}[]')
+    unit_ids = request.POST.getlist(f'units_{prod_id}[]')
+    qtys = request.POST.getlist(f'quantities_{prod_id}[]')
+
+    if not mat_ids or len(mat_ids) != len(unit_ids) or len(mat_ids) != len(qtys):
+        return
+
+    for mat_id, unit_id, qty_str in zip(mat_ids, unit_ids, qtys):
+        try:
+            qty = Decimal(qty_str)
+            if qty <= 0:
+                continue
+        except (InvalidOperation, ValueError):
+            continue
+
+        material = MaterialRegistration.objects.filter(id=mat_id).first()
+        unit = Unit.objects.filter(id=unit_id).first()
+        if not material or not unit:
+            continue
+
+        usage, created = MaterialUsage.objects.get_or_create(
+            order_item=item,
+            material=material,
+            defaults={
+                'order': order,
+                'unit': unit,
+                'quantity_used': qty
+            }
+        )
+
+        if not created:
+            usage.unit = unit
+            usage.quantity_used = qty
+            usage.save()
+
+        material.mr_quantity -= qty
+        material.save()
+
+def _update_inventory_details(order, user):
+    for item in order.items.all():
+        for usage in item.material_usages.all():
+            material = usage.material
+            print('material usages **********: ', material)
+            inv = MaterialInventoryDetail.objects.filter(mid_material=material).first()
+            
+            print('material inventory ----------: ', inv)
+
+            if inv:
+                inv.order_id = order
+                inv.mid_dealer = order.customer.id
+                inv.mid_sell_quentity = usage.quantity_used
+                inv.mid_sell_prices = material.mr_sell_price
+                inv.mid_sell_paid = material.mr_sell_price * usage.quantity_used
+                inv.mid_deal_type = 'sell'
+                inv.id_debit = material.mr_sell_price * usage.quantity_used
+                inv.mid_entry_by = user
+                inv.save()
+                
+
+def get_materials_by_product(request, order_id, product_id):
+    usages = MaterialUsage.objects.filter(
+        order_id=order_id,
+        order_item__product_id=product_id
+    ).select_related('material', 'unit')
+
+    data = [
+        {
+            'material_id': usage.material.id,
+            'material_name': usage.material.mr_material_name,
+            'quantity': str(usage.quantity_used),
+            'unit_id': usage.unit.id,
+        }
+        for usage in usages
+    ]
+    return JsonResponse({'materials': data})
+
+# Approve Order Ends
 
 
-
+@login_required
 def product_list(request):
     return render(request, 'backend/product-list.html')
-
+@login_required
 def add_product(request):
     return render(request, 'backend/product-add.html')
 
-
+@login_required
 def order_detail(request):
     return render(request, 'backend/order-details.html')
-
+@login_required
 def customer_list(request):
     return render(request, 'backend/customer-all.html')
-
+@login_required
 def customer_overview(request):
     return render(request, 'backend/customer-details-overview.html')
-
+@login_required
 def security(request):
     return render(request, 'backend/customer-details-security.html')
-
+@login_required
 def billing(request):
     return render(request, 'backend/customer-details-billing.html')
-
+@login_required
 def notification(request):
     return render(request, 'backend/customer-details-notifications.html')
-
+@login_required
 def store_details(request):
     return render(request, 'backend/settings-detail.html')
-
+@login_required
 def payments(request):
     return render(request, 'backend/settings-payments.html')
-
+@login_required
 def checkout(request):
     return render(request, 'backend/settings-checkout.html')
-
+@login_required
 def shipping(request):
     return render(request, 'backend/settings-shipping.html')
-
+@login_required
 def location(request):
     return render(request, 'backend/settings-locations.html')
 
 def setting_notification(request):
     return render(request, 'backend/settings-notifications.html')
-
+@login_required
 def invoice_add(request):
     return render(request, 'backend/invoice-add.html')
-
+@login_required
 def invoice_edit(request):
     return render(request, 'backend/invoice-edit.html')
-
+@login_required
 def invoice_preview(request):
     return render(request, 'backend/invoice-preview.html')
-
+@login_required
 def invoice_list(request):
     return render(request, 'backend/invoice-list.html')
-
+@login_required
 def access_roles(request):
     return render(request, 'backend/access-roles.html')
-
+@login_required
 def access_permission(request):
     return render(request, 'backend/access-permission.html')
 
-
+@login_required
 def category_list(request):
     categories = Category.objects.all().order_by('-created_at')
     
@@ -833,7 +1303,7 @@ def category_list(request):
 
     return render(request, 'backend/categories/category_list.html', context)
 
-
+@login_required
 def category_create(request):
     parent_categories = Category.objects.filter(parent_category__isnull=True)
 
@@ -867,6 +1337,7 @@ def category_create(request):
     
     
 # @csrf_exempt  # Optional if you're using fetch and passing the CSRF token manually
+@login_required
 def update_category(request, pk):
     if request.method == "POST":
         category = get_object_or_404(Category, id=pk)
@@ -894,14 +1365,14 @@ def update_category(request, pk):
         return JsonResponse({'message': 'Category updated successfully.'})
     
     
-
+@login_required
 def delete_category(request, pk):
     if request.method == "POST":
         category = get_object_or_404(Category, pk=pk)
         category.delete()
         return redirect('category_list')
     
-    
+@login_required   
 @require_http_methods(["GET", "POST"])
 def units(request):
     if request.method == 'POST':
@@ -930,7 +1401,7 @@ def units(request):
     units = Unit.objects.all()
     return render(request, 'backend/units/unit_list.html', {'units': units})
     
-    
+@login_required 
 # List brands (returns HTML)
 @require_http_methods(["GET"])
 def brand_list(request):
@@ -938,6 +1409,8 @@ def brand_list(request):
     return render(request, 'backend/brand/index.html', {'brands': brands})
 
 # Create brand (returns JSON)
+
+@login_required
 @csrf_exempt
 def brand_create(request):
     if request.method == 'POST':
@@ -956,7 +1429,7 @@ def brand_create(request):
         return JsonResponse({'success': True, 'brand_id': brand.id})
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
-
+@login_required
 # Get single brand (returns JSON)
 @require_http_methods(["GET"])
 def brand_detail(request, pk):
@@ -970,7 +1443,7 @@ def brand_detail(request, pk):
         'updated_at': brand.updated_at.isoformat() if brand.updated_at else None
     })
 
-
+@login_required
 # Update brand (returns JSON)
 @csrf_exempt
 @require_http_methods(["PUT", "POST"])
@@ -998,7 +1471,7 @@ def brand_update(request, pk):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
-
+@login_required
 # Delete brand (returns JSON)
 @csrf_exempt
 @require_http_methods(["DELETE", "POST"])
@@ -1010,7 +1483,7 @@ def brand_delete(request, pk):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
     
-
+@login_required
 def product_list(request):
     products = Product.objects.all().order_by('-created_at')
     
@@ -1018,7 +1491,7 @@ def product_list(request):
         'products': products,
     }
     return render(request, 'backend/products/product_list.html', context)
-
+@login_required
 def product_create(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -1050,8 +1523,16 @@ def product_create(request):
     categories = Category.objects.all()
     brands = Brand.objects.all()
     return render(request, 'backend/products/create.html', {'categories': categories, 'brands': brands})
+    
+@login_required
+def delete_product(request, pk):
+    if request.method == 'POST':
+        product = get_object_or_404(Product, pk=pk)
+        product.delete()
+        messages.success(request, "Product deleted successfully.")
+    return redirect('product_list')  # or wherever your list view is
 
-
+@login_required
 def aboutus_faq(request):
     """Handle all FAQ operations in one view"""
     # Handle POST requests for different actions
@@ -1135,7 +1616,7 @@ def aboutus_faq(request):
     }
     return render(request, 'backend/aboutUs_faq.html', context)
 
-
+@login_required
 def Ourfaq_banner(request):
     banner = OurfaqBanner.objects.last()
     if not banner:
@@ -1154,7 +1635,9 @@ def Ourfaq_banner(request):
         'form': form,
         'banner': banner
     })
-    
+
+
+@login_required   
 def Ourfaq_faqs(request):
     """Single view to handle all FAQ operations"""
     
@@ -1229,7 +1712,7 @@ def Ourfaq_faqs(request):
 
     return render(request, 'backend/OurFaq_faqs.html', context)
 
-
+@login_required
 def home_CTA(request):
     cta = HomeCTA.objects.first()
 
@@ -1247,7 +1730,7 @@ def home_CTA(request):
     })
     
     
-    
+@login_required   
 def pricing_card(request):
     card, _ = PricingCard.objects.get_or_create(id=1)  # Ensure single editable instance
 
@@ -1262,13 +1745,13 @@ def pricing_card(request):
     return render(request, 'backend/home_pricingcard.html', {'form': form})
 
 
-
+@login_required
 def party_supplier_list(request):
     # List all suppliers (returns HTML)
     suppliers = PartyRegSupplier.objects.all()
     context = {'suppliers': suppliers}
     return render(request, 'backend/party_supplier/list.html', context)
-
+@login_required
 def party_supplier_detail(request, slid):
     # View details of a specific supplier (returns JSON)
     supplier = get_object_or_404(PartyRegSupplier, prs_slid=slid)
@@ -1292,6 +1775,8 @@ def party_supplier_detail(request, slid):
 logger = logging.getLogger(__name__)
 
 @csrf_exempt  # Only use this if CSRF tokens are not being used (e.g., API endpoint)
+
+@login_required
 def party_supplier_create(request):
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
@@ -1344,6 +1829,7 @@ def party_supplier_create(request):
 
 
 @csrf_exempt
+@login_required
 def party_supplier_update(request, slid):
     if request.method == 'GET':
         try:
@@ -1390,6 +1876,8 @@ def party_supplier_update(request, slid):
 
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+        
+@login_required
 def party_supplier_delete(request, slid):
     # Delete a supplier (returns JSON)
     supplier = get_object_or_404(PartyRegSupplier, prs_slid=slid)
@@ -1402,12 +1890,12 @@ def party_supplier_delete(request, slid):
 
 
 
-
+@login_required
 # List all material types
 def material_type_list(request):
     material_types = MaterialType.objects.all()
     return render(request, 'backend/material/type/type_list.html', {'material_types': material_types})
-
+@login_required
 # Show form and create new material type
 def material_type_create(request):
     if request.method == 'POST':
@@ -1420,7 +1908,7 @@ def material_type_create(request):
         else:
             return HttpResponse("TypeName is required", status=400)
     return render(request, 'material_type_form.html')
-
+@login_required
 # Show form and update existing material type
 def material_type_update(request, id):
     material_type = get_object_or_404(MaterialType, pk=id)
@@ -1436,7 +1924,7 @@ def material_type_update(request, id):
         else:
             return HttpResponse("TypeName is required", status=400)
     return render(request, 'material_type_form.html', {'material_type': material_type})
-
+@login_required
 # Delete a material type
 @require_http_methods(["POST"])
 def material_type_delete(request, pk):
@@ -1447,7 +1935,7 @@ def material_type_delete(request, pk):
 
 
 
-
+@login_required
 def material_list(request):
     materials = MaterialRegistration.objects.select_related('mr_supplier', 'mr_type').all()
     suppliers = PartyRegSupplier.objects.all()
@@ -1461,7 +1949,7 @@ def material_list(request):
         'units': units,
     })
 # Create a new material
-
+@login_required
 def material_create(request):
     suppliers = PartyRegSupplier.objects.all()
     types = MaterialType.objects.all()
@@ -1521,7 +2009,7 @@ def material_create(request):
     })
 
 # Update a material
-
+@login_required
 def material_update(request, id):
     material = get_object_or_404(MaterialRegistration, pk=id)
     suppliers = PartyRegSupplier.objects.all()
@@ -1543,13 +2031,13 @@ def material_update(request, id):
         'suppliers': suppliers,
         'types': types
     })
-
+@login_required
 def material_delete(request, pk):
     material = get_object_or_404(MaterialRegistration, pk=pk)
     material.delete()
     return redirect('material_list')
 
-
+@login_required
 def material_purchase_list(request):
     purchases = MaterialInventoryDetail.objects.select_related(
         'mid_party', 'mid_entry_by', 'mid_material'
@@ -1567,7 +2055,7 @@ def material_purchase_list(request):
 
 
 
-
+@login_required
 def material_purchase_create(request):
     suppliers = PartyRegSupplier.objects.all()
     materials = MaterialRegistration.objects.all()
@@ -1615,7 +2103,7 @@ def material_purchase_create(request):
         'suppliers': suppliers,
         'materials': materials,
     })
-
+@login_required
 def material_purchase_update(request, id):
     purchase = get_object_or_404(MaterialInventoryDetail, pk=id)
     suppliers = PartyRegSupplier.objects.all()
@@ -1656,7 +2144,7 @@ def material_purchase_update(request, id):
         'suppliers': suppliers,
         'materials': materials,
     })
-
+@login_required
 def material_purchase_delete(request, pk):
     purchase = get_object_or_404(MaterialInventoryDetail, pk=pk)
     try:
@@ -1666,7 +2154,7 @@ def material_purchase_delete(request, pk):
         return HttpResponse(f"Error deleting purchase: {str(e)}", status=400)
 
 
-
+@login_required
 def customer_list(request):
     customers = CustomerInfo.objects.all()
     return render(request, 'backend/customer/customer_list.html', {
@@ -1674,7 +2162,7 @@ def customer_list(request):
     })
 
 
-
+@login_required
 def customer_create(request):
     if request.method == 'POST':
         try:
@@ -1721,7 +2209,7 @@ def customer_create(request):
     return render(request, 'backend/customer/customer_form.html')
 
 
-
+@login_required
 def customer_update(request, id):
     customer = get_object_or_404(CustomerInfo, pk=id)
 
@@ -1749,7 +2237,7 @@ def customer_update(request, id):
         'customer': customer
     })
 
-
+@login_required
 def customer_delete(request, id):
     customer = get_object_or_404(CustomerInfo, pk=id)
     try:
@@ -1761,7 +2249,7 @@ def customer_delete(request, id):
 
 
 
-
+@login_required
 # List all warehouses
 def warehouse_list(request):
     warehouses = InvWarehouse.objects.all()
@@ -1771,7 +2259,7 @@ def warehouse_list(request):
         'users':users
     })
 
-
+@login_required
 # Create a new warehouse
 def warehouse_create(request):
     users = User.objects.all()
@@ -1837,7 +2325,7 @@ def warehouse_create(request):
         'users': users
     })
 
-
+@login_required
 def warehouse_update(request, id):
     warehouse = get_object_or_404(InvWarehouse, pk=id)
     users = User.objects.all()
@@ -1879,7 +2367,7 @@ def warehouse_update(request, id):
         'users': users
     })
 
-
+@login_required
 # Delete a warehouse
 def warehouse_delete(request, id):
     try:
@@ -1946,7 +2434,7 @@ def inventory_stock_report(request):
         'suppliers': PartyRegSupplier.objects.all(),
         'total_inventory_value': total_inventory_value,
     })
-
+@login_required
 def material_transactions_report(request):
     transactions = MaterialInventoryDetail.objects.select_related(
         'mid_material', 'mid_party', 'mid_entry_by'
@@ -1991,7 +2479,7 @@ def material_transactions_report(request):
         'request': request
     })
 
-
+@login_required
 def sales_report(request):
     orders = Order.objects.select_related('customer').prefetch_related('items__product').order_by('-created_at')
 
@@ -2052,6 +2540,8 @@ def sales_report(request):
         'status_choices': Order.STATUS_CHOICES,
         'request': request,
     })
+    
+@login_required
 def product_material_usage_report(request):
     products = Product.objects.prefetch_related('productmaterial_set__material')
 
@@ -2080,7 +2570,7 @@ def product_material_usage_report(request):
     })
 
 
-
+@login_required
 def customer_report(request):
     # Get all customers with optional filters
     customers = CustomerInfo.objects.all().order_by('-RegDate')
@@ -2138,7 +2628,7 @@ def customer_report(request):
     return render(request, 'backend/reports/customer_report.html', context)
 
 
-
+@login_required
 def profit_loss_report(request):
     end_date = datetime.now().date()
     start_date = end_date - timedelta(days=30)
@@ -2268,7 +2758,7 @@ def profit_loss_report(request):
     return render(request, 'backend/reports/profit_loss_report.html', context)
 
 
-
+@login_required
 def supplier_detail(request, supplier_id):
     # Get the supplier or return 404 if not found
     supplier = get_object_or_404(PartyRegSupplier, prs_slid=supplier_id)
@@ -2292,7 +2782,7 @@ def supplier_detail(request, supplier_id):
     
     return render(request, 'backend/party_supplier/supplier_detail.html', context)
 
-
+@login_required
 def blog_banner(request):
     banner = BlogBanner.objects.last()
     if not banner:
@@ -2310,7 +2800,7 @@ def blog_banner(request):
         'banner': banner
     })
     
-    
+@login_required  
 def product_banner(request):
     banner = ProductBanner.objects.last()
     if not banner:
@@ -2328,7 +2818,7 @@ def product_banner(request):
         'banner': banner
     })
     
-
+@login_required
 def home_CTA(request):
     cta = HomeCTA.objects.first()
     if request.method == "POST":
@@ -2344,14 +2834,14 @@ def home_CTA(request):
     })
     
     
-    
+@login_required 
 # Discount Category Views
 def discount_category_list(request):
     categories = DiscountCategory.objects.all()
     return render(request, 'backend/discount/category_list.html', {
         'categories': categories
     })
-
+@login_required
 def discount_category_create(request):
     if request.method == 'POST':
         try:
@@ -2378,7 +2868,7 @@ def discount_category_create(request):
             return HttpResponse(f"Error creating category: {str(e)}", status=400)
 
     return render(request, 'backend/discount/category_form.html')
-
+@login_required
 def discount_category_update(request, pk):
     category = get_object_or_404(DiscountCategory, pk=pk)
     
@@ -2399,7 +2889,7 @@ def discount_category_update(request, pk):
     return render(request, 'backend/discount/category_form.html', {
         'category': category
     })
-
+@login_required
 def discount_category_delete(request, pk):
     category = get_object_or_404(DiscountCategory, pk=pk)
     try:
@@ -2407,7 +2897,7 @@ def discount_category_delete(request, pk):
         return redirect('discount_category_list')
     except Exception as e:
         return HttpResponse(f"Error deleting category: {str(e)}", status=400)
-
+@login_required
 def discount_list(request):
     discounts = Discount.objects.prefetch_related('products', 'category').all()
     products = Product.objects.all()
@@ -2418,7 +2908,7 @@ def discount_list(request):
         'categories': categories,
     })
 
-
+@login_required
 def discount_create(request):
     products = Product.objects.all().order_by('name')
     categories = DiscountCategory.objects.all().order_by('name')
@@ -2499,7 +2989,7 @@ def discount_create(request):
         'products': products,
         'categories': categories,
     })
-
+@login_required
 def discount_update(request, discount_id):
     discount = get_object_or_404(Discount, id=discount_id)
     products = Product.objects.all()
@@ -2533,7 +3023,7 @@ def discount_update(request, discount_id):
         'products': products,
         'categories': categories,
     })
-
+@login_required
 def discount_delete(request, pk):
     discount = get_object_or_404(Discount, pk=pk)
     try:
@@ -2544,25 +3034,23 @@ def discount_delete(request, pk):
         messages.error(request, f'Error deleting discount: {str(e)}')
         return redirect('discount_list')
     
-    
-
+@login_required    
 def blog_post(request):
-    posts = BlogPost.objects.all().order_by('-id')  # Order by newest first
-    # Get categories instead of products for the dropdown
-    categories = Category.objects.all()  # Assuming you have a Category model
+    posts = BlogPost.objects.all().order_by('-id')
+    categories = Product.objects.all()  # Using Product as category
     form = BlogPostForm()
     return render(request, 'backend/Blog/post.html', {
         'posts': posts,
-        'categories': categories,  # Changed from 'products' to 'categories'
+        'categories': categories,
         'form': form
     })
-
+@login_required
 @require_http_methods(["POST"])
 def create_or_update_post(request):
     try:
         post_id = request.POST.get('id')
         
-        if post_id:
+        if post_id and post_id.strip():
             # Update existing post
             instance = get_object_or_404(BlogPost, id=post_id)
             form = BlogPostForm(request.POST, request.FILES, instance=instance)
@@ -2580,7 +3068,7 @@ def create_or_update_post(request):
         else:
             return JsonResponse({
                 'success': False, 
-                'errors': form.errors,
+                'errors': dict(form.errors),
                 'message': 'Form validation failed'
             })
     except Exception as e:
@@ -2589,7 +3077,7 @@ def create_or_update_post(request):
             'error': str(e),
             'message': 'An error occurred while saving the post'
         })
-
+@login_required
 def get_post(request, id):
     try:
         post = get_object_or_404(BlogPost, id=id)
@@ -2597,7 +3085,7 @@ def get_post(request, id):
             'id': post.id,
             'title': post.title,
             'author': post.author,
-            'category': post.category.id,  # Send category ID for the select dropdown
+            'category': post.category.id if post.category else '',
             'description': post.description,
             'is_active': post.is_active,
         }
@@ -2608,7 +3096,7 @@ def get_post(request, id):
             'error': str(e),
             'message': 'Failed to retrieve post'
         })
-
+@login_required
 @require_http_methods(["POST"])
 def delete_post(request, id):
     try:
@@ -2624,8 +3112,7 @@ def delete_post(request, id):
             'error': str(e),
             'message': 'Failed to delete post'
         })
-
-# CKEditor image upload handler
+@login_required
 @csrf_exempt
 def ckeditor_upload(request):
     if request.method == 'POST' and request.FILES.get('upload'):
@@ -2637,15 +3124,15 @@ def ckeditor_upload(request):
             from django.core.files.base import ContentFile
             import uuid
             
-            # Generate unique filename to avoid conflicts
+            # Generate unique filename
             file_extension = os.path.splitext(upload.name)[1]
             unique_filename = f"{uuid.uuid4()}{file_extension}"
             
-            # Save file using Django's default storage
+            # Save file
             file_path = f"ckeditor_uploads/{unique_filename}"
             saved_path = default_storage.save(file_path, ContentFile(upload.read()))
             
-            # Get the URL for the saved file
+            # Get the URL
             file_url = default_storage.url(saved_path)
             
             return JsonResponse({
@@ -2663,17 +3150,139 @@ def ckeditor_upload(request):
         'error': {'message': 'No file uploaded'}
     })
     
+@login_required
 def blog_comments(request):
     comments = BlogComment.objects.select_related('blog').all()
     return render (request,'backend/Blog/comments.html', {'comments': comments})
 
-
+@login_required
 def product_review(request):
     reviews = ProductReview.objects.select_related('product').order_by('-created_at')
     return render(request, 'backend/products/reviews.html', {'reviews': reviews})
 
+@login_required
+def daily_sell_report(request):
+    # Get date parameters from request (default to today)
+    date_str = request.GET.get('date', '')
+    if date_str:
+        try:
+            selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            selected_date = timezone.now().date()
+    else:
+        selected_date = timezone.now().date()
+    
+    # Calculate previous and next day for navigation
+    previous_day = selected_date - timedelta(days=1)
+    next_day = selected_date + timedelta(days=1)
+    
+    # Filter sell transactions for the selected date
+    sell_transactions = MaterialInventoryDetail.objects.filter(
+        mid_deal_type='sell',
+        mid_entry_date__date=selected_date
+    ).select_related('mid_material', 'mid_party', 'mid_material__unit')
+    
+    # Annotate each transaction with calculated total and get customer details
+    transactions_with_totals = []
+    for tx in sell_transactions:
+        # Get customer details if available
+        customer = None
+        if hasattr(tx.mid_party, 'customer_info'):
+            customer = tx.mid_party.customer_info
+        elif hasattr(tx.mid_party, 'customerinfo'):
+            customer = tx.mid_party.customerinfo
+        
+        tx.total = tx.mid_sell_quentity * tx.mid_sell_prices
+        tx.customer_details = customer
+        transactions_with_totals.append(tx)
+    
+    # Calculate summary totals
+    total_sell_quantity = sum(tx.mid_sell_quentity for tx in sell_transactions)
+    total_sell_amount = sum(tx.total for tx in transactions_with_totals)
+    total_sell_paid = sum(tx.mid_sell_paid for tx in sell_transactions)
+    outstanding = total_sell_amount - total_sell_paid
+    
+    # Group by material for summary
+    material_summary = {}
+    for tx in transactions_with_totals:
+        material_key = (tx.mid_material.mr_material_name, tx.mid_material.unit.name if tx.mid_material.unit else '')
+        if material_key not in material_summary:
+            material_summary[material_key] = {
+                'quantity': 0,
+                'amount': 0,
+                'transactions': 0
+            }
+        material_summary[material_key]['quantity'] += tx.mid_sell_quentity
+        material_summary[material_key]['amount'] += tx.total
+        material_summary[material_key]['transactions'] += 1
+    
+    # Convert material summary to list with calculated averages
+    material_summary_list = []
+    for (material_name, unit_name), data in material_summary.items():
+        material_summary_list.append({
+            'material_name': material_name,
+            'unit_name': unit_name,
+            'total_quantity': data['quantity'],
+            'total_amount': data['amount'],
+            'avg_price': data['amount'] / data['quantity'] if data['quantity'] else 0,
+            'transaction_count': data['transactions']
+        })
+    
+    # Sort material summary by material name
+    material_summary_list.sort(key=lambda x: x['material_name'])
+    
+    # Group by customer for customer summary
+    customer_summary = {}
+    for tx in transactions_with_totals:
+        if tx.customer_details:
+            customer_key = (tx.customer_details.CustomerID, tx.customer_details.CustomerName)
+            if customer_key not in customer_summary:
+                customer_summary[customer_key] = {
+                    'quantity': 0,
+                    'amount': 0,
+                    'transactions': 0,
+                    'paid': 0,
+                    'customer': tx.customer_details
+                }
+            customer_summary[customer_key]['quantity'] += tx.mid_sell_quentity
+            customer_summary[customer_key]['amount'] += tx.total
+            customer_summary[customer_key]['paid'] += tx.mid_sell_paid
+            customer_summary[customer_key]['transactions'] += 1
+    
+    # Convert customer summary to list
+    customer_summary_list = []
+    for (customer_id, customer_name), data in customer_summary.items():
+        customer_summary_list.append({
+            'customer_id': customer_id,
+            'customer_name': customer_name,
+            'total_quantity': data['quantity'],
+            'total_amount': data['amount'],
+            'total_paid': data['paid'],
+            'outstanding': data['amount'] - data['paid'],
+            'transaction_count': data['transactions'],
+            'customer_details': data['customer']
+        })
+    
+    # Sort customer summary by customer name
+    customer_summary_list.sort(key=lambda x: x['customer_name'])
+    
+    context = {
+        'selected_date': selected_date,
+        'previous_day': previous_day,
+        'next_day': next_day,
+        'transactions': transactions_with_totals,
+        'material_summary': material_summary_list,
+        'customer_summary': customer_summary_list,
+        'total_sell_quantity': total_sell_quantity,
+        'total_sell_amount': total_sell_amount,
+        'total_sell_paid': total_sell_paid,
+        'outstanding': outstanding,
+    }
+    
+    return render(request, 'backend/reports/daily_sell_report.html', context)
 
 
+@login_required
 def cart_banner(request):
     banner = CartBanner.objects.last()
     if not banner:
@@ -2692,4 +3301,62 @@ def cart_banner(request):
         'form': form,
         'banner': banner
     })
-   
+    
+    
+    
+    
+    
+    
+@login_required
+def checkout_banner(request):
+    banner = CheckoutBanner.objects.last()
+    if not banner:
+        banner = CheckoutBanner.objects.create()
+    if request.method == 'POST':
+        form = AboutUsBannerForm(request.POST, request.FILES, instance=banner)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Shop  banner updated successfully!')
+            return redirect('checkout_banner')
+    else:
+        form = AboutUsBannerForm(instance=banner)
+    return render(request, 'backend/Checkout/banner.html', {
+        'form': form,
+        'banner': banner
+    })
+    
+@login_required
+def order_summary(request):
+    orders = OrderSummary.objects.all().order_by('-created_at')  # or filter per user if needed
+    context={
+        'orders': orders
+    }
+    return render (request, 'backend/Checkout/orderSummary.html',context)
+@login_required
+@csrf_exempt  # Optional if using AJAX without CSRF token
+def delete_order(request):
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        try:
+            order = OrderSummary.objects.get(order_id=order_id)
+            order.delete()
+            return JsonResponse({'success': True})
+        except OrderSummary.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Order not found'})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+@login_required
+@csrf_exempt
+def update_order_status(request):
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        status = request.POST.get('status')
+        try:
+            order = OrderSummary.objects.get(order_id=order_id)
+            order.order_status = status
+            order.save()
+            return JsonResponse({'success': True})
+        except OrderSummary.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Order not found.'})
+    return JsonResponse({'success': False, 'error': 'Invalid request.'})    
+    
+    

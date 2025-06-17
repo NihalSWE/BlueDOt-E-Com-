@@ -230,13 +230,25 @@
                     </td>
                     <td>{{ order.invoice_id|default:"-" }}</td>
                     <td>
-                        <span class="badge bg-label-{{ order.get_status_display|lower }}">
-                            {{ order.get_status_display }}
-                        </span>
+                        {% if order.status == 0 %}
+                            <span class="badge bg-warning">Pending</span>
+                        {% elif order.status == 1 %}
+                            <span class="badge bg-success">Approved</span>
+                        {% elif order.status == 2 %}
+                            <span class="badge bg-info">Processing</span>
+                        {% elif order.status == 3 %}
+                            <span class="badge bg-primary">Completed</span>
+                        {% elif order.status == 4 %}
+                            <span class="badge bg-danger">Cancelled</span>
+                        {% elif order.status == 5 %}
+                            <span class="badge bg-secondary">Not Viewed</span>
+                        {% else %}
+                            <span class="badge bg-dark">Unknown</span>
+                        {% endif %}
                     </td>
                     <td>
                         <div class="d-flex">
-                            {% if user_type == 2 %}
+                            {% if user_type == 1 %}
                                 <a href="{% url 'approve_order' order.id %}">
                                     <span 
                                         class="icon-park--edit-two me-2"

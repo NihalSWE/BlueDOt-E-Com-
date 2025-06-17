@@ -394,7 +394,10 @@
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <form action="#">
+                <form action="#" style="    display: flex
+;
+    
+    gap: 30px;">
                     <div class="table-content table-responsive wow fadeInUp">
                         <table class="table">
                             <thead>
@@ -454,20 +457,22 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="row">
+                    {% comment %} <div class="row">
                         <div class="col-12">
                             <div class="coupon-all wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s">
                                 <div class="coupon2">
-                                    <button class="tp-btn theme-bg" type="button" onclick="location.reload()">
-                                        <span>Update cart</span>
-                                    </button>
+                                  <a href="{% url 'shop' %}" class="tp-btn theme-bg">
+                                    <span>Continue Shopping</span>
+                                </a>
+                                
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row justify-content-end">
-                        <div class="col-xl-5 col-lg-5 col-md-7">
-                            <div class="cart-page-total wow fadeInUp" data-wow-delay=".5s" data-wow-duration="1s">
+                    </div> {% endcomment %}
+                    <div class="row justify-content-end" style='
+    width: 400px;'>
+                        <div>
+                            <div class="cart-page-total wow fadeInUp" style="    margin-top: 0px;" data-wow-delay=".5s" data-wow-duration="1s">
                                 <h2>Cart totals</h2>
                                 <ul class="mb-20">
                                     <li>Subtotal <span id="cart-subtotal">৳{{ subtotal }}</span></li>

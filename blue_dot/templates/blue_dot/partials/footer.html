@@ -24,11 +24,12 @@
                             <h4 class="tp-footer-title tp-footer-2-title">Navigation</h4>
                             <div class="tp-footer-list tp-footer-2-list">
                                 <ul>
-                                    <li><a href="index.html">Home</a></li>
-                                    <li><a href="about.html">About US</a></li>
-                                    <li><a href="service.html">Services</a></li>
-                                    <li><a href="contact.html">Contact</a></li>
-                                    <li><a href="blog.html">Blog</a></li>
+                                    <li><a href="">Home</a></li>
+                                    <li><a href="{% url 'aboutUs' %}l">About Us</a></li>
+                                    <li><a href="{% url 'shop' %}">Product</a></li>
+                                    <li><a href="{% url 'contact' %}">Contact</a></li>
+                                     <li><a href="{% url 'faq' %}">FAQ</a></li>
+                                    <li><a href="{% url 'blog' %}">Blog</a></li>
                                 </ul>
                             </div>
                         </div>

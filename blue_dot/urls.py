@@ -12,15 +12,15 @@ urlpatterns = [
     path('shop/',views.shop,name='shop'),
     path('shop_details/',views.shop_details,name='shop_details'),
     path('product/<slug:slug>/', views.product_detail, name='product_detail'),
-    #cart
-
+    path('cart/',views.cart,name='cart'),
+    path('cart_checkout/',views.cart_checkout,name='cart_checkout'),
     path('add-to-cart/<slug:slug>/', views.add_to_cart, name='add_to_cart'),
     path('cart/', views.cart, name='cart'),
     path('cart/remove/<slug:slug>/', views.remove_from_cart, name='remove_from_cart'),
     path('update-cart-quantity/', views.update_cart_quantity, name='update_cart_quantity'),  # Add this line
     #cart
     path('cart_checkout/',views.cart_checkout,name='cart_checkout'),
-    
+    # Home
     # Blog
     path('blog/',views.blog,name='blog'),
     path('blog_details/<slug:slug>/',views.blog_details,name='blog_details'),
@@ -41,7 +41,13 @@ urlpatterns = [
     path('promotion',views.promotion,name='promotion'),
     path('promotion/category/<slug:slug>/', views.category_products, name='category_products'),
     
+    #thank page
+    path('thank-you/', views.thank_you, name='thank_you'),
+    #thnk you
     
+    #search
+    path('search/', views.search_view, name='search'),
+    #search
     
 ]
 

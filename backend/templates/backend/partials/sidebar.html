@@ -26,7 +26,7 @@
 
 {% endblock custom_css %}
 
-<aside id="layout-menu" class="layout-menu menu-vertical menu">
+<aside id="layout-menu" class="layout-menu menu-vertical menu" style="overflow-y: scroll;">
   <div class="app-brand demo">
     <a href="{% url 'dashboard' %}" class="app-brand-link">
       <span class="app-brand-logo demo">
@@ -129,194 +129,305 @@
         <div data-i18n="Dashboard">Dashboard</div>
       </a>
     </li>
-    <!-- Home (Independent item) -->
-    {% comment %} <li class="menu-item">
-      <a href="{% url 'admin-home' %}" class="menu-link">
-        <i class="menu-icon ri ri-home-line"></i>
-        <div data-i18n="Home">Home</div>
-      </a>
-    </li> {% endcomment %}
-    <li class="menu-item">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon ri ri-home-line"></i>
-        <div data-i18n="Home">Home</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item">
-          <a href="{% url 'home_banner' %}" class="menu-link">
-            <div data-i18n="Banner">Banner</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="{% url 'practice_area' %}" class="menu-link">
-            <div data-i18n="home/practice_area Locations">Practice Area</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="{% url 'contactUs_msg' %}" class="menu-link">
-            <div data-i18n="Messages">Messages</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="{% url 'home_centerCard' %}" class="menu-link">
-            <div data-i18n="Messages">Center Area Cards</div>
-          </a>
-        </li>
 
-        <li class="menu-item">
-          <a href="{% url 'home_CTA' %}" class="menu-link">
-            <div data-i18n="Messages">Call To Action</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="{% url 'pricing_card' %}" class="menu-link">
-            <div data-i18n="Messages">Home Page Product Pricing Card</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-      <li class="menu-item">
-      <a href="{% url 'brand_list' %}" class="menu-link">
-        <i class="menu-icon ri ri-home-line"></i>
-        <div data-i18n="Brand">Brand</div>
+<li class="menu-item {% if request.resolver_match.url_name == 'home_banner' or request.resolver_match.url_name == 'practice_area' or request.resolver_match.url_name == 'contactUs_msg' or request.resolver_match.url_name == 'home_centerCard' or request.resolver_match.url_name == 'home_CTA' or request.resolver_match.url_name == 'pricing_card' %}active open{% endif %}">
+  <a href="javascript:void(0);" class="menu-link menu-toggle">
+    <i class="menu-icon ri ri-home-line"></i>
+    <div data-i18n="Home">Home</div>
+  </a>
+  <ul class="menu-sub">
+    <li class="menu-item {% if request.resolver_match.url_name == 'home_banner' %}active{% endif %}">
+      <a href="{% url 'home_banner' %}" class="menu-link">
+        <div data-i18n="Banner">Banner</div>
       </a>
     </li>
-        <li class="menu-item">
-      <a href="{% url 'party_supplier_list' %}" class="menu-link">
-        <i class="menu-icon ri ri-home-line"></i>
-        <div data-i18n="Brand">Supplier List</div>
+    <li class="menu-item {% if request.resolver_match.url_name == 'practice_area' %}active{% endif %}">
+      <a href="{% url 'practice_area' %}" class="menu-link">
+        <div data-i18n="home/practice_area Locations">Practice Area</div>
       </a>
     </li>
+    <li class="menu-item {% if request.resolver_match.url_name == 'contactUs_msg' %}active{% endif %}">
+      <a href="{% url 'contactUs_msg' %}" class="menu-link">
+        <div data-i18n="Messages">Messages</div>
+      </a>
+    </li>
+    <li class="menu-item {% if request.resolver_match.url_name == 'home_centerCard' %}active{% endif %}">
+      <a href="{% url 'home_centerCard' %}" class="menu-link">
+        <div data-i18n="Messages">Center Area Cards</div>
+      </a>
+    </li>
+    <li class="menu-item {% if request.resolver_match.url_name == 'home_CTA' %}active{% endif %}">
+      <a href="{% url 'home_CTA' %}" class="menu-link">
+        <div data-i18n="Messages">Call To Action</div>
+      </a>
+    </li>
+    <li class="menu-item {% if request.resolver_match.url_name == 'pricing_card' %}active{% endif %}">
+      <a href="{% url 'pricing_card' %}" class="menu-link">
+        <div data-i18n="Messages">Home Page Product Pricing Card</div>
+      </a>
+    </li>
+  </ul>
+</li>
 
-      <li class="menu-item">
-      <a href="{% url 'warehouse_list' %}" class="menu-link">
-        <i class="menu-icon ri ri-home-line"></i>
-        <div data-i18n="warehouse">Warehouse List</div>
+<li class="menu-item {% if request.resolver_match.url_name == 'brand_list' %}active{% endif %}">
+  <a href="{% url 'brand_list' %}" class="menu-link">
+    <i class="menu-icon ri ri-home-line"></i>
+    <div data-i18n="Brand">Brand</div>
+  </a>
+</li>
+<!--Cart Start-->
+<li class="menu-item">
+  <a href="javascript:void(0);" class="menu-link menu-toggle">
+    <i class="menu-icon ri ri-shopping-cart-line"></i>
+    <div data-i18n="Cart">Cart</div>
+  </a>
+  <ul class="menu-sub">
+    <li class="menu-item">
+      <a href="{% url 'cart_banner' %}" class="menu-link">
+        <div data-i18n="View Cart">Banner</div>
       </a>
     </li>
-    <!--Categories Menu -->
-    <li class="menu-item">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon ri ri-home-line"></i>
-        <div data-i18n="Home">Categories</div>
+  </ul>
+</li>
+<!--Cart Ends-->
+<!-- Checkout Start -->
+<li class="menu-item {% if request.resolver_match.url_name == 'cart_checkout' or request.resolver_match.url_name == 'order_summary' %}active open{% endif %}">
+  <a href="javascript:void(0);" class="menu-link menu-toggle">
+    <i class="menu-icon ri ri-shopping-cart-line"></i>
+    <div data-i18n="Checkout">Checkout</div>
+  </a>
+  <ul class="menu-sub">
+    <li class="menu-item {% if request.resolver_match.url_name == 'cart_checkout' %}active open{% endif %}">
+      <a href="{% url 'checkout_banner' %}" class="menu-link">
+        <div data-i18n="Cart Checkout">Banner</div>
       </a>
-      <ul class="menu-sub">
-        <li class="menu-item">
-          <a href="{% url 'category_list' %}" class="menu-link">
-            <div data-i18n="Banner">Category List</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="{% url 'practice_area' %}" class="menu-link">
-            <div data-i18n="home/practice_area Locations">Practice Area</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="{% url 'contactUs_msg' %}" class="menu-link">
-            <div data-i18n="Messages">Messages</div>
-          </a>
-        </li>
-      </ul>
     </li>
-    <!--Categories Menu -->
-
-    <!--Discount Category-->
-    <li class="menu-item">
-        <a href="{% url 'discount_category_list' %}" class="menu-link">
-            <div data-i18n="Category List">Discount Category List</div>
-        </a>
+    <li class="menu-item {% if request.resolver_match.url_name == 'order_summary' %}active open{% endif %}">
+      <a href="{% url 'order_summary' %}" class="menu-link">
+        <div data-i18n="Order Summary">Order Summary</div>
+      </a>
     </li>
-
-    <li class="menu-item">
-        <a href="{% url 'discount_list' %}" class="menu-link">
-            <div data-i18n="Discount Product">Discount</div>
-        </a>
-      </li>
-    <!--Discount Category-->
+  </ul>
+</li>
+<!-- Checkout End -->
 
     <!--Units Menu -->
-    <li class="menu-item">
+    <li class="menu-item {% if request.resolver_match.url_name == 'units' %}active{% endif %}">
       <a href="{% url 'units' %}" class="menu-link">
         <i class="menu-icon ri ri-home-line"></i>
         <div data-i18n="Units">Units</div>
       </a>
     </li>
     <!--Units Menu -->
+<li class="menu-item {% if request.resolver_match.url_name == 'party_supplier_list' %}active{% endif %}">
+  <a href="{% url 'party_supplier_list' %}" class="menu-link">
+    <i class="menu-icon ri ri-home-line"></i>
+    <div data-i18n="Brand">Supplier List</div>
+  </a>
+</li>
+
+<li class="menu-item {% if request.resolver_match.url_name == 'warehouse_list' %}active{% endif %}">
+  <a href="{% url 'warehouse_list' %}" class="menu-link">
+    <i class="menu-icon ri ri-home-line"></i>
+    <div data-i18n="warehouse">Warehouse List</div>
+  </a>
+</li>
+
+
+<!-- Categories Menu -->
+<li class="menu-item {% if request.resolver_match.url_name == 'category_list'  or request.resolver_match.url_name == 'contactUs_msg' %}active open{% endif %}">
+  <a href="javascript:void(0);" class="menu-link menu-toggle">
+    <i class="menu-icon ri ri-home-line"></i>
+    <div data-i18n="Home">Categories</div>
+  </a>
+  <ul class="menu-sub">
+    <li class="menu-item {% if request.resolver_match.url_name == 'category_list' %}active{% endif %}">
+      <a href="{% url 'category_list' %}" class="menu-link">
+        <div data-i18n="Banner">Category List</div>
+      </a>
+    </li>
+
+
+  </ul>
+</li>
+
+
+<!--Users-->
+    <li class="menu-item">
+      <a href="{% url 'user_list' %}" class="menu-link">
+        <i class="menu-icon ri ri-home-line"></i>
+        <div data-i18n="User">Users</div>
+      </a>
+    </li>
+
+
+
 
   <!--Material-->
-    <li class="menu-item">
+    <li class="menu-item  {% if request.resolver_match.url_name == 'material_type_list' or request.resolver_match.url_name == 'material_list' or request.resolver_match.url_name == 'material_purchase_list' %}active open{% endif %}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon ri ri-contacts-book-line"></i>
         <div data-i18n="Contact">Material</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item">
+        <li class="menu-item {% if request.resolver_match.url_name == 'material_type_list' %}active{% endif %}">
           <a href="{% url 'material_type_list' %}" class="menu-link">
             <div data-i18n="Contact Us">Material Type</div>
           </a>
         </li>
 
-          <li class="menu-item">
-          <a href="{% url 'material_type_list' %}" class="menu-link">
-            <div data-i18n="Contact Us">Material Type</div>
-          </a>
-        </li>
-        <li class="menu-item">
+       
+        <li class="menu-item {% if request.resolver_match.url_name == 'material_list' %}active{% endif %}">
           <a href="{% url 'material_list' %}" class="menu-link">
             <div data-i18n="Material List">Material List</div>
           </a>
         </li>
-          <li class="menu-item">
+          <li class="menu-item {% if request.resolver_match.url_name == 'material_purchase_list' %}active{% endif %}">
           <a href="{% url 'material_purchase_list' %}" class="menu-link">
             <div data-i18n="Material List">Material Purchases List</div>
           </a>
         </li>
-        <li class="menu-item">
-          <a href="{% url 'contactUs_msg' %}" class="menu-link">
-            <div data-i18n="Messages">Messages</div>
-          </a>
-        </li>
+      
       </ul>
     </li>
 
     <!--Product Menu -->
-    <li class="menu-item">
+    <li class="menu-item  {% if request.resolver_match.url_name == 'product_list' or request.resolver_match.url_name == 'product_create' or request.resolver_match.url_name == 'product_banner' or request.resolver_match.url_name == 'product_review' %}active open{% endif %}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon ri ri-home-line"></i>
         <div data-i18n="Home">Products</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item">
+        <li class="menu-item {% if request.resolver_match.url_name == 'product_list'  %}active open{% endif %}">
           <a href="{% url 'product_list' %}" class="menu-link">
             <div data-i18n="Product">Product List</div>
           </a>
         </li>
 
-        <li class="menu-item">
-          <a href="{% url 'add_product' %}" class="menu-link">
+        <li class="menu-item {% if request.resolver_match.url_name == 'product_create'  %}active open{% endif %}">
+          <a href="{% url 'product_create' %}" class="menu-link">
             <div data-i18n="Add Product">Add Product</div>
           </a>
         </li>
-        <li class="menu-item">
+        <li class="menu-item {% if request.resolver_match.url_name == 'product_banner'  %}active open{% endif %}">
           <a href="{% url 'product_banner' %}" class="menu-link">
             <div data-i18n="Product Banner">Product Banner</div>
           </a>
         </li>
-        <li class="menu-item">
-          <a href="{% url 'category_list' %}" class="menu-link">
-            <div data-i18n="Category List">Category List</div>
-          </a>
-        </li>
+   <li class="menu-item {% if request.resolver_match.url_name == 'discount_category_list'  %}active open{% endif %}">
+        <a href="{% url 'discount_category_list' %}" class="menu-link">
+            <div data-i18n="Category List">Discount Category List</div>
+        </a>
+    </li>
 
-        <li class="menu-item">
+    <li class="menu-item {% if request.resolver_match.url_name == 'discount_list'  %}active open{% endif %}">
+        <a href="{% url 'discount_list' %}" class="menu-link">
+            <div data-i18n="Discount Product">Discount</div>
+        </a>
+      </li>
+ <li class="menu-item  {% if request.resolver_match.url_name == 'product_review'  %}active open{% endif %}">
           <a href="{% url 'product_review' %}" class="menu-link">
             <div data-i18n="Discount Product">Product Reviews</div>
           </a>
-        </li>
+   </li>
+
       </ul>
     </li>
     <!--Product Menu -->
 
+
+  <!--Blog Start-->
+    <li class="menu-item {% if request.resolver_match.url_name == 'blog_banner' or request.resolver_match.url_name == 'blog_post'  or request.resolver_match.url_name == 'blog_comments'  %}active open{% endif %}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon ri ri-article-line"></i>
+        <div data-i18n="Blog">Blog</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {% if request.resolver_match.url_name == 'blog_banner'  %}active open{% endif %}">
+          <a href="{% url 'blog_banner' %}" class="menu-link">
+            <div data-i18n="All Blogs">Banner</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.resolver_match.url_name == 'blog_post'  %}active open{% endif %}">
+          <a href="{% url 'blog_post'  %}" class="menu-link">
+            <div data-i18n="Create Blog">Create Blog</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.resolver_match.url_name == 'blog_comments'  %}active open{% endif %}">
+          <a href="{% url 'blog_comments' %}" class="menu-link">
+            <div data-i18n="Comments">Comments</div>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <!--Blog Ends-->
+    <!-- Customers Dropdown -->
+    <li class="menu-item {% if request.resolver_match.url_name == 'customer_list' or request.resolver_match.url_name == 'customer_overview' or request.resolver_match.url_name == 'security' or request.resolver_match.url_name == 'billing' or request.resolver_match.url_name == 'billing' or request.resolver_match.url_name == 'notification'    %}active open{% endif %} ">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon ri ri-user-3-line"></i>
+        <div data-i18n="Customers">Customers</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {% if request.resolver_match.url_name == 'customer_list'  %}active open{% endif %}">
+          <a href="{% url 'customer_list' %}" class="menu-link">
+            <div data-i18n="All Customers">All Customers</div>
+          </a>
+        </li>
+        <li class="menu-item  {% if request.resolver_match.url_name == 'customer_list'  %}active open{% endif %}">
+          <a href="javascript:void(0);" class="menu-link menu-toggle">
+            <div data-i18n="Customer Details">Customer Details</div>
+          </a>
+          <ul class="menu-sub">
+            <li class="menu-item  {% if request.resolver_match.url_name == 'customer_overview'  %}active open{% endif %}">
+              <a href="{% url 'customer_overview' %}" class="menu-link">
+                <div data-i18n="Overview">Overview</div>
+              </a>
+            </li>
+            <li class="menu-item {% if request.resolver_match.url_name == 'security'  %}active open{% endif %}">
+              <a href="{% url 'security' %}" class="menu-link">
+                <div data-i18n="Security">Security</div>
+              </a>
+            </li>
+            <li class="menu-item {% if request.resolver_match.url_name == 'billing'  %}active open{% endif %}">
+              <a href="{% url 'billing' %}" class="menu-link">
+                <div data-i18n="Address & Billing">Address & Billing</div>
+              </a>
+            </li>
+            <li class="menu-item {% if request.resolver_match.url_name == 'notification'  %}active open{% endif %}">
+              <a href="{% url 'notification' %}" class="menu-link">
+                <div data-i18n="Notifications">Notifications</div>
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+     <!-- Orders Dropdown -->
+    <li class="menu-item {% if request.resolver_match.url_name == 'product_review' or request.resolver_match.url_name == 'order_list'  or request.resolver_match.url_name == 'initial_orders' or request.resolver_match.url_name == 'order_detail' %}active open{% endif %}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon ri ri-file-list-3-line"></i>
+        <div data-i18n="Orders">Orders</div>
+      </a>
+      <ul class="menu-sub">
+        {% comment %} <li class="menu-item {% if request.resolver_match.url_name == 'order_list'  %}active open{% endif %}">
+          <a href="{% url 'order_list' %}" class="menu-link">
+            <div data-i18n="Order List">Order List</div>
+          </a>
+        </li> {% endcomment %}
+
+        <li class="menu-item {% if request.resolver_match.url_name == 'initial_orders'  %}active open{% endif %}">
+          <a href="{% url 'initial_orders' %}" class="menu-link">
+            <div data-i18n="Initial Order">Initial Orders</div>
+          </a>
+        </li>
+
+        <li class="menu-item {% if request.resolver_match.url_name == 'order_detail'  %}active open{% endif %}">
+          <a href="{% url 'order_detail' %}" class="menu-link">
+            <div data-i18n="Order Details">Order Details</div>
+          </a>
+        </li>
+      </ul>
+    </li>
  <!--Blog Start-->
     <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -342,73 +453,47 @@
       </ul>
     </li>
     <!--Blog Ends-->
-<!--Cart Start-->
-<li class="menu-item">
-  <a href="javascript:void(0);" class="menu-link menu-toggle">
-    <i class="menu-icon ri ri-shopping-cart-line"></i>
-    <div data-i18n="Cart">Cart</div>
-  </a>
-  <ul class="menu-sub">
-    <li class="menu-item">
-      <a href="{% url 'cart_banner' %}" class="menu-link">
-        <div data-i18n="View Cart">Banner</div>
-      </a>
-    </li>
-    <li class="menu-item">
-      <a href="#" class="menu-link">
-        <div data-i18n="Checkout">Checkout</div>
-      </a>
-    </li>
-    <li class="menu-item">
-      <a href="#" class="menu-link">
-        <div data-i18n="Order History">Order History</div>
-      </a>
-    </li>
-  </ul>
-</li>
-<!--Cart Ends-->
 
-    <!--Brand-->
-    <li class="menu-item">
-      <a href="{% url 'brand_list' %}" class="menu-link">
-        <i class="menu-icon ri ri-home-line"></i>
-        <div data-i18n="Brand">Brand</div>
-      </a>
-    </li>
 
     <!--Report-->
-    <li class="menu-item">
+    <li class="menu-item {% if request.resolver_match.url_name == 'daily_sell_report' or request.resolver_match.url_name == 'material_transactions_report' or request.resolver_match.url_name == 'inventory_stock_report'  or request.resolver_match.url_name == 'material_transactions_report' or request.resolver_match.url_name == 'sales_report'  or request.resolver_match.url_name == 'customer_report' or request.resolver_match.url_name == 'profit_loss_report' %}active open{% endif %}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon ri ri-contacts-book-line"></i>
         <div data-i18n="Contact">Report</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item">
+         <li class="menu-item {% if request.resolver_match.url_name == 'daily_sell_report'  %}active open{% endif %}">
+          <a href="{% url 'daily_sell_report' %}" class="menu-link">
+            <div data-i18n="Sales Report">Daily Sales Report</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.resolver_match.url_name == 'inventory_stock_report'  %}active open{% endif %}">
           <a href="{% url 'inventory_stock_report' %}" class="menu-link">
             <div data-i18n="Contact Us">Inventory Stock Report</div>
           </a>
         </li>
 
-          <li class="menu-item">
+          <li class="menu-item {% if request.resolver_match.url_name == 'material_transactions_report'  %}active open{% endif %}">
           <a href="{% url 'material_transactions_report' %}" class="menu-link">
             <div data-i18n="Material Transaction">Material Transaction Report</div>
           </a>
         </li>
-        <li class="menu-item">
+        <li class="menu-item {% if request.resolver_match.url_name == 'sales_report'  %}active open{% endif %}">
           <a href="{% url 'sales_report' %}" class="menu-link">
             <div data-i18n="Sales Report">Sales Report</div>
           </a>
         </li>
-          <li class="menu-item">
+          <li class="menu-item {% if request.resolver_match.url_name == 'customer_report'  %}active open{% endif %}">
           <a href="{% url 'customer_report' %}" class="menu-link">
             <div data-i18n="Material List">Customer Report</div>
           </a>
         </li>
-        <li class="menu-item">
+        <li class="menu-item {% if request.resolver_match.url_name == 'profit_loss_report'  %}active open{% endif %}">
           <a href="{% url 'profit_loss_report' %}" class="menu-link">
             <div data-i18n="Profit and Loss">Profit and Loss</div>
           </a>
         </li>
+          
       </ul>
     </li>
 
@@ -493,98 +578,33 @@
   </ul>
 </li>
 
-    
+ 
 
-    <!-- Orders Dropdown -->
-    <li class="menu-item">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon ri ri-file-list-3-line"></i>
-        <div data-i18n="Orders">Orders</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item">
-          <a href="{% url 'order_list' %}" class="menu-link">
-            <div data-i18n="Order List">Order List</div>
-          </a>
-        </li>
+   
 
-        <li class="menu-item">
-          <a href="{% url 'initial_orders' %}" class="menu-link">
-            <div data-i18n="Initial Order">Initial Orders</div>
-          </a>
-        </li>
-
-        <li class="menu-item">
-          <a href="{% url 'order_detail' %}" class="menu-link">
-            <div data-i18n="Order Details">Order Details</div>
-          </a>
-        </li>
-      </ul>
-    </li>
+  
 
 
 
-    <!-- Customers Dropdown -->
-    <li class="menu-item">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon ri ri-user-3-line"></i>
-        <div data-i18n="Customers">Customers</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item">
-          <a href="{% url 'customer_list' %}" class="menu-link">
-            <div data-i18n="All Customers">All Customers</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="javascript:void(0);" class="menu-link menu-toggle">
-            <div data-i18n="Customer Details">Customer Details</div>
-          </a>
-          <ul class="menu-sub">
-            <li class="menu-item">
-              <a href="{% url 'customer_overview' %}" class="menu-link">
-                <div data-i18n="Overview">Overview</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="{% url 'security' %}" class="menu-link">
-                <div data-i18n="Security">Security</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="{% url 'billing' %}" class="menu-link">
-                <div data-i18n="Address & Billing">Address & Billing</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="{% url 'notification' %}" class="menu-link">
-                <div data-i18n="Notifications">Notifications</div>
-              </a>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </li>
-
-    <!-- Settings Dropdown -->
-    <li class="menu-item">
+    {% comment %} <!-- Settings Dropdown -->
+    <li class="menu-item {% if request.resolver_match.url_name == 'store_details' or request.resolver_match.url_name == 'payments' or request.resolver_match.url_name == 'checkout'  %}active open{% endif %}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon ri ri-settings-3-line"></i>
         <div data-i18n="Settings">Settings</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item">
+        <li class="menu-item {% if request.resolver_match.url_name == 'store_details'  %}active open{% endif %}">
           <a href="{% url 'store_details' %}" class="menu-link"
             ><div data-i18n="Store Details">Store Details</div></a
           >
         </li>
-        <li class="menu-item">
+        <li class="menu-item {% if request.resolver_match.url_name == 'payments'  %}active open{% endif %}">
           <a href="{% url 'payments' %}" class="menu-link"
             ><div data-i18n="Payments">Payments</div></a
           >
         </li>
-        <li class="menu-item">
-          <a href="{% url 'checkout' %}" class="menu-link"
+        <li class="menu-item ">
+          <a href="{% url 'checkout'  %}" class="menu-link"
             ><div data-i18n="Checkout">Checkout</div></a
           >
         </li>
@@ -604,10 +624,10 @@
           >
         </li>
       </ul>
-    </li>
+    </li> {% endcomment %}
     <!--Invoice-->
 <!-- Invoice Dropdown -->
-<li class="menu-item">
+{% comment %} <li class="menu-item">
   <a href="javascript:void(0);" class="menu-link menu-toggle">
     <i class="menu-icon ri ri-bill-line"></i>
     <div data-i18n="Invoice">Invoice</div>
@@ -654,7 +674,7 @@
           >
         </li>
       </ul>
-    </li>
+    </li> {% endcomment %}
   </ul>
 </aside>
 {% block custom_js %}

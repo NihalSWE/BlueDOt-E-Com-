@@ -1,698 +1,696 @@
-/**
- * Main
- */
+/***************************************************
+==================== JS INDEX ======================
+****************************************************
 
-'use strict';
+01. PreLoader Js
+02. Common Js
+03. Menu Controls JS
+04. Offcanvas Js
+05. Search Js
+06. One Page Scroll Js
+07. Body overlay Js
+08. cartmini-open-btn
+09. Smooth Scroll Js
+10. BeforeAfter Js
+11. Sticky Header Js
+12. Header Height Js
+13. Sidebar Js
+14. backtotop Js
+15. Nice Select Js
+16. magnificPopup img view 
+17. magnificPopup video view
+18. Ecommerce Cart Js
+19. Show Login Toggle Js
+20. Show Coupon Toggle Js
+21. Create An Account Toggle Js
+22. Shipping Box Toggle Js
+23. Wow Js
+24. Counter Js
+25. Jquery proggess ber
+26. parallax
+27. circle percent 
+28. header language
+29. cursor style
+30. tp-btn-trigger
+31. gsap-costom-hover
+32. Password Toggle Js
 
-window.isRtl = window.Helpers.isRtl();
-window.isDarkStyle = window.Helpers.isDarkStyle();
-let menu,
-  animate,
-  isHorizontalLayout = false;
 
-if (document.getElementById('layout-menu')) {
-  isHorizontalLayout = document.getElementById('layout-menu').classList.contains('menu-horizontal');
-}
-document.addEventListener('DOMContentLoaded', function () {
-  // class for ios specific styles
-  if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-    document.body.classList.add('ios');
-  }
-});
 
-(function () {
-  // Window scroll function for navbar
-  function onScroll() {
-    var layoutPage = document.querySelector('.layout-page');
-    if (layoutPage) {
-      if (window.scrollY > 0) {
-        layoutPage.classList.add('window-scrolled');
-      } else {
-        layoutPage.classList.remove('window-scrolled');
-      }
-    }
-  }
-  // On load time out
-  setTimeout(() => {
-    onScroll();
-  }, 200);
+****************************************************/
 
-  // On window scroll
-  window.onscroll = function () {
-    onScroll();
-  };
 
-  setTimeout(function () {
-    window.Helpers.initCustomOptionCheck();
-  }, 1000);
+(function ($) {
+	"use strict";
 
-  // To remove russian country specific scripts from Sweet Alert 2
-  if (
-    typeof window !== 'undefined' &&
-    /^ru\b/.test(navigator.language) &&
-    location.host.match(/\.(ru|su|by|xn--p1ai)$/)
-  ) {
-    localStorage.removeItem('swal-initiation');
+	var windowOn = $(window);
+	
+	////////////////////////////////////////////////////
+	// 01. PreLoader Js
+	windowOn.on('load', function () {
+		$(".loader-wrapper").fadeOut(500);
+	});
 
-    document.body.style.pointerEvents = 'system';
-    setInterval(() => {
-      if (document.body.style.pointerEvents === 'none') {
-        document.body.style.pointerEvents = 'system';
-      }
-    }, 100);
-    HTMLAudioElement.prototype.play = function () {
-      return Promise.resolve();
-    };
-  }
 
-  if (typeof Waves !== 'undefined') {
-    Waves.init();
-    Waves.attach(
-      ".btn[class*='btn-']:not(.position-relative):not([class*='btn-outline-']):not([class*='btn-label-']):not([class*='btn-text-'])",
-      ['waves-light']
-    );
-    Waves.attach("[class*='btn-outline-']:not(.position-relative)");
-    Waves.attach("[class*='btn-label-']:not(.position-relative)");
-    Waves.attach("[class*='btn-text-']:not(.position-relative)");
-    Waves.attach('.pagination:not([class*="pagination-outline-"]) .page-item.active .page-link', ['waves-light']);
-    Waves.attach('.pagination .page-item .page-link');
-    Waves.attach('.dropdown-menu .dropdown-item');
-    Waves.attach('[data-bs-theme="light"] .list-group .list-group-item-action');
-    Waves.attach('[data-bs-theme="dark"] .list-group .list-group-item-action', ['waves-light']);
-    Waves.attach('.nav-tabs:not(.nav-tabs-widget) .nav-item .nav-link');
-    Waves.attach('.nav-pills .nav-item .nav-link', ['waves-light']);
-  }
+	////////////////////////////////////////////////////
+	// 02. Common Js
 
-  // Initialize menu
-  //-----------------
+	$("[data-background").each(function () {
+		$(this).css("background-image", "url( " + $(this).attr("data-background") + "  )");
+	});
 
-  let layoutMenuEl = document.querySelectorAll('#layout-menu');
-  layoutMenuEl.forEach(function (element) {
-    menu = new Menu(element, {
-      orientation: isHorizontalLayout ? 'horizontal' : 'vertical',
-      closeChildren: isHorizontalLayout ? true : false,
-      // ? This option only works with Horizontal menu
-      showDropdownOnHover: localStorage.getItem('templateCustomizer-' + templateName + '--ShowDropdownOnHover') // If value(showDropdownOnHover) is set in local storage
-        ? localStorage.getItem('templateCustomizer-' + templateName + '--ShowDropdownOnHover') === 'true' // Use the local storage value
-        : window.templateCustomizer !== undefined // If value is set in config.js
-          ? window.templateCustomizer.settings.defaultShowDropdownOnHover // Use the config.js value
-          : true // Use this if you are not using the config.js and want to set value directly from here
-    });
-    // Change parameter to true if you want scroll animation
-    window.Helpers.scrollToActive((animate = false));
-    window.Helpers.mainMenu = menu;
-  });
+	$("[data-width]").each(function () {
+		$(this).css("width", $(this).attr("data-width"));
+	});
 
-  // Initialize menu togglers and bind click on each
-  let menuToggler = document.querySelectorAll('.layout-menu-toggle');
-  menuToggler.forEach(item => {
-    item.addEventListener('click', event => {
-      event.preventDefault();
-      window.Helpers.toggleCollapsed();
-      // Enable menu state with local storage support if enableMenuLocalStorage = true from config.js
-      if (config.enableMenuLocalStorage && !window.Helpers.isSmallScreen()) {
-        try {
-          localStorage.setItem(
-            'templateCustomizer-' + templateName + '--LayoutCollapsed',
-            String(window.Helpers.isCollapsed())
-          );
-          // Update customizer checkbox state on click of menu toggler
-          let layoutCollapsedCustomizerOptions = document.querySelector('.template-customizer-layouts-options');
-          if (layoutCollapsedCustomizerOptions) {
-            let layoutCollapsedVal = window.Helpers.isCollapsed() ? 'collapsed' : 'expanded';
-            layoutCollapsedCustomizerOptions.querySelector(`input[value="${layoutCollapsedVal}"]`).click();
-          }
-        } catch (e) {}
-      }
-    });
-  });
+	$("[data-bg-color]").each(function () {
+		$(this).css("background-color", $(this).attr("data-bg-color"));
+	});
 
-  // Menu swipe gesture
+	$("[data-text-color]").each(function () {
+		$(this).css("color", $(this).attr("data-text-color"));
+	});
 
-  // Detect swipe gesture on the target element and call swipe In
-  window.Helpers.swipeIn('.drag-target', function (e) {
-    window.Helpers.setCollapsed(false);
-  });
 
-  // Detect swipe gesture on the target element and call swipe Out
-  window.Helpers.swipeOut('#layout-menu', function (e) {
-    if (window.Helpers.isSmallScreen()) window.Helpers.setCollapsed(true);
-  });
 
-  // Display in main menu when menu scrolls
-  let menuInnerContainer = document.getElementsByClassName('menu-inner'),
-    menuInnerShadow = document.getElementsByClassName('menu-inner-shadow')[0];
-  if (menuInnerContainer.length > 0 && menuInnerShadow) {
-    menuInnerContainer[0].addEventListener('ps-scroll-y', function () {
-      if (this.querySelector('.ps__thumb-y').offsetTop) {
-        menuInnerShadow.style.display = 'block';
-      } else {
-        menuInnerShadow.style.display = 'none';
-      }
-    });
-  }
+	////////////////////////////////////////////////////
+	// 03. Menu Controls JS
+	$('.tp-hamburger-toggle').on('click', function(){
+		$('.tp-header-side-menu').slideToggle('tp-header-side-menu');
+	});
 
-  // Get style from local storage or use 'system' as default
-  let storedStyle =
-    localStorage.getItem('templateCustomizer-' + templateName + '--Theme') || // if no template style then use Customizer style
-    (window.templateCustomizer?.settings?.defaultStyle ?? document.documentElement.getAttribute('data-bs-theme')); //!if there is no Customizer then use default style as light
+	if($('.tp-main-menu-content').length && $('.tp-main-menu-mobile').length){
+		let navContent = document.querySelector(".tp-main-menu-content").outerHTML;
+		let mobileNavContainer = document.querySelector(".tp-main-menu-mobile");
+		mobileNavContainer.innerHTML = navContent;
+		let arrow = $(".tp-main-menu-mobile .has-dropdown > a");
+		arrow.each(function () {
+			let self = $(this);
+			let arrowBtn = document.createElement("BUTTON");
+			arrowBtn.classList.add("dropdown-toggle-btn");
+			arrowBtn.innerHTML = "<i class='fa-regular fa-angle-right'></i>";
+	
+			self.append(function () {
+			  return arrowBtn;
+			});
+	
+			self.find("button").on("click", function (e) {
+			  e.preventDefault();
+			  let self = $(this);
+			  self.toggleClass("dropdown-opened");
+			  self.parent().toggleClass("expanded");
+			  self.parent().parent().addClass("dropdown-opened").siblings().removeClass("dropdown-opened");
+			  self.parent().parent().children(".tp-submenu").slideToggle();
+			});
+	
+		  });
+	}
 
-  // Run switchImage function based on the stored style
-  window.Helpers.switchImage(storedStyle);
 
-  // Update light/dark image based on current style
-  window.Helpers.setTheme(window.Helpers.getPreferredTheme());
+	
+	
+	////////////////////////////////////////////////////
+	// 04. Offcanvas Js
+	$(".tp-offcanvas-open-btn").on("click", function () {
+		$(".offcanvas__area").addClass("offcanvas-opened");
+		$(".body-overlay").addClass("opened");
+	});
+	$(".offcanvas-close-btn").on("click", function () {
+		$(".offcanvas__area").removeClass("offcanvas-opened");
+		$(".body-overlay").removeClass("opened");
+	});
 
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    const storedTheme = window.Helpers.getStoredTheme();
-    if (storedTheme !== 'light' && storedTheme !== 'dark') {
-      window.Helpers.setTheme(window.Helpers.getPreferredTheme());
-    }
-  });
 
-  function getScrollbarWidth() {
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    document.body.style.setProperty('--bs-scrollbar-width', `${scrollbarWidth}px`);
-  }
-  getScrollbarWidth();
-  window.addEventListener('DOMContentLoaded', () => {
-    window.Helpers.showActiveTheme(window.Helpers.getPreferredTheme());
-    getScrollbarWidth();
-    // Toggle Universal Sidebar
-    window.Helpers.initSidebarToggle();
-    document.querySelectorAll('[data-bs-theme-value]').forEach(toggle => {
-      toggle.addEventListener('click', () => {
-        const theme = toggle.getAttribute('data-bs-theme-value');
-        window.Helpers.setStoredTheme(templateName, theme);
-        window.Helpers.setTheme(theme);
-        window.Helpers.showActiveTheme(theme, true);
-        window.Helpers.syncCustomOptions(theme);
-        let currTheme = theme;
-        if (theme === 'system') {
-          currTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-        const semiDarkL = document.querySelector('.template-customizer-semiDark');
-        if (semiDarkL) {
-          if (theme === 'dark') {
-            semiDarkL.classList.add('d-none');
-          } else {
-            semiDarkL.classList.remove('d-none');
-          }
-        }
-        window.Helpers.switchImage(currTheme);
-      });
-    });
-  });
 
-  // Internationalization (Language Dropdown)
-  // ---------------------------------------
+	// ////////////////////////////////////////////////////
+	// // 05. Search Js
+	 if($('.search-box-outer').length) {
+		$('.search-box-outer').on('click', function() {
+			$('body').addClass('search-active');
+		});
+		$('.close-search').on('click', function() {
+			$('body').removeClass('search-active');
+		});
+	}
 
-  if (typeof i18next !== 'undefined' && typeof i18NextHttpBackend !== 'undefined') {
-    i18next
-      .use(i18NextHttpBackend)
-      .init({
-        lng: window.templateCustomizer ? window.templateCustomizer.settings.lang : 'en',
-        debug: false,
-        fallbackLng: 'en',
-        backend: {
-          loadPath: assetsPath + 'json/locales/{{lng}}.json'
-        },
-        returnObjects: true
-      })
-      .then(function (t) {
-        localize();
-      });
-  }
+	
+    ////////////////////////////////////////////////////
+	// 06. One Page Scroll Js
+	function scrollNav() {
+		$('.tp-onepage-menu li a').click(function () {
+			$(".tp-onepage-menu li a.active").removeClass("active");
+			$(this).addClass("active");
 
-  let languageDropdown = document.getElementsByClassName('dropdown-language');
+			$('html, body').stop().animate({
+				scrollTop: $($(this).attr('href')).offset().top - 80
+			}, 300);
+			return false;
+		});
+	}
+	scrollNav();
 
-  if (languageDropdown.length) {
-    let dropdownItems = languageDropdown[0].querySelectorAll('.dropdown-item');
 
-    for (let i = 0; i < dropdownItems.length; i++) {
-      dropdownItems[i].addEventListener('click', function () {
-        let currentLanguage = this.getAttribute('data-language');
-        let textDirection = this.getAttribute('data-text-direction');
 
-        for (let sibling of this.parentNode.children) {
-          var siblingEle = sibling.parentElement.parentNode.firstChild;
+	////////////////////////////////////////////////////
+	// 07. Body overlay Js
+	$(".body-overlay").on("click", function () {
+		$(".offcanvas__area").removeClass("offcanvas-opened");
+		$(".tp-search-area").removeClass("opened");
+		$(".cartmini__area").removeClass("cartmini-opened");
+		$(".body-overlay").removeClass("opened");
+	});
 
-          // Loop through each sibling and push to the array
-          while (siblingEle) {
-            if (siblingEle.nodeType === 1 && siblingEle !== siblingEle.parentElement) {
-              siblingEle.querySelector('.dropdown-item').classList.remove('active');
+
+
+	////////////////////////////////////////////////////
+	// 08. cartmini-open-btn
+	$(".cartmini-open-btn").on("click", function () {
+		$(".cartmini__area").addClass("cartmini-opened");
+		$(".cartmini-overlay").addClass("openeds");
+	});
+	$(".cartmini-close-btn").on("click", function () {
+		$(".cartmini__area").removeClass("cartmini-opened");
+		$(".cartmini-overlay").removeClass("openeds");
+	});
+	$(".cartmini-overlay").on("click", function () {
+		$(".cartmini__area").removeClass("cartmini-opened");
+		$(".cartmini-overlay").removeClass("openeds");
+	});
+
+
+
+	////////////////////////////////////////////////////
+	// 09. Smooth Scroll Js
+	function smoothSctoll() {
+		$('.smooth a').on('click', function (event) {
+			var target = $(this.getAttribute('href'));
+			if (target.length) {
+				event.preventDefault();
+				$('html, body').stop().animate({
+					scrollTop: target.offset().top - 120
+				}, 1500);
+			}
+		});
+	}
+	smoothSctoll();
+	if($('#smooth-wrapper').length && $('#smooth-content').length){
+		gsap.registerPlugin(ScrollTrigger, ScrollSmoother, TweenMax, ScrollToPlugin);
+	
+		gsap.config({
+			nullTargetWarn: false,
+		});
+	
+		let smoother = ScrollSmoother.create({
+			smooth: 2,
+			effects: true,
+			smoothTouch: 0.1,
+			normalizeScroll: false,
+			ignoreMobileResize: true,
+		});
+
+	}
+
+
+	// split text animation
+	var st = $(".tp-split-text");
+	if(st.length == 0) return;
+	gsap.registerPlugin(SplitText);
+	st.each(function(index, el) {
+		el.split = new SplitText(el, {
+			type: "lines,words,chars",
+			linesClass: "tp-split-line"
+		});
+		gsap.set(el, { perspective: 400 });
+		if( $(el).hasClass('right') ){
+			gsap.set(el.split.chars, {
+				opacity: 0,
+				x: "50",
+				ease: "Back.easeOut",
+			});
+		}
+		if( $(el).hasClass('left') ){
+			gsap.set(el.split.chars, {
+				opacity: 0,
+				x: "-50",
+				ease: "circ.out",
+			});
+		}
+		if( $(el).hasClass('up') ){
+			gsap.set(el.split.chars, {
+				opacity: 0,
+				y: "80",
+				ease: "circ.out",
+			});
+		}
+		if( $(el).hasClass('down') ){
+			gsap.set(el.split.chars, {
+				opacity: 0,
+				y: "-80",
+				ease: "circ.out",
+			});
+		}
+		el.anim = gsap.to(el.split.chars, {
+			scrollTrigger: {
+				trigger: el,
+				start: "top 90%",
+			},
+			x: "0",
+			y: "0",
+			rotateX: "0",
+			scale: 1,
+			opacity: 1,
+			duration: 0.4,
+			stagger: 0.02,
+		});
+	});
+
+
+	
+	////////////////////////////////////////////////////
+	// 10. BeforeAfter Js
+	if ($(".beforeAfter").length > 0) {
+		$('.beforeAfter').beforeAfter({
+			movable: true,
+			clickMove: true,
+			position: 50,
+			separatorColor: '#fafafa',
+			bulletColor: '#fafafa',
+			onMoveStart: function (e) {
+				console.log(event.target);
+			},
+			onMoving: function () {
+				console.log(event.target);
+			},
+			onMoveEnd: function () {
+				console.log(event.target);
+			},
+		});
+	}
+
+
+	///////////////////////////////////////////////////
+	// 11. Sticky Header Js
+	windowOn.on('scroll', function () {
+		var scroll = windowOn.scrollTop();
+		if (scroll < 200) {
+			$("#header-sticky").removeClass("header-sticky");
+		} else {
+			$("#header-sticky").addClass("header-sticky");
+		}
+	});
+
+
+	///////////////////////////////////////////////////
+	// 12. Header Height Js
+	if ($('.tp-header-height').length > 0) {
+		var headerHeight = document.querySelector(".tp-header-height");
+		var setHeaderHeight = headerHeight.offsetHeight;
+		$(".tp-header-height").each(function () {
+			$(this).css({
+				'height': setHeaderHeight + 'px'
+			});
+		});
+
+		$(".tp-header-height.header-sticky").each(function () {
+			$(this).css({
+				'height': inherit,
+			});
+		});
+	}
+
+
+	////////////////////////////////////////////////////
+	// 13. Sidebar Js
+	$(".tp-menu-bar").on("click", function () {
+		$(".tpoffcanvas").addClass("opened");
+		$(".body-overlay").addClass("apply");
+	});
+	$(".close-btn").on("click", function () {
+		$(".tpoffcanvas").removeClass("opened");
+		$(".body-overlay").removeClass("apply");
+	});
+	$(".body-overlay").on("click", function () {
+		$(".tpoffcanvas").removeClass("opened");
+		$(".body-overlay").removeClass("apply");
+	});
+
+
+
+	////////////////////////////////////////////////////
+  	// 14. backtotop Js
+	  function back_to_top() {
+		var btn = $('#back_to_top');
+		var btn_wrapper = $('.back-to-top-wrapper');
+
+		windowOn.scroll(function () {
+			if (windowOn.scrollTop() > 300) {
+				btn_wrapper.addClass('back-to-top-btn-show');
+			} else {
+				btn_wrapper.removeClass('back-to-top-btn-show');
+			}
+		});
+
+		btn.on('click', function (e) {
+			e.preventDefault();
+			$('html, body').animate({ scrollTop: 0 }, '300');
+		});
+	}
+	back_to_top();
+
+
+	////////////////////////////////////////////////////
+	// 15. Nice Select Js
+	$('.tp-header-search-category select').niceSelect();
+
+
+	////////////////////////////////////////////////////
+	// 16. magnificPopup img view 
+	$('.popup-image').magnificPopup({
+		// delegate: 'a',
+		type: 'image',
+		gallery: {
+			enabled: true
+		}
+	});
+
+
+	////////////////////////////////////////////////////
+	// 17. magnificPopup video view
+	$(".popup-video").magnificPopup({
+		type: "iframe",
+	});
+
+
+	////////////////////////////////////////////////////
+	// 18. Ecommerce Cart Js
+	function tp_ecommerce() {
+		$('.tp-cart-minus').on('click', function () {
+			var $input = $(this).parent().find('input');
+			var count = Number($input.val()) - 1;
+			count = count < 1 ? 1 : count;
+			$input.val(count);
+			$input.change();
+			return false;
+		});
+	
+		$('.tp-cart-plus').on('click', function () {
+			var $input = $(this).parent().find('input');
+			$input.val(Number($input.val()) + 1);
+			$input.change();
+			return false;
+		});
+
+		$("#slider-range").slider({
+			range: true,
+			min: 0,
+			max: 500,
+			values: [75, 300],
+			slide: function (event, ui) {
+				$("#amount").val("$" + ui.values[0] + " - $" + ui.values[1]);
+			}
+		});
+		$("#amount").val("$" + $("#slider-range").slider("values", 0) +
+			" - $" + $("#slider-range").slider("values", 1));
+	
+		
+
+		$('.tp-checkout-payment-item label').on('click', function () {
+			$(this).siblings('.tp-checkout-payment-desc').slideToggle(400);
+			
+		});
+		
+
+		$('.tp-color-variation-btn').on('click', function () {
+			$(this).addClass('active').siblings().removeClass('active');
+		});
+		
+
+		$('.tp-size-variation-btn').on('click', function () {
+			$(this).addClass('active').siblings().removeClass('active');
+		});
+
+
+	
+		////////////////////////////////////////////////////
+		// 19. Show Login Toggle Js
+		$('.tp-checkout-login-form-reveal-btn').on('click', function () {
+			$('#tpReturnCustomerLoginForm').slideToggle(400);
+		});
+
+
+
+	
+		////////////////////////////////////////////////////
+		// 20. Show Coupon Toggle Js
+		$('.tp-checkout-coupon-form-reveal-btn').on('click', function () {
+			$('#tpCheckoutCouponForm').slideToggle(400);
+		});
+
+
+	
+		////////////////////////////////////////////////////
+		// 21. Create An Account Toggle Js
+		$('#cbox').on('click', function () {
+			$('#cbox_info').slideToggle(900);
+		});
+
+
+	
+		////////////////////////////////////////////////////
+		// 22. Shipping Box Toggle Js
+		$('#ship-box').on('click', function () {
+			$('#ship-box-info').slideToggle(1000);
+		});
+	}
+	tp_ecommerce();
+
+
+	////////////////////////////////////////////////////
+	// 23. Wow Js
+	new WOW().init();
+
+
+	////////////////////////////////////////////////////
+	// 24. Counter Js
+	new PureCounter();
+	new PureCounter({
+		filesizing: true,
+		selector: ".filesizecount",
+		pulse: 2,
+	});
+
+
+
+
+	////////////////////////////////////////////////////
+	// 25. Jquery proggess ber
+	if (typeof ($.fn.knob) != 'undefined') {
+		$('.knob').each(function () {
+		var $this = $(this),
+		knobVal = $this.attr('data-rel');
+
+		$this.knob({
+		'draw': function () {
+			$(this.i).val(this.cv + '%')
+		}
+		});
+
+		$this.appear(function () {
+		$({
+			value: 0
+		}).animate({
+			value: knobVal
+		}, {
+			duration: 2000,
+			easing: 'swing',
+			step: function () {
+			$this.val(Math.ceil(this.value)).trigger('change');
+			}
+		});
+		}, {
+		accX: 0,
+		accY: -150,
+		});
+	});
+	}
+
+
+	////////////////////////////////////////////////////
+	// 26. parallax 
+	if ($('.scene').length > 0) {
+		$('.scene').parallax({
+			scalarX: 2,
+			scalarY: 2,
+		});
+	};
+	if ($('.scene-2').length > 0) {
+		$('.scene-2').parallax({
+			scalarX: 1,
+			scalarY: 1,
+		});
+	};
+
+
+
+
+	////////////////////////////////////////////////////
+	// 27. circle percent 
+	$(".circle_percent").each(function () {
+        var $this = $(this),
+            $dataV = $this.data("percent"),
+            $dataDeg = $dataV * 3.6,
+            $round = $this.find(".round_per");
+        $round.css("transform", "rotate(" + parseInt($dataDeg + 180) + "deg)");
+        $this.append('<div class="circle_inbox"><span class="percent_text"></span></div>');
+        $this.prop('Counter', 0).animate({
+            Counter: $dataV
+        }, {
+            duration: 3000,
+            easing: 'swing',
+            step: function (now) {
+                $this.find(".percent_text").text(Math.ceil(now) + "%");
             }
-            siblingEle = siblingEle.nextSibling;
-          }
-        }
-        this.classList.add('active');
-
-        i18next.changeLanguage(currentLanguage, (err, t) => {
-          window.templateCustomizer ? window.templateCustomizer.setLang(currentLanguage) : '';
-          directionChange(textDirection);
-          if (err) return console.log('something went wrong loading', err);
-          localize();
-          window.Helpers.syncCustomOptionsRtl(textDirection);
         });
-      });
-    }
-    function directionChange(textDirection) {
-      document.documentElement.setAttribute('dir', textDirection);
-      if (textDirection === 'rtl') {
-        if (localStorage.getItem('templateCustomizer-' + templateName + '--Rtl') !== 'true')
-          window.templateCustomizer ? window.templateCustomizer.setRtl(true) : '';
-      } else {
-        if (localStorage.getItem('templateCustomizer-' + templateName + '--Rtl') === 'true')
-          window.templateCustomizer ? window.templateCustomizer.setRtl(false) : '';
-      }
-    }
-  }
-
-  function localize() {
-    let i18nList = document.querySelectorAll('[data-i18n]');
-    // Set the current language in dd
-    let currentLanguageEle = document.querySelector('.dropdown-item[data-language="' + i18next.language + '"]');
-
-    if (currentLanguageEle) {
-      currentLanguageEle.click();
-    }
-
-    i18nList.forEach(function (item) {
-      item.innerHTML = i18next.t(item.dataset.i18n);
-      /* FIX: Uncomment the following line to hide elements with the i18n attribute before translation to prevent text change flicker */
-      // item.style.visibility = 'visible';
+        if ($dataV >= 51) {
+            $round.css("transform", "rotate(" + 360 + "deg)");
+            setTimeout(function () {
+                $this.addClass("percent_more");
+            }, 1000);
+            setTimeout(function () {
+                $round.css("transform", "rotate(" + parseInt($dataDeg + 180) + "deg)");
+            }, 1000);
+        }
     });
-  }
 
-  // Notification
-  // ------------
-  const notificationMarkAsReadAll = document.querySelector('.dropdown-notifications-all');
-  const notificationMarkAsReadList = document.querySelectorAll('.dropdown-notifications-read');
 
-  // Notification: Mark as all as read
-  if (notificationMarkAsReadAll) {
-    notificationMarkAsReadAll.addEventListener('click', event => {
-      notificationMarkAsReadList.forEach(item => {
-        item.closest('.dropdown-notifications-item').classList.add('marked-as-read');
-      });
-    });
-  }
-  // Notification: Mark as read/unread onclick of dot
-  if (notificationMarkAsReadList) {
-    notificationMarkAsReadList.forEach(item => {
-      item.addEventListener('click', event => {
-        item.closest('.dropdown-notifications-item').classList.toggle('marked-as-read');
-      });
-    });
-  }
 
-  // Notification: Mark as read/unread onclick of dot
-  const notificationArchiveMessageList = document.querySelectorAll('.dropdown-notifications-archive');
-  notificationArchiveMessageList.forEach(item => {
-    item.addEventListener('click', event => {
-      item.closest('.dropdown-notifications-item').remove();
-    });
-  });
+	////////////////////////////////////////////////////
+	// 28. header language
+	if ($("#tp-header-lang-toggle").length > 0) {
+		window.addEventListener('click', function(e){
+	
+			if (document.getElementById('tp-header-lang-toggle').contains(e.target)){
+				$(".tp-lang-list").toggleClass("tp-lang-list-open");
+			}
+			else{
+				$(".tp-lang-list").removeClass("tp-lang-list-open");
+			}
+		});
+	}
 
-  // Init helpers & misc
-  // --------------------
 
-  // Init BS Tooltip
-  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-  tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl);
-  });
+	
+	////////////////////////////////////////////////////
+	// 29. cursor style
+	document.addEventListener("DOMContentLoaded", function() {
+		var cursor = document.querySelector(".cursor");
+		var cursor2 = document.querySelector(".cursor2");
+		document.addEventListener("mousemove", function(e) {
+			cursor.style.cssText = cursor2.style.cssText = "left: " + e.clientX + "px; top: " + e.clientY + "px;";
+		});
+		var cursorScale = document.querySelectorAll('a, button, .brand-item,.swiper-button-prev,.swiper-button-next, .icons');
+		cursorScale.forEach(link => {
+			link.addEventListener('mousemove', () => {
+				cursor.classList.add('grow');
+				if (link.classList.contains('small')) {
+					cursor.classList.remove('grow');
+					cursor.classList.add('grow-small');
+				}
+			});
+			link.addEventListener('mouseleave', () => {
+				cursor.classList.remove('grow');
+				cursor.classList.remove('grow-small');
+			});
+		});
+	});
+	
 
-  // Accordion active class
-  const accordionActiveFunction = function (e) {
-    if (e.type == 'show.bs.collapse' || e.type == 'show.bs.collapse') {
-      e.target.closest('.accordion-item').classList.add('active');
-      e.target.closest('.accordion-item').previousElementSibling?.classList.add('previous-active');
-    } else {
-      e.target.closest('.accordion-item').classList.remove('active');
-      e.target.closest('.accordion-item').previousElementSibling?.classList.remove('previous-active');
-    }
-  };
+	///////////////////////////////////////////////////
+	// 30. tp-btn-trigger
+	if ($('.tp-btn-trigger').length > 0) {
 
-  const accordionTriggerList = [].slice.call(document.querySelectorAll('.accordion'));
-  const accordionList = accordionTriggerList.map(function (accordionTriggerEl) {
-    accordionTriggerEl.addEventListener('show.bs.collapse', accordionActiveFunction);
-    accordionTriggerEl.addEventListener('hide.bs.collapse', accordionActiveFunction);
-  });
+		gsap.set(".tp-btn-bounce", { y: -100, opacity: 0 });
+		var mybtn = gsap.utils.toArray(".tp-btn-bounce");
+		mybtn.forEach((btn) => {
+			var $this = $(btn);
+			gsap.to(btn, {
+				scrollTrigger: {
+					trigger: $this.closest('.tp-btn-trigger'),
+					start: "top center",
+					markers: false
+				},
+				duration: 1,
+				ease: "bounce.out",
+				y: 0,
+				opacity: 1,
+			})
+		});
+	}
 
-  // Auto update layout based on screen size
-  window.Helpers.setAutoUpdate(true);
 
-  // Toggle Password Visibility
-  window.Helpers.initPasswordToggle();
 
-  // Speech To Text
-  window.Helpers.initSpeechToText();
+	///////////////////////////////////////////////////
+	// 31. gsap-costom-hover
+	var hoverBtns = gsap.utils.toArray(".tp-costom-wrapper-hover");
+	const hoverBtnItem = gsap.utils.toArray(".tp-costom-inner-hover");
+	hoverBtns.forEach((btn, i) => {
+		$(btn).mousemove(function (e) {
+			callParallax(e);
+		});
+		function callParallax(e) {
+			parallaxIt(e, hoverBtnItem[i], 60);
+		}
 
-  // Init PerfectScrollbar in Navbar Dropdown (i.e notification)
-  window.Helpers.initNavbarDropdownScrollbar();
+		function parallaxIt(e, target, movement) {
+			var $this = $(btn);
+			var relX = e.pageX - $this.offset().left;
+			var relY = e.pageY - $this.offset().top;
 
-  let horizontalMenuTemplate = document.querySelector("[data-template^='horizontal-menu']");
-  if (horizontalMenuTemplate) {
-    // if screen size is small then set navbar fixed
-    if (window.innerWidth < window.Helpers.LAYOUT_BREAKPOINT) {
-      window.Helpers.setNavbarFixed('fixed');
-    } else {
-      window.Helpers.setNavbarFixed('');
-    }
-  }
+			gsap.to(target, 1, {
+				x: ((relX - $this.width() / 2) / $this.width()) * movement,
+				y: ((relY - $this.height() / 2) / $this.height()) * movement,
+				ease: Power2.easeOut,
+			});
+		}
+		$(btn).mouseleave(function (e) {
+			gsap.to(hoverBtnItem[i], 1, {
+				x: 0,
+				y: 0,
+				ease: Power2.easeOut,
+			});
+		});
+	});
 
-  // On window resize listener
-  // -------------------------
-  window.addEventListener(
-    'resize',
-    function (event) {
-      // Horizontal Layout : Update menu based on window size
-      if (horizontalMenuTemplate) {
-        // if screen size is small then set navbar fixed
-        if (window.innerWidth < window.Helpers.LAYOUT_BREAKPOINT) {
-          window.Helpers.setNavbarFixed('fixed');
-        } else {
-          window.Helpers.setNavbarFixed('');
-        }
-        setTimeout(function () {
-          if (window.innerWidth < window.Helpers.LAYOUT_BREAKPOINT) {
-            if (document.getElementById('layout-menu')) {
-              if (document.getElementById('layout-menu').classList.contains('menu-horizontal')) {
-                menu.switchMenu('vertical');
-              }
-            }
-          } else {
-            if (document.getElementById('layout-menu')) {
-              if (document.getElementById('layout-menu').classList.contains('menu-vertical')) {
-                menu.switchMenu('horizontal');
-              }
-            }
-          }
-        }, 100);
-      }
-    },
-    true
-  );
 
-  // Manage menu expanded/collapsed with templateCustomizer & local storage
-  //------------------------------------------------------------------
 
-  // If current layout is horizontal OR current window screen is small (overlay menu) than return from here
-  if (isHorizontalLayout || window.Helpers.isSmallScreen()) {
-    return;
-  }
+	////////////////////////////////////////////////////
+	// 32. Password Toggle Js
+	if($('.password-show-toggle').length > 0){
+		var showBtn = $('.password-show-toggle');
+		showBtn.each(function (e) {
+			$(this).on('click', function(x){
+				let inputField = $(this).parent().find('input');
+				if(inputField.attr('type') === "password"){
+					inputField.attr('type', 'text')
+					$(this).children('.open-eye-icon').css({
+						'display' : 'block'
+					})
+					$(this).children('.close-eye-icon').css({
+						'display' : 'none'
+					})
+				}else{
+					inputField.attr('type', 'password')
+					$(this).children('.open-eye-icon').css({
+						'display' : 'none'
+					})
+					$(this).children('.close-eye-icon').css({
+						'display' : 'block'
+					})
+				}
+			})
+		})
+	}
 
-  // If current layout is vertical and current window screen is > small
-  // Auto update menu collapsed/expanded based on the themeConfig
-  if (typeof window.templateCustomizer !== 'undefined') {
-    if (window.templateCustomizer.settings.defaultMenuCollapsed) {
-      window.Helpers.setCollapsed(true, false);
-    } else {
-      window.Helpers.setCollapsed(false, false);
-    }
 
-    if (window.templateCustomizer.settings.semiDark) {
-      document.querySelector('#layout-menu').setAttribute('data-bs-theme', 'dark');
-    }
-  }
 
-  // Manage menu expanded/collapsed state with local storage support If enableMenuLocalStorage = true in config.js
-  if (typeof config !== 'undefined') {
-    if (config.enableMenuLocalStorage) {
-      try {
-        if (localStorage.getItem('templateCustomizer-' + templateName + '--LayoutCollapsed') !== null)
-          window.Helpers.setCollapsed(
-            localStorage.getItem('templateCustomizer-' + templateName + '--LayoutCollapsed') === 'true',
-            false
-          );
-      } catch (e) {}
-    }
-  }
-})();
-
-// Search Configuration
-const SearchConfig = {
-  container: '#autocomplete',
-  placeholder: 'Search [CTRL + K]',
-  classNames: {
-    detachedContainer: 'd-flex flex-column',
-    detachedFormContainer: 'd-flex align-items-center justify-content-between border-bottom',
-    form: 'd-flex align-items-center',
-    input: 'search-control border-none',
-    detachedCancelButton: 'btn-search-close',
-    panel: 'flex-grow content-wrapper overflow-hidden position-relative',
-    panelLayout: 'h-100',
-    clearButton: 'd-none',
-    item: 'd-block'
-  }
-};
-
-// Search state and data
-let data = {};
-let currentFocusIndex = -1;
-
-// Utils
-function isMacOS() {
-  return /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
-}
-
-// Load search data
-function loadSearchData() {
-  const searchJson = $('#layout-menu').hasClass('menu-horizontal') ? 'search-horizontal.json' : 'search-vertical.json';
-
-  fetch(assetsPath + 'json/' + searchJson)
-    .then(response => {
-      if (!response.ok) throw new Error('Failed to fetch data');
-      return response.json();
-    })
-    .then(json => {
-      data = json;
-      initializeAutocomplete();
-    })
-    .catch(error => console.error('Error loading JSON:', error));
-}
-
-// Initialize autocomplete
-function initializeAutocomplete() {
-  const searchElement = document.getElementById('autocomplete');
-  if (!searchElement) return;
-
-  return autocomplete({
-    ...SearchConfig,
-    openOnFocus: true,
-    onStateChange({ state, setQuery }) {
-      // When autocomplete is opened
-      if (state.isOpen) {
-        // Hide body scroll and add padding to prevent layout shift
-        document.body.style.overflow = 'hidden';
-        document.body.style.paddingRight = 'var(--bs-scrollbar-width)';
-        // Replace "Cancel" text with icon
-        const cancelIcon = document.querySelector('.aa-DetachedCancelButton');
-        if (cancelIcon) {
-          cancelIcon.innerHTML =
-            '<span class="text-body-secondary">[esc]</span> <span class="icon-base icon-md ri ri-close-line text-heading"></span>';
-        }
-
-        // Perfect Scrollbar
-        if (!window.autoCompletePS) {
-          const panel = document.querySelector('.aa-Panel');
-          if (panel) {
-            window.autoCompletePS = new PerfectScrollbar(panel);
-          }
-        }
-      } else {
-        // When autocomplete is closed
-        if (state.status === 'idle' && state.query) {
-          setQuery('');
-        }
-
-        // Restore body scroll and padding when autocomplete is closed
-        document.body.style.overflow = 'auto';
-        document.body.style.paddingRight = '';
-      }
-    },
-    render(args, root) {
-      const { render, html, children, state } = args;
-
-      // Initial Suggestions
-      if (!state.query) {
-        const initialSuggestions = html`
-          <div class="p-5 p-lg-12">
-            <div class="row g-4">
-              ${Object.entries(data.suggestions || {}).map(
-                ([section, items]) => html`
-                  <div class="col-md-6 suggestion-section">
-                    <p class="search-headings mb-2">${section}</p>
-                    <div class="suggestion-items">
-                      ${items.map(
-                        item => html`
-                          <a href="${item.url}" class="suggestion-item d-flex align-items-center">
-                            <i class="icon-base ri ${item.icon} me-2"></i>
-                            <span>${item.name}</span>
-                          </a>
-                        `
-                      )}
-                    </div>
-                  </div>
-                `
-              )}
-            </div>
-          </div>
-        `;
-
-        render(initialSuggestions, root);
-        return;
-      }
-
-      // No items
-      if (!args.sections.length) {
-        render(
-          html`
-            <div class="search-no-results-wrapper">
-              <div class="d-flex justify-content-center align-items-center h-100">
-                <div class="text-center text-heading">
-                  <i class="icon-base ri ri-file-text-line text-body-secondary icon-48px mb-4"></i>
-                  <h5>No results found</h5>
-                </div>
-              </div>
-            </div>
-          `,
-          root
-        );
-        return;
-      }
-
-      render(children, root);
-      window.autoCompletePS?.update();
-    },
-    getSources() {
-      const sources = [];
-
-      // Add navigation sources if available
-      if (data.navigation) {
-        // Add other navigation sources first
-        const navigationSources = Object.keys(data.navigation)
-          .filter(section => section !== 'files' && section !== 'members')
-          .map(section => ({
-            sourceId: `nav-${section}`,
-            getItems({ query }) {
-              const items = data.navigation[section];
-              if (!query) return items;
-              return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
-            },
-            getItemUrl({ item }) {
-              return item.url;
-            },
-            templates: {
-              header({ items, html }) {
-                if (items.length === 0) return null;
-                return html`<span class="search-headings">${section}</span>`;
-              },
-              item({ item, html }) {
-                return html`
-                  <a href="${item.url}" class="d-flex justify-content-between align-items-center">
-                    <span class="item-wrapper"><i class="icon-base ri ${item.icon}"></i>${item.name}</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
-                      <path fill="currentColor" d="M16 13h-6v-3l-5 4l5 4v-3h7a1 1 0 0 0 1-1V5h-2z" />
-                    </svg>
-                  </a>
-                `;
-              }
-            }
-          }));
-        sources.push(...navigationSources);
-
-        // Add Files source second
-        if (data.navigation.files) {
-          sources.push({
-            sourceId: 'files',
-            getItems({ query }) {
-              const items = data.navigation.files;
-              if (!query) return items;
-              return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
-            },
-            getItemUrl({ item }) {
-              return item.url;
-            },
-            templates: {
-              header({ items, html }) {
-                if (items.length === 0) return null;
-                return html`<span class="search-headings">Files</span>`;
-              },
-              item({ item, html }) {
-                return html`
-                  <a href="${item.url}" class="d-flex align-items-center position-relative px-4 py-2">
-                    <div class="file-preview me-2">
-                      <img src="${assetsPath}${item.src}" alt="${item.name}" class="rounded" width="42" />
-                    </div>
-                    <div class="flex-grow-1">
-                      <h6 class="mb-0">${item.name}</h6>
-                      <small class="text-body-secondary">${item.subtitle}</small>
-                    </div>
-                    ${item.meta
-                      ? html`
-                          <div class="position-absolute end-0 me-4">
-                            <span class="text-body-secondary small">${item.meta}</span>
-                          </div>
-                        `
-                      : ''}
-                  </a>
-                `;
-              }
-            }
-          });
-        }
-
-        // Add Members source last
-        if (data.navigation.members) {
-          sources.push({
-            sourceId: 'members',
-            getItems({ query }) {
-              const items = data.navigation.members;
-              if (!query) return items;
-              return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
-            },
-            getItemUrl({ item }) {
-              return item.url;
-            },
-            templates: {
-              header({ items, html }) {
-                if (items.length === 0) return null;
-                return html`<span class="search-headings">Members</span>`;
-              },
-              item({ item, html }) {
-                return html`
-                  <a href="${item.url}" class="d-flex align-items-center py-2 px-4">
-                    <div class="avatar me-2">
-                      <img src="${assetsPath}${item.src}" alt="${item.name}" class="rounded-circle" width="32" />
-                    </div>
-                    <div class="flex-grow-1">
-                      <h6 class="mb-0">${item.name}</h6>
-                      <small class="text-body-secondary">${item.subtitle}</small>
-                    </div>
-                  </a>
-                `;
-              }
-            }
-          });
-        }
-      }
-
-      return sources;
-    }
-  });
-}
-
-// Initialize search shortcut
-document.addEventListener('keydown', event => {
-  if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-    event.preventDefault();
-    document.querySelector('.aa-DetachedSearchButton').click();
-  }
-});
-
-// Load search data on page load
-if (document.documentElement.querySelector('#autocomplete')) {
-  loadSearchData();
-}
+})(jQuery);

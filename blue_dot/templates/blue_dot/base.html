@@ -89,98 +89,85 @@
     <!-- Start Search Popup Section -->
 
 
-    <!-- cart mini area start -->
-    <div class="cartmini__area">
-        <div class="cartmini__wrapper d-flex justify-content-between flex-column">
-            <div class="cartmini__top-wrapper ">
-                <div class="cartmini__top p-relative">
-                    <div class="cartmini__title">
-                        <h4>Shopping cart</h4>
-                    </div>
-                    <div class="cartmini__close">
-                        <button type="button" class="cartmini__close-btn cartmini-close-btn"><i class="fal fa-times"></i></button>
-                    </div>
+  <!-- cartmini area start -->
+<div class="cartmini__area">
+    <div class="cartmini__wrapper d-flex justify-content-between flex-column">
+        <div class="cartmini__top-wrapper ">
+            <div class="cartmini__top p-relative">
+                <div class="cartmini__title">
+                    <h4>Shopping cart</h4>
                 </div>
-                <div class="cartmini__widget">
-                    <div class="cartmini__widget-item">
-                        <div class="cartmini__thumb">
-                            <a href="product-details.html">
-                                <img src="{% static 'assets/img/cart/product-1.jpg' %}" alt="">
-                            </a>
-                        </div>
-                        <div class="cartmini__content">
-                            <h5><a href="product-details.html">Level Bolt Smart Lock</a></h5>
-                            <div class="cartmini__price-wrapper">
-                                <span class="cartmini__price">$46.00</span>
-                                <span class="cartmini__quantity">x2</span>
-                            </div>
-                        </div>
-                        <button class="cartmini__del"><i class="fal fa-times"></i></button>
-                    </div>
-                    <div class="cartmini__widget-item">
-                        <div class="cartmini__thumb">
-                            <a href="product-details.html">
-                                <img src="{% static 'assets/img/cart/product-2.jpg' %}" alt="">
-                            </a>
-                        </div>
-                        <div class="cartmini__content">
-                            <h5><a href="product-details.html">Trademil for younger</a></h5>
-                            <div class="cartmini__price-wrapper">
-                                <span class="cartmini__price">$78.00</span>
-                                <span class="cartmini__quantity">x1</span>
-                            </div>
-                        </div>
-                        <button class="cartmini__del"><i class="fal fa-times"></i></button>
-                    </div>
-                    <div class="cartmini__widget-item">
-                        <div class="cartmini__thumb">
-                            <a href="product-details.html">
-                                <img src="{% static 'assets/img/cart/product-3.jpg' %}" alt="">
-                            </a>
-                        </div>
-                        <div class="cartmini__content">
-                            <h5><a href="product-details.html">ViewSonic VP2756-2K</a></h5>
-                            <div class="cartmini__price-wrapper">
-                                <span class="cartmini__price">$98.00</span>
-                                <span class="cartmini__quantity">x3</span>
-                            </div>
-                        </div>
-                        <button class="cartmini__del"><i class="fal fa-times"></i></button>
-                    </div>
-                </div>
-                <!-- for wp -->
-                <!-- if no item in cart -->
-                <div class="cartmini__empty text-center d-none">
-                    <p>Your Cart is empty</p>
-                    <a href="shop.html" class="cartmini-btn">Go to Shop</a>
+                <div class="cartmini__close">
+                    <button type="button" class="cartmini__close-btn cartmini-close-btn">
+                        <i class="fal fa-times"></i>
+                    </button>
                 </div>
             </div>
-            <div class="cartmini__checkout">
-                <div class="cartmini__checkout-title mb-30">
-                    <h4>Subtotal:</h4>
-                    <span>$113.00</span>
+            
+            {% if cart_data %}
+            <div class="cartmini__widget">
+                {% for cart in cart_data %}
+                <div class="cartmini__widget-item">
+                    <div class="cartmini__thumb">
+                        <a href="{% url 'product_detail' cart.item.product.slug %}">
+                            <img src="{{ cart.item.product.thumbnail.url }}" alt="{{ cart.item.product.name }}">
+                        </a>
+                    </div>
+                    <div class="cartmini__content">
+                        <h5>
+                            <a href="{% url 'product_detail' cart.item.product.slug %}">
+                                {{ cart.item.product.name }}
+                            </a>
+                        </h5>
+                        <div class="cartmini__price-wrapper">
+                            <span class="cartmini__price">৳{{ cart.item.final_price|floatformat:2 }}</span>
+                            <span class="cartmini__quantity">x{{ cart.item.quantity }}</span>
+                        </div>
+                    </div>
+                    <form method="POST" action="{% url 'remove_from_cart' cart.item.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="cartmini__del"><i class="fal fa-times"></i></button>
+                    </form>
                 </div>
-                <div class="cartmini__checkout-btn">
-                    <a href="cart.html" class="cartmini-btn mb-10 w-100"> <span></span> view cart</a>
-                    <a href="checkout.html" class="cartmini-btn-border w-100"> <span></span> checkout</a>
-                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty cart message -->
+            <div class="cartmini__empty text-center">
+                <p>Your Cart is empty</p>
+                <a href="{% url 'shop' %}" class="cartmini-btn">Go to Shop</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="cartmini__checkout">
+            <div class="cartmini__checkout-title mb-30">
+                <h4>Subtotal:</h4>
+                <span>৳{{ subtotal|floatformat:2 }}</span>
+            </div>
+            <div class="cartmini__checkout-btn">
+                <a href="{% url 'cart' %}" class="cartmini-btn mb-10 w-100"><span></span> view cart</a>
+                <a href="{% url 'cart_checkout' %}" class="cartmini-btn-border w-100"><span></span> checkout</a>
             </div>
         </div>
     </div>
+</div>
+<!-- cartmini area end -->
+
     <div class="cartmini-overlay"></div>
     <!-- cart mini area end -->
 
 
 
 
-    <!-- tp-offcanvus-area-start -->
+     <!-- tp-offcanvus-area-start -->
     <div class="tpoffcanvas-area">
         <div class="tpoffcanvas">
             <div class="tpoffcanvas__close-btn">
                 <button class="close-btn"><i class="fal fa-times"></i></button>
             </div>
             <div class="tpoffcanvas__logo">
-                <a href="index.html">
+                <a href="/">
                     <img src="{% static 'assets/img/logo/logo.png' %}" alt="">
                 </a>
             </div>
@@ -188,7 +175,20 @@
                 <p>Presvila is the partner of choice for many of the world’s leading enterprises.
                     We help businesses development.</p>
             </div>
-            <div class="tp-main-menu-mobile d-xl-none"></div>
+    
+            <!-- Injected mobile navigation here -->
+            <div class="tp-main-menu-mobile d-xl-none">
+                <nav class="tp-main-menu-content">
+                    <ul>
+                        <li class="has-dropdown"><a href="{% url 'home' %}">Home</a></li>
+                        <li class="has-dropdown"><a href="{% url 'shop' %}">Products</a></li>
+                        <li><a href="{% url 'blog' %}">Blog</a></li>
+                        <li><a href="{% url 'promotion' %}">Promotions</a></li>
+                        <li class="has-dropdown"><a href="{% url 'contact' %}">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+    
             <div class="tpoffcanvas__contact-info">
                 <div class="tpoffcanvas__contact-title">
                     <h5>Contact us</h5>
@@ -196,18 +196,21 @@
                 <ul>
                     <li>
                         <i class="fa-solid fa-location-dot"></i>
-                        <a href="https://www.google.com/maps/@23.8223586,90.3661283,15z" target="_blank">Manchester 21, Zurich, CH</a>
+                        <a href="https://www.google.com/maps/place/35%2F4+Lake+Circus,+Kalabagan,+Dhaka,+Bangladesh" target="_blank">
+                            35/4 Lake Circus, Kalabagan, Dhaka, Bangladesh, 1205
+                        </a>
                     </li>
                     <li>
                         <i class="fas fa-envelope"></i>
-                        <a href="mailto:techubinfo@mail.com"><span class="__cf_email__">presvilainfo@mail.com</span></a>
+                        <a href="mailto:info@bluedots.com">info@bluedots.com</a>
                     </li>
                     <li>
                         <i class="fa-solid fa-phone-flip"></i>
-                        <a href="tel:+48555223224">(+00) 678 345 98568</a>
+                        <a href="tel:+8801332500075">01332-500075</a>
                     </li>
                 </ul>
             </div>
+            
             <div class="tpoffcanvas__input">
                 <div class="tpoffcanvas__input-title">
                     <h4>Get UPdate</h4>
@@ -231,9 +234,9 @@
             </div>
         </div>
     </div>
+    
     <div class="body-overlay"></div>
     <!-- tp-offcanvus-area-end -->
-
 
 
     {% include "blue_dot/partials/navbar.html" %}

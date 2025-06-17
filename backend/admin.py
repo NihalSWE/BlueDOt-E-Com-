@@ -1,7 +1,40 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from .models import *
 
+
+
+
+@admin.register(User)
+class UserAdmin(BaseUserAdmin):
+    model = User
+
+    # Fields to display in list view
+    list_display = ('user_id', 'email', 'name', 'user_type', 'user_status', 'is_staff')
+    list_filter = ('user_type', 'user_status', 'is_staff')
+
+    # Fields for search bar
+    search_fields = ('email', 'user_id', 'name', 'phone_number')
+    ordering = ('email',)
+
+    # Fields visible in the user form (admin detail/edit page)
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Personal Info', {'fields': ('user_id', 'username', 'name', 'phone_number', 'address')}),
+        ('Permissions', {'fields': ('user_type', 'user_status', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login',)}),
+    )
+
+    # Fields for the add user form
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'user_id', 'username', 'name', 'phone_number', 'user_type', 'user_status', 'password1', 'password2'),
+        }),
+    )
+    
+    
 # Register your models here.
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'brand', 'base_price', 'thumbnail_preview', 'created_at')

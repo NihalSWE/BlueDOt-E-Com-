@@ -72,6 +72,9 @@
     min-height: 38px;
     border: 1px solid #ced4da;
   }
+    #discountTable th, #discountTable td {
+  border: 1px solid #dee2e6;
+}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
@@ -104,8 +107,7 @@
             <th>Type</th>
             <th>Value</th>
             <th>Status</th>
-            <th>Start Date</th>
-            <th>End Date</th>
+      
             <th>Actions</th>
           </tr>
         </thead>
@@ -113,20 +115,22 @@
           {% for discount in discounts %}
           <tr>
             <td>{{ forloop.counter }}</td>
-            <td>
-              <div class="product-list">
-                {% for product in discount.products.all %}
-                  {{ product.name }}{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-              </div>
-            </td>
+     <td>
+  <div class="product-list d-flex flex-wrap gap-1">
+    {% for product in discount.products.all %}
+      <span class="badge bg-info text-dark">{{ product.name }}</span>
+    {% empty %}
+      <span class="text-muted">No products</span>
+    {% endfor %}
+  </div>
+</td>
             <td>{{ discount.category.name }}</td>
             <td>{{ discount.get_discount_type_display }}</td>
             <td class="price-cell">
               {% if discount.discount_type == 'percent' %}
                 {{ discount.discount_value }}%
               {% else %}
-                ${{ discount.discount_value }}
+                Tk{{ discount.discount_value }}
               {% endif %}
             </td>
             <td>
@@ -136,8 +140,7 @@
                 <span class="status-badge badge-inactive">Inactive</span>
               {% endif %}
             </td>
-            <td>{{ discount.start_date|date:"M d, Y"|default:"-" }}</td>
-            <td>{{ discount.end_date|date:"M d, Y"|default:"-" }}</td>
+        
             <td class="action-btns">
               <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editDiscountModal{{ discount.id }}">
                 <i class="fas fa-edit"></i>
@@ -270,15 +273,7 @@
                 <option value="0">Inactive</option>
               </select>
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Start Date</label>
-              <input type="datetime-local" name="start_date" class="form-control">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">End Date</label>
-              <input type="datetime-local" name="end_date" class="form-control">
-            </div>
-          </div>
+     
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

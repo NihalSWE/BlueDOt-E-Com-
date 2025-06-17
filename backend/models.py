@@ -76,7 +76,7 @@ class UserManager(BaseUserManager):
 
         return self.create_user(
             email=email,
-            user_id=user_id or 'admin001',
+            user_id=user_id or '445900',
             username=username or 'admin',
             phone_number=phone_number,
             password=password,
@@ -104,6 +104,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     address = models.CharField(max_length=250, blank=True, null=True)
     user_type = models.IntegerField(choices=USER_TYPE_CHOICES, default=2)
     user_status = models.IntegerField(choices=STATUS_CHOICES, default=1)
+    name = models.CharField(max_length=250, blank=True, null=True)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -209,6 +210,16 @@ class Category(models.Model):
             else:
                 self.codes = str(self.pk).zfill(2)
         
+        # Resize image if exists
+        if self.image:
+            try:
+                img = Image.open(self.image.path)
+                img = img.convert('RGB')
+                img = img.resize((300, 300), Image.LANCZOS)  # Resize to 300x300
+                img.save(self.image.path)
+            except Exception as e:
+                print(f"Image resizing failed: {e}")       
+        
         super().save(update_fields=['slug', 'codes'])
         
 
@@ -223,7 +234,7 @@ class Brand(models.Model):
         (0, 'Inactive'),
     )
     name = models.CharField(max_length=255, null=True, blank=True, db_index=True)
-    image = models.CharField(max_length=255, null=True, blank=True)
+    image = models.ImageField(upload_to='brands/', null=True, blank=True)  # <-- changed here
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=1)
     created_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
@@ -252,6 +263,11 @@ class Product(models.Model):
     materials = models.ManyToManyField('Material', through='ProductMaterial')
     discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPE_CHOICES, blank=True, null=True)
     discount_value = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    
+    class Meta:
+        verbose_name = "Inv Product"
+        verbose_name_plural = "Inv Products"
+        
     @property
     def active_discount(self):
         return self.discounts.filter(
@@ -375,15 +391,44 @@ class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='product_images/')
     alt_text = models.CharField(max_length=255, blank=True, null=True)
+    
+    class Meta:
+        verbose_name = "Inv Product Image"
+        verbose_name_plural = "Inv Products Images"
 
     def __str__(self):
         return f"Image for {self.product.name}"
+        
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.image:
+            try:
+                img_path = self.image.path
+                with Image.open(img_path) as img:
+                    # Resize image to 800x600
+                    img = img.resize((800, 600), Image.LANCZOS)
+
+                    # Handle transparency if present
+                    if img.mode in ('RGBA', 'LA'):
+                        img.save(img_path, format='PNG')
+                    else:
+                        img = img.convert('RGB')
+                        img.save(img_path, format='JPEG')
+
+            except Exception as e:
+                print(f"Error resizing product image: {e}")
+        
     
     
     
     
 class MeasurementType(models.Model):
     name = models.CharField(max_length=50, unique=True)  # e.g. Length, Weight, Quantity
+    
+    class Meta:
+        verbose_name = "Inv Measurement Type"
+        verbose_name_plural = "Inv Measurement Types"
 
     def __str__(self):
         return self.name
@@ -397,6 +442,10 @@ class MeasurementUnit(models.Model):
     conversion_factor_to_base = models.FloatField(
         help_text="Conversion factor to the base unit of the type (e.g., cm → 0.01 for meter)"
     )
+    
+    class Meta:
+        verbose_name = "Inv Measurement Unit"
+        verbose_name_plural = "Inv Measurement Units"
 
     def __str__(self):
         return f"{self.abbreviation} ({self.measurement_type.name})"
@@ -407,6 +456,10 @@ class Material(models.Model):
     measurement_unit = models.ForeignKey(MeasurementUnit, on_delete=models.CASCADE)
     quantity_in_stock = models.DecimalField(max_digits=10, decimal_places=2)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    class Meta:
+        verbose_name = "Inv Material"
+        verbose_name_plural = "Inv Materials"
 
     def __str__(self):
         return f"{self.name} ({self.measurement_unit.abbreviation})"
@@ -424,6 +477,8 @@ class ProductMaterial(models.Model):
 
     class Meta:
         unique_together = ('product', 'material')
+        verbose_name = "Inv Product Material"
+        verbose_name_plural = "Inv Product Materials"
 
     def __str__(self):
         return f"{self.material.name} for {self.product.name}"
@@ -440,27 +495,73 @@ class Order(models.Model):
         (4, 'Cancelled'),
         (5, 'Not Viewed'),
     ]
+    SHIPPING_TYPE_CHOICES = [
+        ('flat_rate', 'Flat Rate (৳100)'),
+        ('free_shipping', 'Free Shipping'),
+    ]
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    ]
 
     customer = models.ForeignKey('CustomerInfo', on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.IntegerField(choices=STATUS_CHOICES, default=0)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending',null=True,blank=True)
     order_date = models.DateField(null=True, blank=True)  # NEW FIELD
     notes = models.TextField(blank=True, null=True)  # ← Add this line
-    invoice_id = models.CharField(max_length=20, blank=True, null=True)
+    invoice_id = models.CharField(max_length=20,unique=True, blank=True, null=True)
+    
+    # Order Financial Information
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
+    shipping_type = models.CharField(max_length=20, choices=SHIPPING_TYPE_CHOICES, default='flat_rate',null=True,blank=True)
+    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=100.00,null=True,blank=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return f"Order #{self.id} - {self.customer}"
+    def generate_invoice_id(self):
+        import random
+        import string
+        while True:
+            invoice_id = 'ORD' + ''.join(random.choices(string.digits, k=8))
+            if not Order.objects.filter(invoice_id=invoice_id).exists():
+                return invoice_id
+
+    def save(self, *args, **kwargs):
+        if not self.invoice_id:
+            self.invoice_id = self.generate_invoice_id()
+        super().save(*args, **kwargs)
+        
     
 
+    def __str__(self):
+        return f"Order #{self.invoice_id} - {self.customer.CustomerName}"
+    
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     notes = models.TextField(blank=True, null=True)
     quantity = models.PositiveIntegerField(default=1)
+    product_name = models.CharField(max_length=200,null=True,blank=True)
+   
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2,blank=True,null=True)
 
+   
+    
+    def save(self, *args, **kwargs):
+        if not self.unit_price:
+            self.unit_price = self.product.final_price or self.product.base_price
+        self.total_price = self.quantity * self.unit_price
+        super().save(*args, **kwargs)
+
+
+    
     def __str__(self):
-        return f"{self.quantity} x {self.product.name} (Order #{self.order.id})"
+        return f"{self.quantity} x {self.product.name} (Order #{self.order.invoice_id})"
     
 
 class OrderSpecification(models.Model):
@@ -468,6 +569,10 @@ class OrderSpecification(models.Model):
     measurement = models.CharField(max_length=255)
     weight = models.DecimalField(max_digits=10, decimal_places=2, help_text="Estimated weight of final product")
     custom_description = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        verbose_name = "Inv Order Specification"
+        verbose_name_plural = "Inv Order Specifications"
 
     def __str__(self):
         return f"Specs for Order #{self.order.id}"
@@ -477,22 +582,14 @@ class OrderSpecification(models.Model):
 class Unit(models.Model):
     name = models.CharField(max_length=50, unique=True)  # e.g., Kilogram, Meter, Litre
     symbol = models.CharField(max_length=10, unique=True)  # e.g., kg, m, L, pcs
+    
+    class Meta:
+        verbose_name = "Inv Unit"
+        verbose_name_plural = "Inv Units"
 
     def __str__(self):
         return f"{self.name} ({self.symbol})"
     
-    
-class MaterialUsage(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    material = models.ForeignKey(Material, on_delete=models.CASCADE)
-    unit = models.ForeignKey(Unit, on_delete=models.PROTECT)  # NEW FIELD
-    quantity_used = models.DecimalField(max_digits=10, decimal_places=2)
-
-    class Meta:
-        unique_together = ('order', 'material')
-
-    def __str__(self):
-        return f"{self.quantity_used} of {self.material.name} for Order #{self.order.id}"
     
 
 class InventoryLog(models.Model):
@@ -501,6 +598,10 @@ class InventoryLog(models.Model):
     quantity_changed = models.DecimalField(max_digits=10, decimal_places=2)
     reference = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Inv Log"
+        verbose_name_plural = "Inv Logs"
 
     def __str__(self):
         return f"{self.change_type} - {self.material.name} ({self.quantity_changed})"
@@ -601,6 +702,21 @@ class Blog(models.Model):
 
     def __str__(self):
         return self.title
+        
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.image:
+            try:
+                img_path = self.image.path
+                with Image.open(img_path) as img:
+                    if img.mode not in ("RGB", "RGBA"):
+                        img = img.convert("RGBA")
+
+                    img = img.resize((730, 410), Image.LANCZOS)
+                    img.save(img_path, format='PNG')
+            except Exception as e:
+                print(f"Error resizing image: {e}")
     
     
 class BlogComment(models.Model):
@@ -1020,7 +1136,20 @@ class CenterCard(models.Model):
 
     def __str__(self):
         return self.title
-    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.image:
+            try:
+                img_path = self.image.path
+                with Image.open(img_path) as img:
+                    # Resize image keeping mode and transparency
+                    img = img.resize((433, 363), Image.LANCZOS)
+
+                    # Save as PNG (preserving transparency)
+                    img.save(img_path, format='PNG')
+            except Exception as e:
+                print(f"Error resizing image: {e}")
 
 
 
@@ -1048,6 +1177,10 @@ class PartyRegSupplier(models.Model):
 class MaterialType(models.Model):
     TypeName = models.CharField(max_length=255)
     adminid = models.IntegerField(null=True, blank=True)  # nullable integer field
+    
+    class Meta:
+        verbose_name = "Inv Material Type"
+        verbose_name_plural = "Inv Material Types"
 
     def __str__(self):
         return self.TypeName
@@ -1057,6 +1190,10 @@ class MaterialType(models.Model):
 class Measurement(models.Model):
     name = models.CharField(max_length=50, unique=True)  # e.g., Weight, Length, Volume, Count
     product_id = models.ForeignKey(Product, on_delete=models.SET_NULL, blank=True, null=True)
+    
+    class Meta:
+        verbose_name = "Inv Measurement"
+        verbose_name_plural = "Inv Measurements"
 
     def __str__(self):
         return self.name
@@ -1084,6 +1221,10 @@ class MaterialRegistration(models.Model):
     mr_buy_price = models.DecimalField(max_digits=10, decimal_places=2)
     mr_sell_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     adminid = models.IntegerField(null=True, blank=True)
+    
+    class Meta:
+        verbose_name = "Inv Material Registration "
+        verbose_name_plural = "Inv Material Registration"
 
     def __str__(self):
         return self.mr_material_name
@@ -1116,6 +1257,10 @@ class MaterialInventoryDetail(models.Model):
     
     id_debit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     mid_credit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
+    class Meta:
+        verbose_name = "Inv Material Details "
+        verbose_name_plural = "Inv Material Details"
 
     def __str__(self):
         return f"Inventory #{self.id} - Material: {self.mid_material.mr_material_name}"
@@ -1147,9 +1292,33 @@ class InvWarehouse(models.Model):
 
     class Meta:
         db_table = 'inv_warehouse'
+        verbose_name = "Inv Warehouse"
+        verbose_name_plural = "Inv Warehouse"
 
     def __str__(self):
         return f"{self.invw_name} ({self.invw_code})"
+    
+    
+
+class MaterialUsage(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order_item = models.ForeignKey(
+        OrderItem,
+        on_delete=models.SET_NULL,
+        related_name='material_usages',
+        null=True, blank=True
+    )
+    material = models.ForeignKey(MaterialRegistration, on_delete=models.CASCADE)
+    unit = models.ForeignKey(Unit, on_delete=models.PROTECT)  # NEW FIELD
+    quantity_used = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        unique_together = ('order', 'material')
+        verbose_name = "Inv Material Usage "
+        verbose_name_plural = "Inv Material Usage"
+
+    def __str__(self):
+        return f"{self.quantity_used} of {self.material.mr_material_name} for Order #{self.order.id}"
     
     
 class CustomerInfo(models.Model):
@@ -1158,6 +1327,12 @@ class CustomerInfo(models.Model):
     CustomerAddress = models.CharField(max_length=250)
     CustomerEmail = models.CharField(max_length=25,null=True)
     CustomerContact = models.CharField(max_length=25)
+    
+    district_id = models.CharField(max_length=10, blank=True, null=True)
+    district_name = models.CharField(max_length=100, blank=True)
+    thana_id = models.CharField(max_length=10, blank=True, null=True)
+    thana_name = models.CharField(max_length=100, blank=True)
+    
     RegDate = models.DateField()
     dabite = models.CharField(max_length=100,null=True)
     cradit = models.CharField(max_length=100,null=True)
@@ -1188,14 +1363,20 @@ class HomeCTA(models.Model):
         super().save(*args, **kwargs)
 
         if self.image:
-            image_path = self.image.path
-            img = Image.open(image_path)
+            try:
+                img_path = self.image.path
+                with Image.open(img_path) as img:
+                    # Convert mode if needed (to ensure transparency support)
+                    if img.mode not in ("RGB", "RGBA"):
+                        img = img.convert("RGBA")
 
-            # Resize to (1486 x 539) using high-quality LANCZOS filter
-            output_size = (692, 500)
-            img = img.convert("RGB")
-            img = img.resize(output_size, Image.LANCZOS)
-            img.save(image_path)    
+                    # Resize to 692 x 500
+                    img = img.resize((692, 500), Image.LANCZOS)
+
+                    # Save as PNG to preserve transparency
+                    img.save(img_path, format='PNG')
+            except Exception as e:
+                print(f"Error resizing image: {e}")
     
  
 class PricingCard(models.Model):
@@ -1223,7 +1404,21 @@ class PricingCard(models.Model):
     def __str__(self):
         return self.title 
     
-    
+# Contact Page banner
+class CartBanner(models.Model):
+    title = models.CharField(max_length=255)
+    subtitle = models.TextField(blank=True, null=True)
+    background_image = models.ImageField(upload_to='contact_banner/')
+    def __str__(self):
+        return self.title
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # First save to get the file on disk
+        if self.background_image:
+            image_path = self.background_image.path
+            with Image.open(image_path) as img:
+                # Force resize to 1920x570 (may distort if original ratio differs)
+                resized_img = img.resize((1920, 300), Image.LANCZOS)
+                resized_img.save(image_path, quality=90, optimize=True)
     
     
 class BlogBanner(models.Model):
@@ -1272,8 +1467,7 @@ class BlogPost(models.Model):
     description = RichTextField(
     max_length=5000,
     blank=True,
-    help_text="Blog content with rich text editor"
-)
+    help_text="Blog content with rich text editor")
 
     image = models.ImageField(upload_to='blog/', help_text="Blog thumbnail image")
     category = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True, 
@@ -1297,14 +1491,18 @@ class BlogPost(models.Model):
         if not self.slug:
             self.slug = self.generate_unique_slug()
         
-        # Resize image
-        if self.image:
-            img = Image.open(self.image)
-            img = img.convert('RGB')
-            img = img.resize((730, 410), Image.LANCZOS)
-            buffer = BytesIO()
-            img.save(fp=buffer, format='JPEG', quality=85)
-            self.image.save(self.image.name, ContentFile(buffer.getvalue()), save=False)
+
+        # Resize image if provided
+        if self.image and hasattr(self.image, 'file'):
+            try:
+                img = Image.open(self.image)
+                img = img.convert('RGB')
+                img = img.resize((730, 410), Image.LANCZOS)
+                buffer = BytesIO()
+                img.save(fp=buffer, format='JPEG', quality=85)
+                self.image.save(self.image.name, ContentFile(buffer.getvalue()), save=False)
+            except Exception as e:
+                print(f"Error resizing image: {e}")
         
         super().save(*args, **kwargs)
 
@@ -1357,29 +1555,22 @@ class ProductReview(models.Model):
     def __str__(self):
         return f"Review by {self.name} - {self.product.name}"
     
+
+
+class Visitor(models.Model):
+    DEVICE_CHOICES = [
+        ('mobile', 'Mobile'),
+        ('desktop', 'Desktop'),
+    ]
     
-    
-# Contact Page banner   
-class CartBanner(models.Model):
-    title = models.CharField(max_length=255)
-    subtitle = models.TextField(blank=True, null=True)
-    background_image = models.ImageField(upload_to='contact_banner/')
+    ip_address = models.GenericIPAddressField()
+    device_type = models.CharField(max_length=10, choices=DEVICE_CHOICES)
+    user_agent = models.TextField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.title
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # First save to get the file on disk
-
-        if self.background_image:
-            image_path = self.background_image.path
-            with Image.open(image_path) as img:
-                # Force resize to 1920x570 (may distort if original ratio differs)
-                resized_img = img.resize((1920, 300), Image.LANCZOS)
-                resized_img.save(image_path, quality=90, optimize=True)
-                
-                
-                
+        return f"{self.device_type} - {self.ip_address}"
+    
 
 from decimal import Decimal
 class AddCart(models.Model):
@@ -1397,7 +1588,152 @@ class AddCart(models.Model):
         if price is None:
             price = getattr(self.product, 'base_price', 0)
         return price or Decimal('0.00')
+        
+        
+        
+        
+        
 
-   
+
+       
+#checkout page-----
+#Banner-----------    
+class CheckoutBanner(models.Model):
+    title = models.CharField(max_length=255)
+    subtitle = models.TextField(blank=True, null=True)
+    background_image = models.ImageField(upload_to='checkout_banner/')
+    def __str__(self):
+        return self.title
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # First save to get the file on disk
+        if self.background_image:
+            image_path = self.background_image.path
+            with Image.open(image_path) as img:
+                # Force resize to 1920x570 (may distort if original ratio differs)
+                resized_img = img.resize((1920, 300), Image.LANCZOS)
+                resized_img.save(image_path, quality=90, optimize=True)
+                
+                
+#Order summary through checkout page
+
+
+import uuid
+class OrderSummary(models.Model):
+    ORDER_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('processing', 'Processing'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    ]
+    
+    SHIPPING_TYPE_CHOICES = [
+        ('flat_rate', 'Flat Rate (৳100)'),
+        ('free_shipping', 'Free Shipping'),
+    ]
+    
+    # Order identification
+    order_id = models.CharField(max_length=20, unique=True, editable=False)
+    
+    # Billing Information
+    phone = models.CharField(max_length=20)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    
+    # Address Information
+    district_id = models.CharField(max_length=10, blank=True, null=True)
+    district_name = models.CharField(max_length=100, blank=True)
+    thana_id = models.CharField(max_length=10, blank=True, null=True)
+    thana_name = models.CharField(max_length=100, blank=True)
+    address = models.TextField(max_length=500)
+    order_notes = models.TextField(max_length=500, blank=True, null=True)
 
     
+    # Order Financial Information
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    shipping_type = models.CharField(max_length=20, choices=SHIPPING_TYPE_CHOICES, default='flat_rate')
+    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=100.00)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    # Order Status
+    order_status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='pending')
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Order'
+        verbose_name_plural = 'Orders'
+    
+    def save(self, *args, **kwargs):
+        if not self.order_id:
+            # Generate unique order ID
+            self.order_id = self.generate_order_id()
+        super().save(*args, **kwargs)
+    
+    def generate_order_id(self):
+        """Generate unique order ID"""
+        import random
+        import string
+        while True:
+            order_id = 'ORD' + ''.join(random.choices(string.digits, k=8))
+            if not OrderSummary.objects.filter(order_id=order_id).exists():
+                return order_id
+
+    
+    def __str__(self):
+        return f"Order #{self.order_id} - {self.first_name} {self.last_name}"
+    
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+    
+    @property
+    def full_address(self):
+        return f"{self.address}, {self.thana_name}, {self.district_name}"
+    
+    
+    
+class OrderItemSummary(models.Model):
+    order = models.ForeignKey(OrderSummary, related_name='items', on_delete=models.CASCADE)
+    product_name = models.CharField(max_length=200)
+    product_id = models.IntegerField()  # Store original product ID
+    quantity = models.PositiveIntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    # Optional: Store product image URL or path
+    product_image = models.URLField(blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Order Item'
+        verbose_name_plural = 'Order Items'
+    
+    def save(self, *args, **kwargs):
+        self.total_price = self.quantity * self.unit_price
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.product_name} x {self.quantity}"
+        
+        
+        
+        
+        
+        
+        
+        
+        

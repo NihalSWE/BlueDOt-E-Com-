@@ -1,5 +1,6 @@
 {% extends 'backend/base.html' %}
 {% load static %}
+{% load math_filters %}
 
 {% block custom_css %}
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css' %}" />
@@ -13,6 +14,7 @@
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/quill/katex.css' %}" />
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/quill/editor.css' %}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 
 <style>
@@ -85,150 +87,240 @@
                 <div class="card-body">
                     <h2 class="card-header" style="border-bottom: 1px solid #d5d5d5; margin-bottom: 50px;">Create a New Order</h2>
                     <form id="orderForm" method="POST">
-                        {% csrf_token %}
-                        <div class="row g-6">
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <select id="customer" class="select2 form-select" name="customer" data-allow-clear="true">
-                                        <option value="">Select Customer</option>
-                                        {% for customer in customers %}
-                                            <option value="{{ customer.id }}">{{ customer.CustomerName }} - </option>
-                                        {% endfor %}
-                                    </select>
-                                    <label for="multicol-country">Customer</label>
-                                </div>
-                            </div>
+                    {% csrf_token %}
 
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <select id="productSelector" class="select2 form-select" name="customer" data-allow-clear="true">
-                                        <option value="">Select Product</option>
-                                        {% for item in order_items %}
-                                            <option value="{{ item.id }}">{{ item.product.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <label for="productSelector">Customer</label>
-                                </div>
+                    <div class="row g-6">
+                        <!-- CUSTOMER DROPDOWN (unchanged) -->
+                        <div class="col-md-4 col-12">
+                            <div class="form-floating form-floating-outline">
+                                <select
+                                    id="customer"
+                                    class="select2 form-select"
+                                    name="customer"
+                                    required
+                                >
+                                <option value="">Select Customer</option>
+                                {% for customer in customers %}
+                                    <option
+                                        value="{{ customer.id }}"
+                                        {% if customer.id == order.customer.id %}selected{% endif %}
+                                    >
+                                        {{ customer.CustomerName }}
+                                    </option>
+                                {% endfor %}
+                                </select>
+                                <label for="customer">Customer</label>
                             </div>
                         </div>
-                        
-                        <!-- Materials Table -->
-                        <div class="table-responsive mt-4">
-                            <table class="table table-bordered table-hover" id="materialsTable">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th width="2%">#</th>
-                                        <th width="25%">Material</th>
-                                        <th width="15%">Unit</th>
-                                        <th width="15%">Available</th>
-                                        <th width="15%">Quantity</th>
-                                        <th width="15%">Price</th>
-                                        <th width="10%">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for material in materials %}
+
+                        <!-- PRODUCT SELECTOR: use item.product.id so it matches below wrappers -->
+                        <div class="col-md-4 col-12">
+                            <div class="form-floating form-floating-outline">
+                                <select
+                                    id="productSelector"
+                                    class="select2 form-select"
+                                    data-allow-clear="true"
+                                >
+                                <option value="">Select Product</option>
+                                {% for item in order_items %}
+                                <option value="{{ item.product.id }}">
+                                    {{ item.product.name }}
+                                </option>
+                                {% endfor %}
+                                </select>
+                                <label for="productSelector">Product</label>
+                            </div>
+                        </div>
+
+                        {% if user_type == 1 %}
+                            <div class="col-md-4 col-12">
+                                <div class="form-floating form-floating-outline">
+                                    <select
+                                        id="statusSelector"
+                                        class="select2 form-select"
+                                        name="order_status"
+                                        data-allow-clear="true"
+                                    >
+                                    <option value="1">Approved</option>
+                                    <option value="2">Processing</option>
+                                    <option value="1">Completed</option>
+                                    </select>
+                                    <label for="productSelector">Product</label>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- MATERIALS TABLE (unchanged) -->
+                    <div class="table-responsive mt-4">
+                        <table class="table table-bordered table-hover" id="materialsTable">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>Material</th>
+                                    <th>Unit</th>
+                                    <th>Available</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Selected Prod.</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for material in materials %}
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
-                                        <td>{{ material.mr_material_name }}</td>
-                                        <td>
-                                            <select class="form-control unit-select" data-material="{{ material.id }}">
+                                        <td class="material-name">{{ material.mr_material_name }}</td>
+                                            <td>
+                                                <select
+                                                class="form-control unit-select"
+                                                data-material="{{ material.id }}"
+                                                >
                                                 {% for unit in units %}
                                                 <option value="{{ unit.id }}">{{ unit.name }}</option>
                                                 {% endfor %}
-                                            </select>
-                                        </td>
+                                                </select>
+                                            </td>
                                         <td class="available-qty">{{ material.quantity }}</td>
                                         <td>
-                                            <input type="number" min="1" class="form-control quantity-input" 
-                                                   data-material="{{ material.id }}" 
-                                                   data-price="{{ material.mr_sell_price }}"
-                                                   placeholder="Qty">
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                class="form-control quantity-input"
+                                                data-material="{{ material.id }}"
+                                                data-price="{{ material.mr_sell_price }}"
+                                                placeholder="Qty"
+                                            >
                                         </td>
                                         <td class="price">${{ material.mr_sell_price }}</td>
+                                        <td id="selected-material-{{ material.id }}"></td>
                                         <td>
-                                            <button type="button" class="btn btn-sm btn-primary add-btn" 
-                                                    data-material="{{ material.id }}">
+                                            <button type="button" class="btn btn-sm btn-primary add-btn" data-material="{{ material.id }}">
                                                 <i class="fas fa-plus"></i> Add
                                             </button>
                                         </td>
                                     </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Selected Items Table -->
-                        {% comment %} <div class="selected-items mt-4">
-                            <h5 class="mb-3">Selected Materials</h5>
-                            <div class="table-responsive">
-                                <table class="table table-bordered" id="selectedItemsTable">
-                                    <thead class="thead-dark">
-                                        <tr>
-                                            <th>Material</th>
-                                            <th>Unit</th>
-                                            <th>Quantity</th>
-                                            <th>Price</th>
-                                            <th>Total</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Selected items will appear here -->
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <td colspan="4" class="text-right"><strong>Grand Total</strong></td>
-                                            <td id="grandTotal">$0.00</td>
-                                            <td></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div> {% endcomment %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
 
-                        {% for item in order_items %}
-                            <div class="selected-items mt-4" id="selected-materials-{{ item.id }}">
-                                <h5 class="mb-3">Materials for: {{ item.product.name }}</h5>
-                                <div class="table-responsive">
-                                    <table class="table selectedMaterialsTable" id="selected-materials-{{ item.id }}" data-product-id="{{ item.id }}">
-                                        <thead class="thead-dark">
-                                            <tr>
-                                                <th>Material</th>
-                                                <th>Unit</th>
-                                                <th>Quantity</th>
-                                                <th>Price</th>
-                                                <th>Total</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <td colspan="4" class="text-right"><strong>Total for this product:</strong></td>
-                                                <td class="product-total" id="product-total-{{ item.id }}" style="font-weight: 600;">$0.00</td>
-                                                <td></td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                            </div>
-                        {% endfor %}
-                        <div class="mt-4 text-end pe-12">
-                            <h5><strong>Grand Total:</strong> <span id="grandTotalAll">$0.00</span></h5>
+                    <!-- SELECTED ITEMS FOR EACH PRODUCT: use product.id instead of item.id -->
+                    {% for item in order_items %}
+                    <div
+                        class="selected-items mt-4"
+                        id="selected-wrapper-{{ item.product.id }}"
+                    >
+                        <h5 class="mb-3">Materials for: {{ item.product.name }}</h5>
+                        <div class="table-responsive">
+                        <table
+                            class="table selectedMaterialsTable"
+                            id="selected-materials-{{ item.product.id }}"
+                            data-product-id="{{ item.product.id }}"
+                        >
+                            <thead class="thead-dark">
+                            <tr>
+                                <th>Material</th>
+                                <th>Unit</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            {% comment %} <tbody></tbody> {% endcomment %}
+
+
+                            <tbody>
+                                {% for usage in item.material_usages.all %}
+                                    <tr data-material="{{ usage.material.id }}">
+                                        <td>{{ usage.material.mr_material_name }}</td>
+                                        <td data-unit-id="{{ usage.unit.id }}">{{ usage.unit.name }}</td>
+                                        <td>{{ usage.quantity_used }}</td>
+                                        <td>${{ usage.material.mr_sell_price }}</td>
+                                        <td>${{ usage.quantity_used|multiply:usage.material.mr_sell_price|floatformat:2 }}</td>
+                                        <td>
+                                            <button type="button"
+                                                class="btn btn-sm btn-danger remove-btn"
+                                                data-material="{{ usage.material.id }}"
+                                                data-product="{{ item.product.id }}">
+                                                <span style="color: white; font-size: 20px;"><i class="fa-solid fa-xmark"></i></span>
+                                            </button>
+                                        </td>
+
+                                        <!-- ✅ Hidden inputs with unique selectors -->
+                                        <input type="hidden"
+                                            name="materials_{{ item.product.id }}[]"
+                                            value="{{ usage.material.id }}"
+                                            data-material-id="{{ usage.material.id }}"
+                                            data-product-id="{{ item.product.id }}">
+                                        
+                                        <input type="hidden"
+                                            name="units_{{ item.product.id }}[]"
+                                            value="{{ usage.unit.id }}"
+                                            class="hidden-unit"
+                                            data-material-id="{{ usage.material.id }}"
+                                            data-product-id="{{ item.product.id }}">
+                                        
+                                        <input type="hidden"
+                                            name="quantities_{{ item.product.id }}[]"
+                                            value="{{ usage.quantity_used }}"
+                                            class="hidden-qty"
+                                            data-material-id="{{ usage.material.id }}"
+                                            data-product-id="{{ item.product.id }}">
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+
+
+                            <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-right">
+                                <strong>Total for this product:</strong>
+                                </td>
+                                <td
+                                class="product-total"
+                                id="product-total-{{ item.product.id }}"
+                                style="font-weight: 600;"
+                                >
+                                $0.00
+                                </td>
+                                <td></td>
+                            </tr>
+                            </tfoot>
+                        </table>
                         </div>
-                        <!-- Submit Button -->
-                        <div class="form-group row mt-4">
-                            <div class="col-sm-10 offset-sm-2">
-                                <button type="submit" class="btn btn-primary">Create Order</button>
-                                <a href="{% url 'order_list' %}" class="btn btn-secondary">Cancel</a>
-                            </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="mt-4 text-end pe-12">
+                        <h5>
+                        <strong>Grand Total:</strong>
+                        <span id="grandTotalAll">$0.00</span>
+                        </h5>
+                    </div>
+
+                    <!-- Hidden inputs go here -->
+                    <div id="hiddenInputsContainer"></div>
+
+                    <!-- Submit Button -->
+                    <div class="form-group row mt-4">
+                        <div class="col-sm-10 offset-sm-2">
+                        <button type="submit" class="btn btn-primary">
+                            Create Order
+                        </button>
+                        <a href="{% url 'order_list' %}" class="btn btn-secondary">Cancel</a>
                         </div>
-                    </form>
+                    </div>
+                </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        var addedMaterials = {{ added_materials_dict|safe }};
+    </script>
 {% endblock %}
 
 {% block custom_js %}
@@ -250,118 +342,229 @@
 
 
 <script>
-$(document).ready(function() {
-    // Initialize Select2 for customer dropdown
-    $('.select2').select2();
-    
-    // Add material to selected items
-    $('.add-btn').click(function () {
-        const selectedProductId = $('#productSelector').val();
-        if (!selectedProductId) {
-            alert('Please select a product first.');
-            return;
+    $(document).ready(function () {
+        $('.selectedMaterialsTable').each(function () {
+            const tableId = $(this).attr('id'); // e.g., "selected-materials-5"
+            const productId = tableId.replace('selected-materials-', '');
+            updateProductTotal(productId);
+        });
+
+            updateGrandTotal();
+        // 1) WHEN “Add” IS CLICKED:
+        $('.add-btn').click(function () {
+    const selectedProductId = $('#productSelector').val();
+    if (!selectedProductId) {
+        alert('Please select a product first.');
+        return;
+    }
+
+    const materialId = $(this).data('material');
+    const row = $(this).closest('tr');
+    const quantity = row.find('.quantity-input').val();
+    const unitId = row.find('.unit-select').val();
+    const unitText = row.find('.unit-select option:selected').text();
+    const materialName = row.find('.material-name').text();
+    const price = parseFloat(row.find('.price').text().replace('$', '')) || 0;
+
+    if (!quantity || quantity <= 0) {
+        alert('Please enter a valid quantity.');
+        return;
+    }
+
+    const tableBody = $(`#selected-materials-${selectedProductId} tbody`);
+    const total = price * quantity;
+
+    const existingRow = tableBody.find(`tr[data-material="${materialId}"]`);
+    const hiddenQtyInput = $(`input.hidden-qty[data-material-id="${materialId}"][data-product-id="${selectedProductId}"]`);
+    const hiddenUnitInput = $(`input.hidden-unit[data-material-id="${materialId}"][data-product-id="${selectedProductId}"]`);
+
+    if (existingRow.length > 0) {
+        // ✅ Update visible table
+        existingRow.find('td:eq(2)').text(quantity);
+        existingRow.find('td:eq(4)').text(`$${total.toFixed(2)}`);
+
+        // ✅ Update hidden inputs (existing from Django or previously created)
+        if (hiddenQtyInput.length > 0) {
+            hiddenQtyInput.val(quantity);
         }
 
-        const materialId = $(this).data('material');
-        const row = $(this).closest('tr');
-        const quantity = row.find('.quantity-input').val();
-        const unitId = row.find('.unit-select').val();
-        const unitText = row.find('.unit-select option:selected').text();
-        const materialName = row.find('td:eq(1)').text();
-        const price = parseFloat(row.find('.price').text().replace('$', ''));
-
-        if (!quantity || quantity <= 0) {
-            alert('Please enter a valid quantity');
-            return;
+        if (hiddenUnitInput.length > 0) {
+            hiddenUnitInput.val(unitId);
         }
-
-        const tableBody = $(`#selected-materials-${selectedProductId} table tbody`);
-        
-        // Check for duplicate
-        if (tableBody.find(`tr[data-material="${materialId}"]`).length > 0) {
-            alert('This material is already added to the selected product');
-            return;
-        }
-
-        const total = price * quantity;
-
-        tableBody.append(`
-            <tr data-material="${materialId}">
-                <td>${materialName}</td>
-                <td>${unitText}</td>
-                <td>${quantity}</td>
-                <td>$${price.toFixed(2)}</td>
-                <td>$${total.toFixed(2)}</td>
-                <td>
-                    <button type="button" class="btn btn-sm btn-danger remove-btn">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-                <input type="hidden" name="product_materials[${selectedProductId}][]" value="${materialId}">
-                <input type="hidden" name="product_units[${selectedProductId}][]" value="${unitId}">
-                <input type="hidden" name="product_quantities[${selectedProductId}][]" value="${quantity}">
-            </tr>
-        `);
-
-        $(`#selected-materials-${selectedProductId}`).show();
 
         updateProductTotal(selectedProductId);
         updateGrandTotal();
-    });
-
-    function updateProductTotal(productId) {
-        let total = 0;
-        $(`#selected-materials-${productId} tbody tr`).each(function () {
-            const rowTotal = parseFloat($(this).find('td:eq(4)').text().replace('$', '')) || 0;
-            total += rowTotal;
-        });
-        $(`#product-total-${productId}`).text('$' + total.toFixed(2));
+        return;
     }
 
-    function updateGrandTotal() {
-        let grandTotal = 0;
-        $('.product-total').each(function () {
-            const productTotal = parseFloat($(this).text().replace('$', '')) || 0;
-            grandTotal += productTotal;
-        });
-        $('#grandTotalAll').text('$' + grandTotal.toFixed(2));
+    // ✅ Add new visible row
+    const newRow = $(`
+        <tr data-material="${materialId}">
+            <td>${materialName}</td>
+            <td>${unitText}</td>
+            <td>${quantity}</td>
+            <td>$${price.toFixed(2)}</td>
+            <td>$${total.toFixed(2)}</td>
+            <td>
+                <button type="button" class="btn btn-sm btn-danger remove-btn"
+                    data-material="${materialId}"
+                    data-product="${selectedProductId}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `);
+    tableBody.append(newRow);
+
+    // ✅ Append new hidden inputs only if not already present
+    if (hiddenQtyInput.length === 0 && hiddenUnitInput.length === 0) {
+        const hiddenInputs = $(`
+            <div class="hidden-${selectedProductId}-${materialId}">
+                <input type="hidden" name="product_ids[]" value="${selectedProductId}">
+                <input type="hidden" name="materials_${selectedProductId}[]" value="${materialId}"
+                    data-material-id="${materialId}" data-product-id="${selectedProductId}">
+                <input type="hidden" name="units_${selectedProductId}[]" value="${unitId}"
+                    class="hidden-unit" data-material-id="${materialId}" data-product-id="${selectedProductId}">
+                <input type="hidden" name="quantities_${selectedProductId}[]" value="${quantity}"
+                    class="hidden-qty" data-material-id="${materialId}" data-product-id="${selectedProductId}">
+            </div>
+        `);
+        $('#hiddenInputsContainer').append(hiddenInputs);
     }
 
-    $('#productSelector').change(function () {
-        //$('.selected-items').hide(); // Hide all
-        const productId = $(this).val();
-        if (productId) {
-            $(`#selected-materials-${productId}`).show(); // Show selected
-        }
-    });
-    
-    // Remove material from selected items
-    $(document).on('click', '.remove-btn', function () {
-        const row = $(this).closest('tr');
-        const productId = $(this).closest('table').data('product-id');
-        row.remove();
-        updateProductTotal(productId);
-        updateGrandTotal();
-    });
-    
-    // Update grand total function
-    function updateGrandTotal() {
-        let grandTotal = 0;
-        $('.product-total').each(function () {
-            const productTotal = parseFloat($(this).text().replace('$', '')) || 0;
-            grandTotal += productTotal;
-        });
-        $('#grandTotalAll').text('$' + grandTotal.toFixed(2));
-    }
-    
-    // Form submission
-    $('#orderForm').submit(function (e) {
-        const anyRows = $('.selectedMaterialsTable tbody tr').length;
-        if (!anyRows) {
-            e.preventDefault();
-            alert('Please add at least one material to a product before submitting.');
-        }
-    });
+    $(`#selected-wrapper-${selectedProductId}`).show();
+
+    updateProductTotal(selectedProductId);
+    updateGrandTotal();
 });
-</script>
+
+
+        // 2) WHEN “REMOVE” IS CLICKED:
+        $(document).on('click', '.remove-btn', function () {
+            const materialId = $(this).data('material');
+            const productId = $(this).data('product');
+
+            // REMOVE VISIBLE ROW
+            $(this).closest('tr').remove();
+            // REMOVE CORRESPONDING HIDDEN INPUTS
+            $(`.hidden-${productId}-${materialId}`).remove();
+
+            // IF THIS PRODUCT’S TABLE BODY IS NOW EMPTY, STILL KEEP IT VISIBLE (per your request)
+            // so do not hide anything here.
+
+            updateProductTotal(productId);
+            updateGrandTotal();
+        });
+
+        // 3) RECALCULATE A SINGLE PRODUCT’S TOTAL
+        function updateProductTotal(productId) {
+            let total = 0;
+            $(
+                `#selected-materials-${productId} tbody tr`
+            ).each(function () {
+                const lineTotal = parseFloat(
+                $(this).find('td:eq(4)').text().replace('$', '')
+                ) || 0;
+                total += lineTotal;
+            });
+            $(`#product-total-${productId}`).text(
+                `$${total.toFixed(2)}`
+            );
+        }
+
+        // 4) RECALCULATE GRAND TOTAL ACROSS ALL PRODUCTS
+        function updateGrandTotal() {
+            let grandTotal = 0;
+            $('.product-total').each(function () {
+                const amt =
+                parseFloat($(this).text().replace('$', '')) || 0;
+                grandTotal += amt;
+            });
+            $('#grandTotalAll').text(`$${grandTotal.toFixed(2)}`);
+        }
+
+        // 5) WHEN USER CHOOSES A PRODUCT, SHOW THAT PRODUCT’S SECTION
+        $('#productSelector').change(function () {
+            const productId = $(this).val();
+            if (productId) {
+                $(`#selected-wrapper-${productId}`).show();
+            }
+
+            const orderId = "{{ order.id }}"; // Django context
+
+            // Reset all highlights and inputs
+            $('td[id^="selected-material-"]').empty();
+            $('tr').removeClass('table-success');
+            $('.quantity-input').val('');
+            $('.unit-select').val('');
+
+            if (!productId) return;
+
+            $.get(`/admin-dashboard/orders/${orderId}/product/${productId}/materials/`, function (response) {
+                const materials = response.materials;
+
+                materials.forEach(m => {
+                    const row = $(`tr:has(td #selected-material-${m.material_id})`).first();
+                    row.addClass('table-success');
+
+                    // Show badge
+                    $(`#selected-material-${m.material_id}`).html('<span class="badge bg-success">Added</span>');
+
+                    // Set quantity input
+                    $(`.quantity-input[data-material="${m.material_id}"]`).val(m.quantity);
+
+                    // Set selected unit
+                    $(`.unit-select[data-material="${m.material_id}"]`).val(m.unit_id);
+                });
+            });
+        });
+
+        // 6) ON FORM SUBMIT, PREVENT SUBMIT IF NO MATERIALS WERE ADDED
+        $('#orderForm').submit(function (e) {
+            if (
+                $('.selectedMaterialsTable tbody tr').length === 0
+            ) {
+                e.preventDefault();
+                alert(
+                'Please add at least one material to a product.'
+                );
+            }
+        });
+    });
+    </script>
+
+    <script>
+        var addedMaterials = {{ added_materials_dict|safe }};
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            var $selector = $('#productSelector');
+
+            function refreshBadges() {
+            var selectedProductId = $selector.val();
+
+            // Clear all badges
+            $('td[id^="selected-material-"]').html('');
+
+            if (!selectedProductId) {
+                return; // nothing selected
+            }
+
+            // Loop through addedMaterials and insert badge where product_id matches
+            $.each(addedMaterials, function(materialId, info) {
+                if (String(info.product_id) === selectedProductId) {
+                $('#selected-material-' + materialId)
+                    .html('<span class="badge bg-success">Added</span>');
+                }
+            });
+            }
+
+            // initial run (in case a product is pre‑selected)
+            refreshBadges();
+
+            // re-run on change
+            $selector.change(refreshBadges);
+        });
+    </script>
 {% endblock %}

@@ -399,37 +399,65 @@
         <div class="row">
             <div class="col-xl-3 col-lg-4">
                 <div class="tp-shop-sidebar mb-40">
-                    <div class="tp-shop-sidebar-search mb-30 wow fadeInUp">
-                        <input type="text" placeholder="Search Products">
-                        <div class="tp-shop-sidebar-search-icon">
+                    <!-- Search Form -->
+                    <form method="get" action="{% url 'shop' %}" class="tp-shop-sidebar-search mb-30 wow fadeInUp">
+                        <input type="text" name="search" placeholder="Search Products" value="{{ search_query }}">
+                        <button type="submit" class="tp-shop-sidebar-search-icon">
                             <i class="fa-regular fa-magnifying-glass"></i>
-                        </div>
-                    </div>
+                        </button>
+                    </form>
+
+                    <!-- Categories Filter -->
                     <div class="tp-shop-sidebar-category mb-30 wow fadeInUp">
                         <h4 class="tp-shop-sidebar-title mb-25">Categories</h4>
                         <div class="tp-shop-sidebar-category-wrap">
                            {% for category in categories %}
-                              <div class="tp-shop-sidebar-category-item">
-                                 <a href="#">{{ category.name }}</a>
+                              <div class="tp-shop-sidebar-category-item {% if category.slug == selected_category %}active-category{% endif %}">
+                                 <a href="?category={{ category.slug }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_option and sort_option != 'default' %}&sort={{ sort_option }}{% endif %}">
+                                    {{ category.name }}
+                                 </a>
                               </div>
                            {% endfor %}
+                           {% if selected_category %}
+                              <div class="tp-shop-sidebar-category-item">
+                                 <a href="?{% if search_query %}search={{ search_query }}{% endif %}{% if sort_option and sort_option != 'default' %}&sort={{ sort_option }}{% endif %}">
+                                    Clear Filter
+                                 </a>
+                              </div>
+                           {% endif %}
                         </div>
                     </div>
-                    <div class="tp-shop-sidebar-price mb-30 wow fadeInUp">
-                        <h4 class="tp-shop-sidebar-title mb-30">Price</h4>
-                        <div class="tp-shop-sidebar-price-wrap">
-                            <div class="tp-shop-sidebar-price-range">
-                            </div>
-                            <div class="tp-shop-sidebar-price-range-head">
-                                <div id="slider-range" class="ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content">
-                                    <div class="ui-slider-range ui-corner-all ui-widget-header" style="left: 10%; width: 65%;"></div><span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default" style="left: 10%;"></span><span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default" style="left: 75%;"></span>
-                                </div>
-                                <div class="tp-shop-price-filter mt-25"><input type="text" id="amount">
-                                    <a href="#">FILTER</a>
-                                </div>
-                            </div>
-                        </div>
+           
+              <!-- Price Range Filter -->
+            <div class="tp-shop-sidebar-price mb-30 wow fadeInUp">
+              <h4 class="tp-shop-sidebar-title mb-30">Price</h4>
+              <div class="tp-shop-sidebar-price-wrap">
+                <div class="tp-shop-sidebar-price-range">
+                </div>
+                <div class="tp-shop-sidebar-price-range-head">
+                  <form method="get" action="{% url 'shop' %}">
+                    <!-- Keep any existing filters in hidden inputs -->
+                    {% if search_query %}<input type="hidden" name="search" value="{{ search_query }}">{% endif %}
+                    {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+                    {% if sort_option %}<input type="hidden" name="sort" value="{{ sort_option }}">{% endif %}
+                    
+                    <div id="slider-range" class="ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content">
+                      <div class="ui-slider-range ui-corner-all ui-widget-header"></div>
+                      <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default"></span>
+                      <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default"></span>
                     </div>
+                    
+        <div class="tp-shop-price-filter mt-25">
+  <input type="text" id="amount" readonly style="border:none; font-weight:bold; width:200px; margin-right:10px;">
+</div>
+
+                    <!-- Hidden inputs to submit min and max -->
+                    <input type="hidden" id="min_price" name="min_price" value="{{ request.GET.min_price }}">
+                    <input type="hidden" id="max_price" name="max_price" value="{{ request.GET.max_price }}">
+                  </form>
+                </div>
+              </div>
+            </div>
                     <div class="tp-shop-sidebar-sell mb-30 wow fadeInUp">
                         <h4 class="tp-shop-sidebar-title mb-25">Recent products</h4>
                         <div class="tp-shop-sidebar-sell-wrap">
@@ -461,31 +489,31 @@
             <div class="col-xl-9 col-lg-8">
                 <div class="row align-items-center">
                     <div class="col-xl-6 col-lg-6 col-md-6 mb-30">
-                        <div class="tp-product__filter-box tp-shop-filter-box flex-xs-wrap d-md-flex justify-content-end">
-                           <div class="tp-product__filter tp-shop-filter">
-                              <select style="display: none;">
-                                 <option>Default sorting</option>
-                                 <option>Low to Hight</option>
-                                 <option>High to Low</option>
-                                 <option>New Added</option>
-                                 <option>On Sale</option>
-                              </select><div class="nice-select" tabindex="0"><span class="current">Default Sorting</span><ul class="list"><li data-value="Default Sorting" class="option selected focus">Default Sorting</li><li data-value="Low to Hight" class="option">Low to Hight</li><li data-value="High to Low" class="option">High to Low</li><li data-value="New Added" class="option">New Added</li><li data-value="On Sale" class="option">On Sale</li></ul></div>
-                           </div>
+                      <div class="tp-product__filter-box tp-shop-filter-box flex-xs-wrap d-md-flex justify-content-end">
+                        <div class="tp-product__filter tp-shop-filter">
+
+                          <form method="get" id="sortForm">
+                            <select name="sort" onchange="this.form.submit();">
+                              <option value="" {% if not request.GET.sort %}selected{% endif %}>Default sorting</option>
+                              <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Low to Hight</option>
+                              <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>High to Low</option>
+                              <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>New Added</option>
+                              <option value="sale" {% if request.GET.sort == 'sale' %}selected{% endif %}>On Sale</option>
+                            </select>
+
+                            <!-- preserve other GET params -->
+                            {% for key, value in request.GET.items %}
+                              {% if key != 'sort' %}
+                                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                              {% endif %}
+                            {% endfor %}
+                          </form>
+
                         </div>
-                     </div>
-                     <div class="col-xl-6 col-lg-6 col-md-6 mb-30">
-                        <div class="tp-product__filter-box tp-shop-filter-box flex-xs-wrap d-md-flex justify-content-end">
-                           <div class="tp-product__filter tp-shop-filter">
-                              <select style="display: none;">
-                                 <option>Showing 12 of 120 results</option>
-                                 <option>Low to Hight</option>
-                                 <option>High to Low</option>
-                                 <option>New Added</option>
-                                 <option>On Sale</option>
-                              </select><div class="nice-select" tabindex="0"><span class="current">12 Product of Per Page</span><ul class="list"><li data-value="12 Product of Per Page" class="option selected focus">12 Product of Per Page</li><li data-value="Low to Hight" class="option">Low to Hight</li><li data-value="High to Low" class="option">High to Low</li><li data-value="New Added" class="option">New Added</li><li data-value="On Sale" class="option">On Sale</li></ul></div>
-                           </div>
-                        </div>
-                     </div>
+                      </div>
+                    </div>
+
+
                   </div>
                 <div class="row align-items-end mb-30">
                      {% for product in products %}
@@ -494,7 +522,7 @@
                                  <div class="product__item p-relative">
                                     <div class="product__top-brand d-flex justify-content-between mb-15">
                                           <div class="product__top-price">
-                                             <a href="cart.html">{% if product.final_price < product.base_price %}
+                                             <a href="{% url 'product_detail' slug=product.slug %}">{% if product.final_price < product.base_price %}
                                               <span style="text-decoration: line-through; color: #999;">৳ {{ product.base_price }}</span>
                                               <span style="color: #E60000; font-weight: bold;">৳ {{ product.final_price }}</span>
                                           {% else %}
@@ -508,13 +536,7 @@
                                           <img src="{{ product.thumbnail.url }}" alt="{{ product.name }}">
                                        </a>
                                        <div class="product__action d-flex flex-column flex-wrap">
-                                          <button type="button" class="product-action-btn">
-                                             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M1.60361 7.98635C2.83627 11.8048 7.70625 14.8923 9.00046 15.6565C10.2991 14.8844 15.2042 11.7628 16.3973 7.98985C17.1807 5.55102 16.4536 2.46177 13.5645 1.53473C12.1648 1.08741 10.5321 1.35966 9.4049 2.22804C9.16927 2.40837 8.8422 2.41187 8.60481 2.23329C7.41084 1.33952 5.85111 1.07778 4.42941 1.53473C1.5447 2.4609 0.82023 5.55014 1.60361 7.98635ZM9.00138 17.0711C8.89236 17.0711 8.78421 17.0448 8.68574 16.9914C8.41055 16.8417 1.92808 13.2841 0.348132 8.3872C0.347252 8.3872 0.347252 8.38633 0.347252 8.38633C-0.644504 5.30321 0.459792 1.42874 4.02502 0.284605C5.69904 -0.254635 7.52342 -0.0174044 8.99874 0.909632C10.4283 0.00973263 12.3275 -0.238878 13.9681 0.284605C17.5368 1.43049 18.6446 5.30408 17.6538 8.38633C16.1248 13.2272 9.59485 16.8382 9.3179 16.9896C9.21943 17.0439 9.1104 17.0711 9.00138 17.0711Z" fill="currentColor"></path>
-                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M14.2027 6.67485C13.8625 6.67485 13.5741 6.41486 13.546 6.07171C13.4879 5.35214 13.0044 4.74462 12.3159 4.52315C11.9686 4.4111 11.7787 4.04081 11.8904 3.69678C12.0038 3.35188 12.3722 3.16454 12.7204 3.27309C13.9187 3.65914 14.7584 4.71573 14.8613 5.96491C14.8903 6.32645 14.6204 6.64334 14.2572 6.67222C14.2388 6.67398 14.2212 6.67485 14.2027 6.67485Z" fill="currentColor"></path>
-                                             </svg>
-                                             <span class="product-action-tooltip">Add To Wishlist</span>
-                                          </button>
+                                         
                                           <button type="button" class="product-action-btn" data-bs-toggle="modal" data-bs-target="#productModal">
                                              <svg width="19" height="16" viewBox="0 0 19 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <path d="M9.49943 5.34978C8.23592 5.34978 7.20896 6.37595 7.20896 7.63732C7.20896 8.89774 8.23592 9.92296 9.49943 9.92296C10.7629 9.92296 11.7908 8.89774 11.7908 7.63732C11.7908 6.37595 10.7629 5.34978 9.49943 5.34978M9.49941 11.3456C7.45025 11.3456 5.78394 9.68213 5.78394 7.63738C5.78394 5.59169 7.45025 3.92725 9.49941 3.92725C11.5486 3.92725 13.2158 5.59169 13.2158 7.63738C13.2158 9.68213 11.5486 11.3456 9.49941 11.3456" fill="currentColor"></path>
@@ -524,17 +546,7 @@
                                              </svg>
                                              <span class="product-action-tooltip">Quick view</span>
                                           </button>
-                                          <button type="button" class="product-action-btn">
-                                             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M11.4144 6.16828L14 3.58412L11.4144 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                                </path>
-                                                <path d="M1.48883 3.58386L14 3.58386" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                                </path>
-                                                <path d="M4.07452 8.32166L1.4889 10.9058L4.07452 13.4899" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                                                <path d="M14 10.906H1.48883" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                                             </svg>
-                                             <span class="product-action-tooltip">Add To Compare</span>
-                                          </button>
+                                          
                                        </div>
                                        <div class="product__add transition-3">
                                           <button type="button" class="product-add-cart-btn w-100">
@@ -574,19 +586,48 @@
                 <div class="row">
                     <div class="tp-postbox-pagination text-center wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s" style="visibility: visible; animation-duration: 1s; animation-delay: 0.3s; animation-name: fadeInUp;">
                         <nav>
-                            <ul>
-                                <li>
-                                    <a href="blog-sideber.html">1</a>
-                                </li>
-                                <li>
-                                    <a class="active" href="blog-sideber.html">2</a>
-                                </li>
-                                <li>
-                                    <a href="blog-sideber.html">3</a>
-                                </li>
-                                <li>
-                                    <a href="blog-sideber.html"><i class="fa-solid fa-arrow-right-long"></i></a>
-                                </li>
+                           <ul>
+                                {% if products.has_previous %}
+                                    <li>
+                                        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}">
+                                            &laquo; First
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="?page={{ products.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}">
+                                            Previous
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in products.paginator.page_range %}
+                                    {% if products.number == num %}
+                                        <li>
+                                            <a class="active" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}">
+                                                {{ num }}
+                                            </a>
+                                        </li>
+                                    {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                                        <li>
+                                            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}">
+                                                {{ num }}
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if products.has_next %}
+                                    <li>
+                                        <a href="?page={{ products.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}">
+                                            Next
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="?page={{ products.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}">
+                                            Last &raquo;
+                                        </a>
+                                    </li>
+                                {% endif %}
                             </ul>
                         </nav>
                     </div>
@@ -598,4 +639,50 @@
 <!-- shop-product area start -->
 {% endblock content %}
 
-{% block custom_js %}{% endblock custom_js %}
+{% block custom_js %}
+<script>
+$(document).ready(function() {
+    $('select[name="sort"]').niceSelect();
+
+    var dbMin = {{ min_price|default:0 }};
+    var dbMax = {{ max_price|default:10000 }};
+
+    var minVal = {% if request.GET.min_price %}{{ request.GET.min_price }}{% else %}dbMin{% endif %};
+    var maxVal = {% if request.GET.max_price %}{{ request.GET.max_price }}{% else %}dbMax{% endif %};
+
+    $("#slider-range").slider({
+        range: true,
+        min: dbMin,
+        max: dbMax,
+        values: [minVal, maxVal],
+        slide: function(event, ui) {
+            $("#min_price").val(ui.values[0]);
+            $("#max_price").val(ui.values[1]);
+            $("#amount").val('৳' + ui.values[0] + ' - ৳' + ui.values[1]);
+        },
+        stop: function(event, ui) {
+            // Auto-submit the form when slider stops moving
+            $("#min_price").val(ui.values[0]);
+            $("#max_price").val(ui.values[1]);
+            $("#amount").val('৳' + ui.values[0] + ' - ৳' + ui.values[1]);
+            $(this).closest("form").submit();
+        }
+    });
+
+    // Set default values
+    $("#min_price").val(minVal);
+    $("#max_price").val(maxVal);
+    $("#amount").val('৳' + minVal + ' - ৳' + maxVal);
+
+    // Optional: Auto-submit on manual input change
+    $("#min_price, #max_price").on("change", function() {
+        var min = parseInt($("#min_price").val()) || dbMin;
+        var max = parseInt($("#max_price").val()) || dbMax;
+        $("#slider-range").slider("values", [min, max]);
+        $("#amount").val('৳' + min + ' - ৳' + max);
+        $(this).closest("form").submit();
+    });
+});
+</script>
+
+{% endblock custom_js %}
