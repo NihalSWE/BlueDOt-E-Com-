@@ -44,6 +44,15 @@
         .weui--delete-filled:hover{
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ec0808' fill-rule='evenodd' d='m18.412 6.5l-.801 13.617A2 2 0 0 1 15.614 22H8.386a2 2 0 0 1-1.997-1.883L5.59 6.5H3.5v-1A.5.5 0 0 1 4 5h16a.5.5 0 0 1 .5.5v1zM10 2.5h4a.5.5 0 0 1 .5.5v1h-5V3a.5.5 0 0 1 .5-.5M9 9l.5 9H11l-.4-9zm4.5 0l-.5 9h1.5l.5-9z' stroke-width='0.5' stroke='%23ec0808'/%3E%3C/svg%3E");
         }
+        
+        .hugeicons--view {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%23ec0808' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' color='%23ec0808'%3E%3Cpath d='M21.544 11.045c.304.426.456.64.456.955c0 .316-.152.529-.456.955C20.178 14.871 16.689 19 12 19c-4.69 0-8.178-4.13-9.544-6.045C2.152 12.529 2 12.315 2 12c0-.316.152-.529.456-.955C3.822 9.129 7.311 5 12 5c4.69 0 8.178 4.13 9.544 6.045'/%3E%3Cpath d='M15 12a3 3 0 1 0-6 0a3 3 0 0 0 6 0'/%3E%3C/g%3E%3C/svg%3E");
+        }
 
         .image-container {
             position: relative;
@@ -248,6 +257,9 @@
                     </td>
                     <td>
                         <div class="d-flex">
+                            <a href="{% url 'order_detail' order.id %}">
+                                <span class="hugeicons--view me-3"></span>
+                            </a>
                             {% if user_type == 1 %}
                                 <a href="{% url 'approve_order' order.id %}">
                                     <span 

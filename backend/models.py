@@ -771,6 +771,8 @@ class ContactUsBanner(models.Model):
 class ContactLocation(models.Model):
     city = models.CharField(max_length=100)
     address = models.TextField()
+    email = models.EmailField(max_length=100,blank=True,null=True)
+    number = models.CharField(max_length=20,blank=True,null=True)  # Mandatory
     image = models.ImageField(upload_to='contact_locations/', null=True, blank=True)
 
     def __str__(self):
@@ -1153,6 +1155,7 @@ class CenterCard(models.Model):
 
 
 
+
 class PartyRegSupplier(models.Model):
     prs_slid = models.CharField(max_length=15, primary_key=True)
     prs_name = models.CharField(max_length=50)
@@ -1169,7 +1172,7 @@ class PartyRegSupplier(models.Model):
     open_sdue = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self):
-        return self.prs_name
+        return self.prs_slid
     
 
 
@@ -1231,12 +1234,13 @@ class MaterialRegistration(models.Model):
 
 
 class MaterialInventoryDetail(models.Model):
-    mid_party = models.ForeignKey('PartyRegSupplier', on_delete=models.CASCADE, related_name='inventory_details')  # Supplier or customer
+
+    mid_party = models.CharField(null=True,max_length=100)
     mid_entry_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='entered_inventory')
-    mid_material = models.ForeignKey('MaterialRegistration', on_delete=models.CASCADE, related_name='inventory_entries')
+    mid_material = models.ForeignKey('MaterialRegistration',null=True ,on_delete=models.CASCADE, related_name='inventory_entries')
     mid_invoice_id = models.CharField(max_length=100)
     
-    order_id = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True)
+    mid_order_id = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True)
 
     mid_buy_quentity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     mid_buy_prices = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -1251,11 +1255,11 @@ class MaterialInventoryDetail(models.Model):
 
     mid_deal_type = models.CharField(max_length=10, choices=[('buy', 'Buy'), ('sell', 'Sell')])
 
-    adminid = models.IntegerField(null=True, blank=True)  # if using custom tracking dsfsd
+    mid_adminid = models.IntegerField(null=True, blank=True)  # if using custom tracking dsfsd
 
-    due_discount = models.DecimalField(max_digits=10,  decimal_places=2, default=0)
+    mid_due_discount = models.DecimalField(max_digits=10,  decimal_places=2, default=0)
     
-    id_debit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    mid_debit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     mid_credit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     
     class Meta:
@@ -1263,7 +1267,7 @@ class MaterialInventoryDetail(models.Model):
         verbose_name_plural = "Inv Material Details"
 
     def __str__(self):
-        return f"Inventory #{self.id} - Material: {self.mid_material.mr_material_name}"
+        return f"Inventory #{self.id}"
     
 
 
@@ -1433,7 +1437,7 @@ class BlogBanner(models.Model):
             image_path = self.background_image.path
             with Image.open(image_path) as img:
                 # Force resize to 1920x570 (may distort if original ratio differs)
-                resized_img = img.resize((1920, 570), Image.LANCZOS)
+                resized_img = img.resize((1920, 300), Image.LANCZOS)
                 resized_img.save(image_path, quality=90, optimize=True)
                 
                 
@@ -1450,7 +1454,7 @@ class ProductBanner(models.Model):
             image_path = self.background_image.path
             with Image.open(image_path) as img:
                 # Force resize to 1920x570 (may distort if original ratio differs)
-                resized_img = img.resize((1920, 570), Image.LANCZOS)
+                resized_img = img.resize((1920, 300), Image.LANCZOS)
                 resized_img.save(image_path, quality=90, optimize=True)
                 
                 
@@ -1732,8 +1736,36 @@ class OrderItemSummary(models.Model):
         
         
         
+#Search page banner
+class SearchViewBanner(models.Model):
+    title = models.CharField(max_length=255)
+    subtitle = models.TextField(blank=True, null=True)
+    background_image = models.ImageField(upload_to='search_banner/')
+    def __str__(self):
+        return self.title
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # First save to get the file on disk
+        if self.background_image:
+            image_path = self.background_image.path
+            with Image.open(image_path) as img:
+                # Force resize to 1920x570 (may distort if original ratio differs)
+                resized_img = img.resize((1920, 300), Image.LANCZOS)
+                resized_img.save(image_path, quality=90, optimize=True)  
         
         
-        
-        
+#Search page banner
+class ThankyouBanner(models.Model):
+    title = models.CharField(max_length=255)
+    subtitle = models.TextField(blank=True, null=True)
+    background_image = models.ImageField(upload_to='search_banner/')
+    def __str__(self):
+        return self.title
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # First save to get the file on disk
+        if self.background_image:
+            image_path = self.background_image.path
+            with Image.open(image_path) as img:
+                # Force resize to 1920x570 (may distort if original ratio differs)
+                resized_img = img.resize((1920, 300), Image.LANCZOS)
+                resized_img.save(image_path, quality=90, optimize=True)      
         

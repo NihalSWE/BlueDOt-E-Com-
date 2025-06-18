@@ -1,0 +1,222 @@
+{% extends "backend/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block custom_css %}
+<style>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .invoice-print-area, .invoice-print-area * {
+        visibility: visible;
+    }
+
+    .invoice-print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: #fff;
+        padding: 0 20px;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .table th, .table td {
+        font-size: 12px !important;
+        padding: 6px 8px !important;
+    }
+
+    .text-end {
+        text-align: right !important;
+    }
+
+    .text-center {
+        text-align: center !important;
+    }
+
+    .text-heading {
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    h5, h6 {
+        margin-bottom: 5px;
+    }
+
+    img {
+        max-height: 60px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="row invoice-preview">
+            <!-- Invoice -->
+            <div class="col-xl-9 col-md-8 col-12 mb-md-0 mb-6 invoice-print-area">
+                <div class="card invoice-preview-card p-sm-12 p-6">
+                    <div class="card-body invoice-preview-header rounded-4 p-6">
+                        <div class="d-flex justify-content-between flex-wrap text-heading align-items-center gap-6">
+                            <div>
+                                <div class="d-flex align-items-center gap-2 mb-6">
+                                    <span class="app-brand-logo demo">
+                                        <img src="{% static 'assets/img/logo.png' %}" width="100" alt="Logo">
+                                    </span>
+                                    <span class="mb-0 app-brand-text fw-semibold">BlueDots</span>
+                                </div>
+                                <p class="mb-1">35/4 Lake Circus, Kalabagan 1205 Dhaka</p>
+                                <p class="mb-1">Dhaka, Bangladesh</p>
+                                <p class="mb-0">01332-500075</p>
+                            </div>
+                            <div>
+                                <h5 class="mb-2">Invoice #{{ purchase.mid_invoice_id }}</h5>
+                                <div class="mb-1"><strong>Date Issued:</strong> {{ current_date }}</div>
+                                <div><strong>Date Due:</strong> {{ due_date }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body py-6 px-0">
+                        <div class="d-flex justify-content-between flex-wrap gap-6">
+                            <div>
+                                <h6 class="text-heading mb-2">Invoice To:</h6>
+                                {% if supplier %}
+                                    <p class="mb-1">{{ supplier.prs_name }}</p>
+                                    <p class="mb-1">{{ supplier.prs_address }}</p>
+                                    <p class="mb-1">{{ supplier.prs_person }}</p>
+                                    <p class="mb-1">{{ supplier.prs_mobile }}</p>
+                                    <p class="mb-0">{{ supplier.prs_email|default:"" }}</p>
+                                {% else %}
+                                    <p>Supplier details not available</p>
+                                {% endif %}
+                            </div>
+    <div>
+<h6 class="text-heading mb-4 ms-5">Bill To:</h6>
+    <table class="table table-borderless">
+        <tbody>
+            <tr class="m-0">
+                <td class="pe-3 text-heading text-nowrap">Total Due:</td>
+                <td class="text-end text-nowrap">৳{{ purchase.mid_buy_prices|floatformat:2|intcomma }}</td>
+            </tr>
+            <tr>
+                <td class="pe-3 text-heading text-nowrap">Amount Paid:</td>
+                <td class="text-end text-nowrap">৳{{ purchase.mid_buy_paid|floatformat:2|intcomma }}</td>
+            </tr>
+            <tr>
+                <td class="pe-3 text-heading text-nowrap">Balance Due:</td>
+                <td class="text-end text-nowrap">৳{{ balance_due|floatformat:2|intcomma }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+                        </div>
+                    </div>
+
+                    <div class="table-responsive border rounded-4 border-bottom-0">
+                        <table class="table table-bordered table-striped m-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item</th>
+                                    <th class="text-end">Cost</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="text-end">Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-semibold">{{ purchase.mid_material.mr_material_name }}</td>
+                                    <td class="text-end">৳{{ unit_price|floatformat:2|intcomma }}</td>
+                                    <td class="text-center">{{ purchase.mid_buy_quentity|floatformat:2 }}</td>
+                                    <td class="text-end">৳{{ purchase.mid_buy_prices|floatformat:2|intcomma }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table m-0 table-borderless">
+                            <tbody>
+                                <tr>
+                                    <td class="px-0 py-6">
+                                        <p class="mb-1"><strong class="text-heading">Salesperson:</strong> {{ entry_by }}</p>
+                                        <span>Thanks for your business!</span>
+                                    </td>
+                                    <td class="pe-0 py-6 w-px-100 text-end">
+                                        <p class="mb-1">Subtotal:</p>
+                                        <p class="mb-1">Discount:</p>
+                                        <p class="mb-1 border-bottom pb-2">Tax:</p>
+                                        <p class="mb-0 pt-2">Total:</p>
+                                    </td>
+                                    <td class="text-end px-0 py-6 w-px-100">
+                                        <p class="fw-medium mb-1">৳{{ purchase.mid_buy_prices|floatformat:2|intcomma }}</p>
+                                        <p class="fw-medium mb-1">৳{{ purchase.mid_due_discount|floatformat:2|intcomma }}</p>
+                                        <p class="fw-medium mb-1 border-bottom pb-2">৳0.00</p>
+                                        <p class="fw-medium mb-0 pt-2">৳{{ purchase.mid_buy_prices|floatformat:2|intcomma }}</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <hr class="mt-0 mb-6" />
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col-12">
+                                <span class="fw-medium text-heading">Note:</span>
+                                <span>It was a pleasure working with you. We hope to work together again.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Actions -->
+            <div class="col-xl-3 col-md-4 col-12 invoice-actions no-print">
+                <div class="card">
+                    <div class="card-body">
+                        <a href="mailto:{{ user.email }}" class="btn btn-primary d-grid w-100 mb-4">
+                            <span class="d-flex align-items-center justify-content-center text-nowrap">
+                                <i class="icon-base ri ri-send-plane-line me-2"></i>Send Invoice
+                            </span>
+                        </a>
+                        <button class="btn btn-outline-secondary d-grid w-100 mb-4 no-print" onclick="window.print()">🖨️ Print Invoice</button>
+                        <div class="d-flex mb-4">
+                            <a href="{% url 'print_invoice_purchase' purchase.id %}" target="_blank" class="btn btn-outline-secondary d-grid w-100 me-4">
+                                Print (New Tab)
+                            </a>
+                        </div>
+                       <a href="{% url 'supplier_payment' %}" class="btn btn-success d-grid w-100">
+    <span class="d-flex align-items-center justify-content-center text-nowrap">
+        <i class="icon-base ri ri-money-dollar-circle-line me-2"></i>Add Payment
+    </span>
+</a>
+                    </div>
+                </div>
+            </div>
+            <!-- /Invoice Actions -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+function printInvoice() {
+    window.print();
+}
+</script>
+{% endblock %}

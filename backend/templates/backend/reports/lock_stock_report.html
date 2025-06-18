@@ -1,0 +1,138 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+
+<div class="card purchase-card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="card-title mb-0 fw-semibold">Low Stock Report</h5>
+      <p class="mb-0 text-muted">Materials with stock less than or equal to {{ low_stock_threshold }}</p>
+    </div>
+  </div>
+  <div class="card-body">
+    <!-- Filters -->
+    <form method="get" class="mb-4" id="filter-form">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label for="material_type" class="form-label">Material Type</label>
+          <select name="material_type" id="material_type" class="form-select">
+            <option value="">All Types</option>
+            {% for type in material_types %}
+              <option value="{{ type.id }}" {% if selected_material_type == type.id|stringformat:"s" %}selected{% endif %}>
+                {{ type.TypeName }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="supplier" class="form-label">Supplier</label>
+          <select name="supplier" id="supplier" class="form-select">
+            <option value="">All Suppliers</option>
+            {% for supplier in suppliers %}
+              <option value="{{ supplier.id }}" {% if selected_supplier == supplier.id|stringformat:"s" %}selected{% endif %}>
+                {{ supplier.prs_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label for="threshold" class="form-label">Threshold</label>
+          <input type="number" name="threshold" id="threshold" class="form-control" 
+                 value="{{ low_stock_threshold }}" step="0.01" min="0">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary me-2">
+            <i class="ti ti-filter"></i> Filter
+          </button>
+          <a href="{% url 'low_stock_report' %}" class="btn btn-outline-secondary">
+            <i class="ti ti-refresh"></i> Reset
+          </a>
+        </div>
+      </div>
+    </form>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table id="low-stock-table" class="table table-hover table-bordered" style="width:100%">
+        <thead class="table-light">
+          <tr>
+            <th>Material Name</th>
+            <th>Type</th>
+            <th>Supplier</th>
+            <th>Current Stock</th>
+            <th>Unit</th>
+            <th>Buy Price</th>
+            <th>Sell Price</th>
+            <th>Total Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for material in materials %}
+          <tr>
+            <td>{{ material.mr_material_name }}</td>
+            <td>{{ material.mr_type.TypeName|default:"-" }}</td>
+            <td>{{ material.mr_supplier.prs_name|default:"-" }}</td>
+            <td class="text-center">
+              <span class="badge {% if material.current_stock <= 0 %}bg-danger{% else %}bg-warning{% endif %}">
+                {{ material.current_stock|floatformat:2 }}
+              </span>
+            </td>
+            <td>{{ material.unit.name|default:"-" }}</td>
+            <td class="text-end">{{ material.mr_buy_price|floatformat:2 }}</td>
+            <td class="text-end">{{ material.mr_sell_price|floatformat:2|default:"-" }}</td>
+            <td class="text-end">{{ material.total_value|floatformat:2|default:"-" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="text-center">No low stock materials found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+
+<script>
+$(document).ready(function() {
+  $('#low-stock-table').DataTable({
+    dom: 'Bfrtip',
+    buttons: [
+      'copy', 'csv', 'excel', 
+      {
+        extend: 'pdf',
+        title: 'Low Stock Report',
+        messageTop: 'Materials with stock ≤ {{ low_stock_threshold }}'
+      },
+      'print', 'colvis'
+    ],
+    responsive: true,
+    stateSave: true,
+    language: {
+      search: "_INPUT_",
+      searchPlaceholder: "Search..."
+    },
+    columnDefs: [
+      { targets: [3,5,6,7], className: 'dt-body-right' },
+      { targets: '_all', className: 'dt-head-center' }
+    ]
+  });
+});
+</script>
+{% endblock %}

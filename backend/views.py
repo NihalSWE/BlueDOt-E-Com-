@@ -32,8 +32,22 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.decorators import login_required
 from collections import defaultdict
+from decimal import Decimal
+from django.db.models import Sum, Value, DecimalField, Q
+from django.db.models.functions import Coalesce
+from decimal import Decimal, InvalidOperation
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.db.models import IntegerField
+from django.utils.timezone import localtime
+from django.db.models import Sum, Count, F, DecimalField, ExpressionWrapper, Value
+from django.db.models.functions import Coalesce
+from django.utils.dateparse import parse_date
+from datetime import timedelta
 
-
+from decimal import Decimal
 
 @login_required
 def dashboard(request):
@@ -107,6 +121,7 @@ def dashboard(request):
     
     # All inventory calculations
     inventory_details = MaterialInventoryDetail.objects.all()
+    suppliers = {str(s.prs_slid): s for s in PartyRegSupplier.objects.all()}
     total_sell_qty = inventory_details.aggregate(
         total=Sum('mid_sell_quentity')
     )['total'] or 0
@@ -167,12 +182,12 @@ def dashboard(request):
     total_orders = Order.objects.count()  # total orders count
     buy_data = (
         MaterialInventoryDetail.objects
-        .values('mid_party__prs_name')
+        .values('mid_party')   # Just the CharField value
         .annotate(total_buy_quantity=Sum('mid_buy_quentity'))
-        .order_by('mid_party__prs_name')
+        .order_by('mid_party')
     )
     
-    supplier_names = [entry['mid_party__prs_name'] for entry in buy_data]
+    supplier_names = [entry['mid_party'] for entry in buy_data]
     total_buy_quantities = [float(entry['total_buy_quantity']) for entry in buy_data]
     customer_names, total_buy_quantities = get_customer_buy_data()
 
@@ -387,9 +402,9 @@ def get_last_user():
 def get_customer_buy_data():
     buy_data = (
         MaterialInventoryDetail.objects
-        .filter(mid_deal_type='buy', order_id__isnull=False)
+        .filter(mid_deal_type='buy', mid_order_id__isnull=False)
         .annotate(
-            customer_name=F('order_id__customer__CustomerName')
+            customer_name=F('mid_order_id__customer__CustomerName')
         )
         .values('customer_name')
         .annotate(total_buy_quantity=Sum('mid_buy_quentity'))
@@ -1070,7 +1085,6 @@ def initial_order_update(request, id):
 
 
 # Approve Order Starts
-@login_required
 def approve_order(request, id):
     order = get_object_or_404(Order, id=id)
     customers = CustomerInfo.objects.all()
@@ -1149,19 +1163,86 @@ def _update_order_fields(order, request):
     order.status = order_status
     order.save()
 
-def _process_material_usages(order, item, request):
+# def _process_material_usages(order, item, request):
+#     prod_id = item.product.id
+
+#     mat_ids = request.POST.getlist(f'materials_{prod_id}[]')
+#     unit_ids = request.POST.getlist(f'units_{prod_id}[]')
+#     qtys = request.POST.getlist(f'quantities_{prod_id}[]')
+    
+#     print('//////////////mat_ids/////////////////', mat_ids)
+#     print('//////////////unit_ids/////////////////', unit_ids)
+#     print('//////////////qtys/////////////////', qtys)   
+
+#     if not mat_ids or len(mat_ids) != len(unit_ids) or len(mat_ids) != len(qtys):
+#         return
+
+#     for mat_id, unit_id, qty_str in zip(mat_ids, unit_ids, qtys):
+#         try:
+#             qty = Decimal(qty_str)
+#             if qty <= 0:
+#                 continue
+#         except (InvalidOperation, ValueError):
+#             continue
+
+#         material = MaterialRegistration.objects.filter(id=mat_id).first()
+#         unit = Unit.objects.filter(id=unit_id).first()
+#         if not material or not unit:
+#             continue
+
+#         usage, created = MaterialUsage.objects.get_or_create(
+#             order_item=item,
+#             material=material,
+#             defaults={
+#                 'order': order,
+#                 'unit': unit,
+#                 'quantity_used': qty
+#             }
+#         )
+
+#         if not created:
+#             usage.unit = unit
+#             usage.quantity_used = qty
+#             usage.save()
+
+#         material.mr_quantity -= qty
+#         material.save()
+
+
+def _process_material_usages(order, item, request): 
     prod_id = item.product.id
 
     mat_ids = request.POST.getlist(f'materials_{prod_id}[]')
     unit_ids = request.POST.getlist(f'units_{prod_id}[]')
     qtys = request.POST.getlist(f'quantities_{prod_id}[]')
+    
+    print('//////////////mat_ids/////////////////', mat_ids)
+    print('//////////////unit_ids/////////////////', unit_ids)
+    print('//////////////qtys/////////////////', qtys)
 
     if not mat_ids or len(mat_ids) != len(unit_ids) or len(mat_ids) != len(qtys):
         return
 
+    mat_ids_int = [int(mid) for mid in mat_ids]
+    existing_usages = item.material_usages.all()
+
+    # Delete usages that were removed in the form
+    for usage in existing_usages:
+        if usage.material.id not in mat_ids_int:
+            # Restore stock before deleting
+            usage.material.mr_quantity -= usage.quantity_used
+            usage.material.save()
+            usage.delete()
+
+    total_material_cost = Decimal('0.00')
+
     for mat_id, unit_id, qty_str in zip(mat_ids, unit_ids, qtys):
+        print('******mat_id***** ', mat_id)
+        print('******unit_id***** ', unit_id)
+        print('******qty_str***** ', qty_str)
+        print('----------------------------------------------------------------------------------------------------')
         try:
-            qty = Decimal(qty_str)
+            qty = Decimal(qty_str) * Decimal(item.quantity)
             if qty <= 0:
                 continue
         except (InvalidOperation, ValueError):
@@ -1170,8 +1251,10 @@ def _process_material_usages(order, item, request):
         material = MaterialRegistration.objects.filter(id=mat_id).first()
         unit = Unit.objects.filter(id=unit_id).first()
         if not material or not unit:
+            print('----material not found----')
             continue
 
+        print('--------material get or create')
         usage, created = MaterialUsage.objects.get_or_create(
             order_item=item,
             material=material,
@@ -1183,12 +1266,30 @@ def _process_material_usages(order, item, request):
         )
 
         if not created:
+            print('-----material not ceated------')
+            # Restore stock difference
+            material.mr_quantity += usage.quantity_used  # revert old usage
             usage.unit = unit
             usage.quantity_used = qty
             usage.save()
 
+        # Reduce updated stock
         material.mr_quantity -= qty
         material.save()
+
+        total_material_cost += material.mr_sell_price * qty
+
+    # Update item pricing
+    if total_material_cost > 0:
+        try:
+            quantity = Decimal(item.quantity)
+            item.unit_price = total_material_cost
+            item.total_price = total_material_cost * quantity
+            item.save()
+        except (InvalidOperation, ZeroDivisionError):
+            pass
+        
+    
 
 def _update_inventory_details(order, user):
     for item in order.items.all():
@@ -1200,17 +1301,17 @@ def _update_inventory_details(order, user):
             print('material inventory ----------: ', inv)
 
             if inv:
-                inv.order_id = order
-                inv.mid_dealer = order.customer.id
+                inv.mid_order_id = order
+                inv.mid_party = order.customer.id
                 inv.mid_sell_quentity = usage.quantity_used
                 inv.mid_sell_prices = material.mr_sell_price
                 inv.mid_sell_paid = material.mr_sell_price * usage.quantity_used
                 inv.mid_deal_type = 'sell'
-                inv.id_debit = material.mr_sell_price * usage.quantity_used
+                inv.mid_debit = material.mr_sell_price * usage.quantity_used
                 inv.mid_entry_by = user
                 inv.save()
                 
-
+                
 def get_materials_by_product(request, order_id, product_id):
     usages = MaterialUsage.objects.filter(
         order_id=order_id,
@@ -1221,12 +1322,32 @@ def get_materials_by_product(request, order_id, product_id):
         {
             'material_id': usage.material.id,
             'material_name': usage.material.mr_material_name,
-            'quantity': str(usage.quantity_used),
+            'quantity': str(usage.quantity_used / usage.order_item.quantity),
             'unit_id': usage.unit.id,
         }
         for usage in usages
     ]
     return JsonResponse({'materials': data})
+    
+
+def order_detail(request, id):
+    try:
+        order = Order.objects.get(id=id)
+    except Order.DoesNotExist:
+        messages.error(request, "Order not found.")
+        return redirect('initial_orders')  # or a 404 page
+
+    order_items = order.items.all().prefetch_related('material_usages__material')
+    
+    order_total_price = Decimal('0.00')  # Initialize total price
+    for item in order_items:
+        order_total_price += item.total_price
+
+    return render(request, 'backend/orders/order-detail.html', {
+        'order': order,
+        'order_items': order_items,
+        'order_total_price': order_total_price
+    })
 
 # Approve Order Ends
 
@@ -1238,9 +1359,6 @@ def product_list(request):
 def add_product(request):
     return render(request, 'backend/product-add.html')
 
-@login_required
-def order_detail(request):
-    return render(request, 'backend/order-details.html')
 @login_required
 def customer_list(request):
     return render(request, 'backend/customer-all.html')
@@ -1935,13 +2053,27 @@ def material_type_delete(request, pk):
 
 
 
+
 @login_required
 def material_list(request):
-    materials = MaterialRegistration.objects.select_related('mr_supplier', 'mr_type').all()
+    materials = MaterialRegistration.objects.select_related('mr_supplier', 'mr_type', 'unit')
+
     suppliers = PartyRegSupplier.objects.all()
     types = MaterialType.objects.all()
     units = Unit.objects.all()
-    
+
+    zero_decimal = Value(0, output_field=DecimalField(max_digits=10, decimal_places=2))
+
+    materials = materials.annotate(
+        total_buy=Coalesce(Sum('inventory_entries__mid_buy_quentity'), zero_decimal),
+        total_sell=Coalesce(Sum('inventory_entries__mid_sell_quentity'), zero_decimal),
+        stock=ExpressionWrapper(
+            Coalesce(Sum('inventory_entries__mid_buy_quentity'), zero_decimal) -
+            Coalesce(Sum('inventory_entries__mid_sell_quentity'), zero_decimal),
+            output_field=DecimalField(max_digits=10, decimal_places=2)
+        )
+    )
+
     return render(request, 'backend/material/material_list.html', {
         'materials': materials,
         'suppliers': suppliers,
@@ -1985,19 +2117,19 @@ def material_create(request):
             )
             material.save()
 
-            # Create MaterialInventoryDetail for initial buy
-            inventory_entry = MaterialInventoryDetail(
-                mid_material=material,
-                mid_party=material.mr_supplier,
-                mid_invoice_id=invoice_id,
-                mid_buy_quentity=buy_quantity,
-                mid_buy_prices=buy_price,
-                mid_buy_paid=buy_paid,
-                mid_deal_type='buy',
-                mid_entry_by=request.user if request.user.is_authenticated else None,
-                mid_entry_date=timezone.now()
-            )
-            inventory_entry.save()
+            # # Create MaterialInventoryDetail for initial buy
+            # inventory_entry = MaterialInventoryDetail(
+            #     mid_material=material,
+            #     mid_party=material.mr_supplier,
+            #     mid_invoice_id=invoice_id,
+            #     mid_buy_quentity=buy_quantity,
+            #     mid_buy_prices=buy_price,
+            #     mid_buy_paid=buy_paid,
+            #     mid_deal_type='buy',
+            #     mid_entry_by=request.user if request.user.is_authenticated else None,
+            #     mid_entry_date=timezone.now()
+            # )
+            # inventory_entry.save()
 
             return redirect('material_list')
         else:
@@ -2040,7 +2172,7 @@ def material_delete(request, pk):
 @login_required
 def material_purchase_list(request):
     purchases = MaterialInventoryDetail.objects.select_related(
-        'mid_party', 'mid_entry_by', 'mid_material'
+        'mid_entry_by', 'mid_material'  
     ).all()
 
     suppliers = PartyRegSupplier.objects.all()
@@ -2062,11 +2194,12 @@ def material_purchase_create(request):
 
     if request.method == 'POST':
         try:
+            supplier_id = request.POST.get('mid_party')
             material_id = request.POST.get('mid_material_id')
             invoice_id = request.POST.get('mid_invoice_id')
-            buy_quantity = request.POST.get('mid_buy_quentity', 0)
-            buy_price = request.POST.get('mid_buy_prices', 0)
-            buy_paid = request.POST.get('mid_buy_paid', 0)
+            buy_quantity = float(request.POST.get('mid_buy_quentity', 0))
+            buy_paid = float(request.POST.get('mid_buy_paid', 0))
+            buy_price = float(request.POST.get('mr_buy_price', 0))
             exp_date = request.POST.get('mid_exp_date')
             deal_type = 'buy'
 
@@ -2079,20 +2212,23 @@ def material_purchase_create(request):
             if not material.mr_supplier:
                 return HttpResponse("Selected material has no supplier assigned", status=400)
 
+            # Calculate price: purchase quantity * unit price from material
+            calculated_price = buy_quantity * buy_price
+
             # Create the inventory entry
             MaterialInventoryDetail.objects.create(
-                mid_party=material.mr_supplier,
+                mid_party=supplier_id,
                 mid_entry_by=request.user,
                 mid_material=material,
                 mid_invoice_id=invoice_id,
-                mid_buy_quentity=float(buy_quantity),
-                mid_buy_prices=float(buy_price),
-                mid_buy_paid=float(buy_paid),
+                mid_buy_quentity=buy_quantity,
+                mid_buy_prices=calculated_price,
+                mid_buy_paid=buy_paid,
                 mid_exp_date=exp_date if exp_date else None,
                 mid_entry_date=timezone.now(),
                 mid_deal_type=deal_type,
-                adminid=request.user.id,
-                due_discount=0,
+                mid_adminid=request.user.id,
+                mid_due_discount=0,
             )
             return redirect('material_purchase_list')
 
@@ -2103,6 +2239,7 @@ def material_purchase_create(request):
         'suppliers': suppliers,
         'materials': materials,
     })
+
 @login_required
 def material_purchase_update(request, id):
     purchase = get_object_or_404(MaterialInventoryDetail, pk=id)
@@ -2111,19 +2248,17 @@ def material_purchase_update(request, id):
 
     if request.method == 'POST':
         try:
+            supplier_id = request.POST.get('mid_party')
             material_id = request.POST.get('mid_material_id')
             invoice_id = request.POST.get('mid_invoice_id')
-            
-            # Validate required fields
-            if not (material_id and invoice_id):
-                return HttpResponse("Material and Invoice ID are required", status=400)
+
+            if not (supplier_id and material_id and invoice_id):
+                return HttpResponse("Supplier, Material and Invoice ID are required", status=400)
 
             material = get_object_or_404(MaterialRegistration, id=material_id)
-            if not material.mr_supplier:
-                return HttpResponse("Selected material has no supplier assigned", status=400)
 
-            # Update purchase record
-            purchase.mid_party = material.mr_supplier
+            # ✅ Save the supplier's ID directly
+            purchase.mid_party = supplier_id
             purchase.mid_material = material
             purchase.mid_invoice_id = invoice_id
             purchase.mid_buy_quentity = float(request.POST.get('mid_buy_quentity', 0))
@@ -2131,9 +2266,9 @@ def material_purchase_update(request, id):
             purchase.mid_buy_paid = float(request.POST.get('mid_buy_paid', 0))
             purchase.mid_exp_date = request.POST.get('mid_exp_date') or None
             purchase.mid_entry_date = timezone.now()
-            purchase.adminid = request.user.id
+            purchase.mid_adminid = request.user.id
             purchase.save()
-            
+
             return redirect('material_purchase_list')
 
         except Exception as e:
@@ -2145,13 +2280,14 @@ def material_purchase_update(request, id):
         'materials': materials,
     })
 @login_required
-def material_purchase_delete(request, pk):
-    purchase = get_object_or_404(MaterialInventoryDetail, pk=pk)
+def material_purchase_delete(request, id):  # was: pk
+    purchase = get_object_or_404(MaterialInventoryDetail, pk=id)
     try:
         purchase.delete()
         return redirect('material_purchase_list')
     except Exception as e:
         return HttpResponse(f"Error deleting purchase: {str(e)}", status=400)
+
 
 
 @login_required
@@ -2434,6 +2570,94 @@ def inventory_stock_report(request):
         'suppliers': PartyRegSupplier.objects.all(),
         'total_inventory_value': total_inventory_value,
     })
+    
+    
+
+from django.shortcuts import render
+from django.db.models import Sum, F, Q, DecimalField
+from django.db.models.functions import Coalesce
+from django.db.models.expressions import ExpressionWrapper, Value
+from .models import MaterialRegistration, MaterialType, PartyRegSupplier
+
+from django.shortcuts import render
+from django.db.models import Sum, F, Q, DecimalField, ExpressionWrapper, Value
+from django.db.models.functions import Coalesce
+
+def low_stock_report(request):
+    # Default threshold (can be overridden via GET param)
+    low_stock_threshold = float(request.GET.get('threshold', 10))
+
+    # Filter parameters
+    material_type_id = request.GET.get('material_type')
+    supplier_id = request.GET.get('supplier')
+
+    # Start with all materials
+    materials = MaterialRegistration.objects.all()
+
+    # Annotate with total bought and sold quantities based on deal type
+    decimal_zero = Value(0, output_field=DecimalField(max_digits=20, decimal_places=2))
+
+    materials = materials.annotate(
+        total_bought=Coalesce(
+            Sum('inventory_entries__mid_buy_quentity',
+                filter=Q(inventory_entries__mid_deal_type='buy'),
+                output_field=DecimalField(max_digits=20, decimal_places=2)),
+            decimal_zero
+        ),
+        total_sold=Coalesce(
+            Sum('inventory_entries__mid_sell_quentity',
+                filter=Q(inventory_entries__mid_deal_type='sell'),
+                output_field=DecimalField(max_digits=20, decimal_places=2)),
+            decimal_zero
+        )
+    )
+
+    # Annotate current stock and total value
+    materials = materials.annotate(
+        stock=ExpressionWrapper(
+            F('total_bought') - F('total_sold'),
+            output_field=DecimalField(max_digits=20, decimal_places=2)
+        ),
+        total_value=ExpressionWrapper(
+            (F('total_bought') - F('total_sold')) * F('mr_sell_price'),
+            output_field=DecimalField(max_digits=20, decimal_places=2)
+        )
+    )
+
+    # Filter materials based on low stock threshold
+    materials = materials.filter(stock__lte=low_stock_threshold)
+
+    # Apply additional filters if provided
+    if material_type_id:
+        materials = materials.filter(mr_type_id=material_type_id)
+    if supplier_id:
+        materials = materials.filter(mr_supplier_id=supplier_id)
+
+    # Calculate total stock of filtered low-stock materials
+    total_current_stock = materials.aggregate(
+        total_stock_sum=Coalesce(
+            Sum('stock', output_field=DecimalField(max_digits=20, decimal_places=2)),
+            decimal_zero
+        )
+    )['total_stock_sum']
+
+    # Get data for filters
+    material_types = MaterialType.objects.all()
+    suppliers = PartyRegSupplier.objects.all()
+
+    context = {
+        'materials': materials,
+        'material_types': material_types,
+        'suppliers': suppliers,
+        'low_stock_threshold': low_stock_threshold,
+        'selected_material_type': material_type_id or '',
+        'selected_supplier': supplier_id or '',
+        'current_stock': total_current_stock,
+    }
+
+    return render(request, 'backend/reports/low_stock_report.html', context)
+
+
 @login_required
 def material_transactions_report(request):
     transactions = MaterialInventoryDetail.objects.select_related(
@@ -2760,28 +2984,42 @@ def profit_loss_report(request):
 
 @login_required
 def supplier_detail(request, supplier_id):
-    # Get the supplier or return 404 if not found
+    # Get supplier or 404
     supplier = get_object_or_404(PartyRegSupplier, prs_slid=supplier_id)
-    
-    # Get all inventory details related to this supplier
-    inventory_details = MaterialInventoryDetail.objects.filter(mid_party=supplier).select_related(
-        'mid_material', 'mid_entry_by'
-    ).order_by('-mid_entry_date')
-    
-    # Calculate totals
-    total_buy = sum(item.mid_buy_quentity * item.mid_buy_prices for item in inventory_details if item.mid_deal_type == 'buy')
-    total_sell = sum(item.mid_sell_quentity * item.mid_sell_prices for item in inventory_details if item.mid_deal_type == 'sell')
-    
+
+    # Get inventory details
+    inventory_details = MaterialInventoryDetail.objects.filter(mid_party=supplier)
+
+    total_buy = 0
+    total_paid = 0
+
+    for item in inventory_details:
+        # Check if item has material linked
+        if item.mid_material_id is None:
+            # No material ID means payment
+            item.amount = item.mid_buy_paid or 0
+            total_paid += item.amount
+            # Mark the deal type explicitly if needed
+            item.mid_deal_type = 'payment'
+        else:
+            # Has material ID, normal buy or sell
+            if item.mid_deal_type == 'buy':
+                item.amount = item.mid_buy_prices or 0
+                total_buy += item.amount
+                item.amount = item.mid_buy_paid or 0
+                total_paid += item.amount
+
+    net_balance = total_buy - total_paid
+
     context = {
         'supplier': supplier,
         'inventory_details': inventory_details,
         'total_buy': total_buy,
-        'total_sell': total_sell,
-        'net_balance': total_buy - total_sell,
+        'total_sell': total_paid,
+        'net_balance': net_balance,
     }
-    
-    return render(request, 'backend/party_supplier/supplier_detail.html', context)
 
+    return render(request, 'backend/party_supplier/supplier_detail.html', context)
 @login_required
 def blog_banner(request):
     banner = BlogBanner.objects.last()
@@ -3180,22 +3418,30 @@ def daily_sell_report(request):
     sell_transactions = MaterialInventoryDetail.objects.filter(
         mid_deal_type='sell',
         mid_entry_date__date=selected_date
-    ).select_related('mid_material', 'mid_party', 'mid_material__unit')
+    ).select_related('mid_material',  'mid_material__unit')
     
     # Annotate each transaction with calculated total and get customer details
     transactions_with_totals = []
     for tx in sell_transactions:
-        # Get customer details if available
         customer = None
-        if hasattr(tx.mid_party, 'customer_info'):
-            customer = tx.mid_party.customer_info
-        elif hasattr(tx.mid_party, 'customerinfo'):
-            customer = tx.mid_party.customerinfo
-        
+    
+        # If mid_party is a string like a customer name, use it directly
+        # If it's an ID and you have a Customer model, you can look it up manually
+    
+        if tx.mid_party:
+            # Optional: Try to fetch customer info manually by ID or name
+            try:
+                customer = CustomerInfo.objects.get(id=tx.mid_party)  # if it's an ID
+            except:
+                try:
+                    customer = CustomerInfo.objects.get(name=tx.mid_party)  # if it's a name
+                except CustomerInfo.DoesNotExist:
+                    customer = None
+    
         tx.total = tx.mid_sell_quentity * tx.mid_sell_prices
         tx.customer_details = customer
         transactions_with_totals.append(tx)
-    
+        
     # Calculate summary totals
     total_sell_quantity = sum(tx.mid_sell_quentity for tx in sell_transactions)
     total_sell_amount = sum(tx.total for tx in transactions_with_totals)
@@ -3282,6 +3528,137 @@ def daily_sell_report(request):
     return render(request, 'backend/reports/daily_sell_report.html', context)
 
 
+
+
+
+
+def daily_purchase_report(request):
+    date_str = request.GET.get('date')
+    if date_str:
+        selected_date = parse_date(date_str)
+        if not selected_date:
+            selected_date = localtime().date()
+    else:
+        selected_date = localtime().date()
+
+    previous_day = selected_date - timedelta(days=1)
+    next_day = selected_date + timedelta(days=1)
+
+    purchases = MaterialInventoryDetail.objects.filter(
+        mid_deal_type='buy',
+        mid_entry_date__date=selected_date
+    )
+
+    zero_decimal = Value(Decimal('0.00'), output_field=DecimalField())
+
+    # total quantity (Decimal)
+    total_quantity = purchases.aggregate(
+        total_qty=Coalesce(Sum('mid_buy_quentity'), zero_decimal)
+    )['total_qty']
+
+    # total amount (Decimal)
+    total_amount = purchases.aggregate(
+        total_amt=Coalesce(Sum(
+            ExpressionWrapper(
+                F('mid_buy_quentity') * F('mid_buy_prices'),
+                output_field=DecimalField(max_digits=20, decimal_places=2)
+            )
+        ), zero_decimal)
+    )['total_amt']
+
+    # total paid (Decimal)
+    total_paid = purchases.aggregate(
+        total_paid=Coalesce(Sum('mid_buy_paid'), zero_decimal)
+    )['total_paid']
+
+    outstanding = total_amount - total_paid
+
+    # Supplier summary
+    # Supplier summary
+    supplier_summary = purchases.values('mid_party').annotate(
+        transaction_count=Count('id'),
+        total_quantity=Coalesce(Sum('mid_buy_quentity'), zero_decimal),
+        total_amount=Coalesce(Sum(
+            ExpressionWrapper(
+                F('mid_buy_quentity') * F('mid_buy_prices'),
+                output_field=DecimalField(max_digits=20, decimal_places=2)
+            )
+        ), zero_decimal),
+        total_paid=Coalesce(Sum('mid_buy_paid'), zero_decimal),
+        outstanding=ExpressionWrapper(
+            Coalesce(Sum(
+                ExpressionWrapper(
+                    F('mid_buy_quentity') * F('mid_buy_prices'),
+                    output_field=DecimalField(max_digits=20, decimal_places=2)
+                )
+            ), zero_decimal) - Coalesce(Sum('mid_buy_paid'), zero_decimal),
+            output_field=DecimalField(max_digits=20, decimal_places=2)
+        )
+    ).order_by('mid_party')
+
+    # Enrich supplier names without FK
+    supplier_summary = list(supplier_summary)
+    for s in supplier_summary:
+        supplier = PartyRegSupplier.objects.filter(prs_slid=s['mid_party']).first()
+        s['prs_slid'] = s['mid_party']
+        s['prs_name'] = supplier.prs_name if supplier else 'Unknown Supplier'
+
+    # Material summary
+    # Material summary (basic aggregation)
+    raw_material_summary = purchases.values(
+        'mid_material'
+    ).annotate(
+        total_quantity=Coalesce(Sum('mid_buy_quentity'), zero_decimal),
+        total_amount=Coalesce(Sum(
+            ExpressionWrapper(
+                F('mid_buy_quentity') * F('mid_buy_prices'),
+                output_field=DecimalField(max_digits=20, decimal_places=2)
+            )
+        ), zero_decimal),
+        avg_price=Coalesce(
+            ExpressionWrapper(
+                Sum(
+                    ExpressionWrapper(
+                        F('mid_buy_quentity') * F('mid_buy_prices'),
+                        output_field=DecimalField(max_digits=20, decimal_places=2)
+                    )
+                ) / Sum('mid_buy_quentity'),
+                output_field=DecimalField(max_digits=20, decimal_places=2)
+            ),
+            zero_decimal
+        ),
+        transaction_count=Count('id')
+    ).order_by('mid_material')
+    
+    # Enrich material data manually
+    material_summary = []
+   
+    
+    for item in raw_material_summary:
+        material_id = item['mid_material']
+        material = MaterialRegistration.objects.select_related('unit').filter(id=material_id).first()
+    
+        item['material_id'] = material_id
+        item['material_name'] = material.mr_material_name if material else 'Unknown Material'
+        item['unit_name'] = material.unit.name if material and material.unit else 'N/A'
+        material_summary.append(item)
+
+    transactions = purchases.select_related('mid_material').order_by('-mid_entry_date')
+
+    context = {
+        'selected_date': selected_date,
+        'previous_day': previous_day,
+        'next_day': next_day,
+        'total_purchase_quantity': total_quantity,
+        'total_purchase_amount': total_amount,
+        'total_purchase_paid': total_paid,
+        'outstanding': outstanding,
+        'supplier_summary': supplier_summary,
+        'material_summary': material_summary,
+        'transactions': transactions,
+    }
+    return render(request, 'backend/reports/daily_purchases_report.html', context)
+
 @login_required
 def cart_banner(request):
     banner = CartBanner.objects.last()
@@ -3357,6 +3734,236 @@ def update_order_status(request):
             return JsonResponse({'success': True})
         except OrderSummary.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Order not found.'})
-    return JsonResponse({'success': False, 'error': 'Invalid request.'})    
+    return JsonResponse({'success': False, 'error': 'Invalid request.'})
+
+@login_required
+def supplier_payment(request):
+    if request.method == 'POST':
+        invoice_id = request.POST.get('invoice_id')
+        party_name = request.POST.get('party_name')
+        payment_amount_str = request.POST.get('payment_amount')
+
+        try:
+            payment_amount = int(payment_amount_str)  # parse as integer
+            if payment_amount <= 0:
+                raise ValueError("Payment amount must be positive")
+
+            buy_entries = MaterialInventoryDetail.objects.filter(
+                mid_invoice_id=invoice_id,
+                mid_party=party_name,
+                mid_deal_type='buy'
+            )
+
+            if not buy_entries.exists():
+                messages.error(request, "No matching inventory entries found")
+                return redirect('supplier_payment')
+
+            total_price_agg = buy_entries.aggregate(
+                total_price=Coalesce(Sum('mid_buy_prices'), Value(0), output_field=IntegerField())
+            )
+            total_price = total_price_agg['total_price'] or 0
+
+            total_paid_agg = buy_entries.aggregate(  # only 'buy' entries
+                total_paid=Coalesce(Sum('mid_buy_paid'), Value(0), output_field=IntegerField())
+            )
+            total_paid = total_paid_agg['total_paid'] or 0
+         
+            total_due = total_price - total_paid
+
+            if payment_amount > total_due:
+                messages.warning(request, f"Payment amount exceeds total due ({total_due})")
+                return redirect('supplier_payment')
+
+            # Create new payment record with mid_deal_type='payment'
+            MaterialInventoryDetail.objects.create(
+                mid_party=party_name,
+                mid_invoice_id=invoice_id,
+                mid_buy_paid=payment_amount,
+                mid_deal_type='buy',
+                # Add other fields if necessary
+            )
+
+            messages.success(request, f"Payment of {payment_amount} recorded successfully")
+            return redirect('supplier_payment')
+
+        except (ValueError, InvalidOperation) as e:
+            messages.error(request, f"Invalid payment amount: {str(e)}")
+            return redirect('supplier_payment')
+
+    # GET request - show payment form
+    parties_with_due = MaterialInventoryDetail.objects.filter(
+        mid_deal_type='buy'
+    ).values('mid_party').annotate(
+        total_price=Coalesce(Sum('mid_buy_prices'), Value(0), output_field=IntegerField()),
+        total_paid=Coalesce(Sum('mid_buy_paid'), Value(0), output_field=IntegerField()),
+        total_due=F('total_price') - F('total_paid')
+    ).filter(total_due__gt=0)
+
+    context = {
+        'parties_with_due': parties_with_due,
+    }
+    return render(request, 'backend/party_supplier/supplier_payment.html', context)
+
+
+from django.db.models import Sum, Value, DecimalField
+from django.db.models.functions import Coalesce
+
+@login_required
+def get_invoices_for_party(request):
+    party_name = request.GET.get('party_name')
+
+    if not party_name:
+        return JsonResponse({'invoices': []})
+
+    # Step 1: Aggregate totals with Coalesce to avoid nulls
+    invoices_with_due = MaterialInventoryDetail.objects.filter(
+        mid_party=party_name,
+        mid_deal_type='buy'
+    ).values('mid_invoice_id').annotate(
+        total_price=Coalesce(Sum('mid_buy_prices'), Value(0, output_field=DecimalField())),
+        total_paid=Coalesce(Sum('mid_buy_paid'), Value(0, output_field=DecimalField()))
+    )
+
+    # Step 2: Calculate due in Python to avoid ORM arithmetic
+    filtered_invoices = []
+    for inv in invoices_with_due:
+        due = inv['total_price'] - inv['total_paid']
+        if due > 0:
+            filtered_invoices.append({
+                'id': inv['mid_invoice_id'],
+                'due': due
+            })
+
+    return JsonResponse({'invoices': filtered_invoices})
+
+
+
+@login_required
+def get_invoice_details(request):
+    invoice_id = request.GET.get('invoice_id')
+    party_name = request.GET.get('party_name')
+    
+    if not invoice_id or not party_name:
+        return JsonResponse({'details': {}})
+    
+    invoice_details = MaterialInventoryDetail.objects.filter(
+        mid_invoice_id=invoice_id,
+        mid_party=party_name,
+        mid_deal_type='buy'
+    ).aggregate(
+        total_amount=Sum('mid_buy_prices'),
+        total_paid=Sum('mid_buy_paid'),
+    )
+    
+    total_due = invoice_details['total_amount'] - invoice_details['total_paid']
+    
+    return JsonResponse({
+        'details': {
+            'total_amount': invoice_details['total_amount'] or 0,
+            'total_paid': invoice_details['total_paid'] or 0,
+            'total_due': total_due or 0,
+        }
+    })
+    
+
+@login_required
+def invoice_purchase(request, purchase_id):
+    purchase = get_object_or_404(MaterialInventoryDetail, id=purchase_id)
+    
+    # Get supplier details
+    supplier = None
+    if purchase.mid_party:
+        try:
+            supplier = PartyRegSupplier.objects.get(prs_slid=purchase.mid_party)
+        except PartyRegSupplier.DoesNotExist:
+            pass
+    
+    # Calculate values
+    unit_price = purchase.mid_buy_prices / purchase.mid_buy_quentity if purchase.mid_buy_quentity else 0
+    balance_due = purchase.mid_buy_prices - purchase.mid_buy_paid
+    
+    context = {
+        'purchase': purchase,
+        'supplier': supplier,
+        'material': purchase.mid_material,
+        'entry_by': purchase.mid_entry_by.get_full_name() if purchase.mid_entry_by else 'System',
+        'unit_price': unit_price,
+        'balance_due': balance_due,
+        'current_date': datetime.now().strftime("%B %d, %Y"),
+        'due_date': (purchase.mid_entry_date + timedelta(days=30)).strftime("%B %d, %Y") if purchase.mid_entry_date else "",
+    }
+    
+    return render(request, 'backend/material/invoice_purchase.html', context)
+
+@login_required
+def print_invoice_purchase(request, purchase_id):
+    purchase = get_object_or_404(MaterialInventoryDetail, id=purchase_id)
+    
+    # Get supplier details
+    supplier = None
+    if purchase.mid_party:
+        try:
+            supplier = PartyRegSupplier.objects.get(prs_slid=purchase.mid_party)
+        except PartyRegSupplier.DoesNotExist:
+            pass
+    
+    # Calculate values
+    unit_price = purchase.mid_buy_prices / purchase.mid_buy_quentity if purchase.mid_buy_quentity else 0
+    balance_due = purchase.mid_buy_prices - purchase.mid_buy_paid
+    
+    context = {
+        'purchase': purchase,
+        'supplier': supplier,
+        'material': purchase.mid_material,
+        'entry_by': purchase.mid_entry_by.get_username() if purchase.mid_entry_by else 'System',
+        'unit_price': unit_price,
+        'balance_due': balance_due,
+        'current_date': datetime.now().strftime("%B %d, %Y"),
+        'due_date': (purchase.mid_entry_date + timedelta(days=30)).strftime("%B %d, %Y") if purchase.mid_entry_date else "",
+        'print_mode': True,
+    }
+    
+    return render(request, 'backend/material/invoice_purchase.html', context)
+
+
+
+@login_required
+def search_banner(request):
+    banner = SearchViewBanner.objects.last()
+    if not banner:
+        banner = SearchViewBanner.objects.create()
+
+    if request.method == 'POST':
+        form = AboutUsBannerForm(request.POST, request.FILES, instance=banner)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'search view page banner updated successfully!')
+            return redirect('search_banner')
+    else:
+        form = AboutUsBannerForm(instance=banner)
+
+    return render(request, 'backend/search/banner.html', {
+        'form': form,
+        'banner': banner
+    })
     
     
+@login_required
+def thankyou_banner(request):
+    banner = ThankyouBanner.objects.last()
+    if not banner:
+        banner = ThankyouBanner.objects.create()
+
+    if request.method == 'POST':
+        form = AboutUsBannerForm(request.POST, request.FILES, instance=banner)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'thankyou page banner updated successfully!')
+            return redirect('thankyou_banner')
+    else:
+        form = AboutUsBannerForm(instance=banner)
+
+    return render(request, 'backend/thankyou/banner.html', {
+        'form': form,
+        'banner': banner
+    })

@@ -10,7 +10,7 @@
                     <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 mb-50">
                         <div class="tp-footer-widget footer-cols-1 transition-3 wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s">
                             <div class="tp-footer-logo">
-                                <a href="index.html"><img  style="width: 100px; height: 100px;"  src="{% static 'assets/img/logo/logo.png' %}" alt=""></a>
+                                <a href="{% url 'home' %}"><img  style="width: 100px; height: 100px;"  src="{% static 'assets/img/logo/logo.png' %}" alt=""></a>
                             </div>
                             <div class="tp-footer-text tp-footer-2-text">
                                 <p>35/4 Lake Circus, Kalabagan, Dhaka, Bangladesh, 1205</p>
@@ -25,7 +25,7 @@
                             <div class="tp-footer-list tp-footer-2-list">
                                 <ul>
                                     <li><a href="">Home</a></li>
-                                    <li><a href="{% url 'aboutUs' %}l">About Us</a></li>
+                                    <li><a href="{% url 'aboutUs' %}">About Us</a></li>
                                     <li><a href="{% url 'shop' %}">Product</a></li>
                                     <li><a href="{% url 'contact' %}">Contact</a></li>
                                      <li><a href="{% url 'faq' %}">FAQ</a></li>

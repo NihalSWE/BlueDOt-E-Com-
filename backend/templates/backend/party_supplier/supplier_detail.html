@@ -28,7 +28,6 @@
     .sell-row {
         background-color: rgba(25, 135, 84, 0.05);
     }
-    /* DataTable styling */
     #inventoryTable {
         border-collapse: collapse !important;
         width: 100%;
@@ -51,61 +50,39 @@
 </style>
 
 <div class="container-fluid">
-<div class="supplier-header bg-white shadow-sm rounded-lg p-4 mb-4">
-    <div class="row align-items-center">
-        <div class="col-md-8">
-            <div class="d-flex align-items-center mb-3">
-                <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
-                    <i class="fas fa-user-tie text-primary fs-2"></i>
-                </div>
-                <div>
-                    <h2 class="mb-0 text-primary">{{ supplier.prs_name }}</h2>
-                    <p class="text-muted mb-0">Supplier Details</p>
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-2">
-                        <span class="badge bg-light text-dark me-2"><i class="fas fa-id-card text-primary me-1"></i> ID:</span>
-                        <span>{{ supplier.prs_slid }}</span>
+    <div class="supplier-header bg-white shadow-sm rounded-lg p-4 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                        <i class="fas fa-user-tie text-primary fs-2"></i>
                     </div>
-                    <div class="mb-2">
-                        <span class="badge bg-light text-dark me-2"><i class="fas fa-building text-primary me-1"></i> Company:</span>
-                        <span>{{ supplier.prs_name }}</span>
-                    </div>
-                    <div class="mb-2">
-                        <span class="badge bg-light text-dark me-2"><i class="fas fa-user text-primary me-1"></i> Contact:</span>
-                        <span>{{ supplier.prs_person }}</span>
+                    <div>
+                        <h2 class="mb-0 text-primary">{{ supplier.prs_name }}</h2>
+                        <p class="text-muted mb-0">Supplier Details</p>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="mb-2">
-                        <span class="badge bg-light text-dark me-2"><i class="fas fa-phone text-primary me-1"></i> Mobile:</span>
-                        <span>{{ supplier.prs_mobile }}</span>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-2"><strong>ID:</strong> {{ supplier.prs_slid }}</div>
+                        <div class="mb-2"><strong>Company:</strong> {{ supplier.prs_name }}</div>
+                        <div class="mb-2"><strong>Contact:</strong> {{ supplier.prs_person }}</div>
                     </div>
-                    <div class="mb-2">
-                        <span class="badge bg-light text-dark me-2"><i class="fas fa-map-marker-alt text-primary me-1"></i> Address:</span>
-                        <span>{{ supplier.prs_address }}</span>
-                    </div>
-                    <div class="mb-2">
-                        <span class="badge bg-light text-dark me-2"><i class="fas fa-globe text-primary me-1"></i> Website:</span>
-                        <span>
+                    <div class="col-md-6">
+                        <div class="mb-2"><strong>Mobile:</strong> {{ supplier.prs_mobile }}</div>
+                        <div class="mb-2"><strong>Address:</strong> {{ supplier.prs_address }}</div>
+                        <div class="mb-2"><strong>Website:</strong>
                             {% if supplier.prs_website %}
-                                <a href="{{ supplier.prs_website }}" target="_blank" class="text-decoration-none">
-                                    {{ supplier.prs_website|truncatechars:20 }}
-                                </a>
+                                <a href="{{ supplier.prs_website }}" target="_blank">{{ supplier.prs_website|truncatechars:20 }}</a>
                             {% else %}
                                 N/A
                             {% endif %}
-                        </span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-
-</div>
     </div>
 
     <div class="row mb-4">
@@ -120,7 +97,7 @@
         <div class="col-md-4">
             <div class="card financial-card h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Total Sales</h5>
+                    <h5 class="card-title">Total Payment</h5>
                     <h3 class="text-success">৳{{ total_sell|floatformat:2 }}</h3>
                 </div>
             </div>
@@ -144,24 +121,23 @@
         <div class="card-body">
             <div class="table-responsive">
                 <table id="inventoryTable" class="table table-striped table-hover" style="width:100%">
-                    <thead class="table-light">
+                    <thead>
                         <tr>
                             <th>Date</th>
                             <th>Material</th>
                             <th>Type</th>
                             <th>Qty</th>
-                            <th>Price</th>
-                            <th>Amount</th>
+                            <th>Total Price</th>
+                            <th>Amount Paid</th>
                             <th>Invoice</th>
                             <th>Expiry</th>
-                          
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in inventory_details %}
                         <tr class="{% if item.mid_deal_type == 'buy' %}buy-row{% else %}sell-row{% endif %}">
-                            <td>{{ item.mid_entry_date|date:"d M Y" }}</td>
-                            <td>{{ item.mid_material.mr_material_name }}</td>
+                            <td>{{ item.mid_entry_date|date:"d M Y"|default:"N/A" }}</td>
+                            <td>{{ item.mid_material.mr_material_name|default:"N/A" }}</td>
                             <td>
                                 <span class="badge bg-{% if item.mid_deal_type == 'buy' %}primary{% else %}success{% endif %}">
                                     {{ item.mid_deal_type|title }}
@@ -169,36 +145,25 @@
                             </td>
                             <td>
                                 {% if item.mid_deal_type == 'buy' %}
-                                    {{ item.mid_buy_quentity|floatformat:2 }}
+                                    {{ item.mid_buy_quentity|default:0|floatformat:2 }}
                                 {% else %}
-                                    {{ item.mid_sell_quentity|floatformat:2 }}
+                                    {{ item.mid_sell_quentity|default:0|floatformat:2 }}
                                 {% endif %}
                             </td>
                             <td>
                                 ৳{% if item.mid_deal_type == 'buy' %}
-                                    {{ item.mid_buy_prices|floatformat:2 }}
+                                    {{ item.mid_buy_prices|default:0|floatformat:2 }}
                                 {% else %}
-                                    {{ item.mid_sell_prices|floatformat:2 }}
+                                    {{ item.mid_sell_prices|default:0|floatformat:2 }}
                                 {% endif %}
                             </td>
-                            <td>
-                                ৳{% if item.mid_deal_type == 'buy' %}
-                                    {{ item.mid_buy_total|floatformat:2 }}
-                                {% else %}
-                                    {{ item.mid_sell_total|floatformat:2 }}
-                                {% endif %}
-                            </td>
-                            <td>{{ item.mid_invoice_id }}</td>
-                            <td>{{ item.mid_exp_date|date:"d M Y"|default:"-" }}</td>
-                            {% comment %} <td>
-                                <a href="{% url 'inventory_detail' item.id %}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                            </td> {% endcomment %}
+                            <td>৳{{ item.amount|default:0|floatformat:2 }}</td>
+                            <td>{{ item.mid_invoice_id|default:"N/A" }}</td>
+                            <td>{{ item.mid_exp_date|date:"d M Y"|default:"N/A" }}</td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="9" class="text-center">No inventory transactions found</td>
+                            <td colspan="8" class="text-center">No inventory transactions found</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -207,122 +172,36 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<!-- DataTables Scripts -->
-<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-
+{% block custom_js %}
 <script>
-$(document).ready(function() {
-    // Initialize DataTable
+  $(document).ready(function() {
     $('#inventoryTable').DataTable({
-        order: [[0, 'desc']],
-        dom: '<"top"f>rt<"bottom"lip><"clear">',
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search months...",
-        }
+      responsive: true,
+      dom: '<"top"<"row"<"col-md-6"l><"col-md-6"f>>>rt<"bottom"<"row"<"col-md-6"i><"col-md-6"p>>>',
+      pageLength: 10,
+      lengthMenu: [[5, 10, 25, 50, 100], [5, 10, 25, 50, 100]],
+      language: {
+        search: "_INPUT_",
+        searchPlaceholder: "Search inventory...",
+        lengthMenu: "Show _MENU_ entries per page",
+        info: "Showing _START_ to _END_ of _TOTAL_ entries",
+        infoEmpty: "No entries found",
+        infoFiltered: "(filtered from _MAX_ total entries)"
+      },
+      initComplete: function() {
+        $('.dataTables_filter input').addClass('form-control');
+        $('.dataTables_length select').addClass('form-select');
+      },
+      columnDefs: [
+        { responsivePriority: 1, targets: 2 }, // Type column
+        { responsivePriority: 2, targets: 1 }, // Material column
+        { responsivePriority: 3, targets: -1 }, // Expiry column (last)
+        { orderable: false, targets: [] } // If you want to disable sorting on any columns, add indices here
+      ]
     });
-
-    // Monthly Trends Chart
-    const ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
-    const monthlyData = {
-        labels: [
-            {% for month in monthly_data %}
-                "{{ month.month|date:'M Y' }}",
-            {% endfor %}
-        ],
-        datasets: [
-            {
-                label: 'Revenue',
-                data: [
-                    {% for month in monthly_data %}
-                        {{ month.revenue }},
-                    {% endfor %}
-                ],
-                backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                borderColor: 'rgba(59, 130, 246, 1)',
-                borderWidth: 2,
-                tension: 0.3
-            },
-            {
-                label: 'COGS',
-                data: [
-                    {% for month in monthly_data %}
-                        {{ month.cogs }},
-                    {% endfor %}
-                ],
-                backgroundColor: 'rgba(239, 68, 68, 0.5)',
-                borderColor: 'rgba(239, 68, 68, 1)',
-                borderWidth: 2,
-                tension: 0.3
-            },
-            {
-                label: 'Gross Profit',
-                data: [
-                    {% for month in monthly_data %}
-                        {{ month.gross }},
-                    {% endfor %}
-                ],
-                backgroundColor: 'rgba(16, 185, 129, 0.5)',
-                borderColor: 'rgba(16, 185, 129, 1)',
-                borderWidth: 2,
-                tension: 0.3
-            }
-        ]
-    };
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: monthlyData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    stacked: false,
-                },
-                y: {
-                    stacked: false,
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return '$' + value.toLocaleString();
-                        }
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            if (context.parsed.y !== null) {
-                                label += '$' + context.parsed.y.toLocaleString();
-                            }
-                            return label;
-                        }
-                    }
-                }
-            }
-        }
-    });
-});
-
-function exportToCSV() {
-    // Add export parameter to URL and submit form
-    const url = new URL(window.location.href);
-    url.searchParams.set('export', 'csv');
-    window.location.href = url.toString();
-}
+  });
 </script>
+
 {% endblock %}

@@ -207,90 +207,90 @@
 
                     <!-- SELECTED ITEMS FOR EACH PRODUCT: use product.id instead of item.id -->
                     {% for item in order_items %}
-                    <div
-                        class="selected-items mt-4"
-                        id="selected-wrapper-{{ item.product.id }}"
-                    >
-                        <h5 class="mb-3">Materials for: {{ item.product.name }}</h5>
-                        <div class="table-responsive">
-                        <table
-                            class="table selectedMaterialsTable"
-                            id="selected-materials-{{ item.product.id }}"
-                            data-product-id="{{ item.product.id }}"
+                        <div
+                            class="selected-items mt-4"
+                            id="selected-wrapper-{{ item.product.id }}"
                         >
-                            <thead class="thead-dark">
-                            <tr>
-                                <th>Material</th>
-                                <th>Unit</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>Total</th>
-                                <th>Action</th>
-                            </tr>
-                            </thead>
-                            {% comment %} <tbody></tbody> {% endcomment %}
+                            <h5 class="mb-3">Materials for: {{ item.product.name }}</h5>
+                            <div class="table-responsive">
+                            <table
+                                class="table selectedMaterialsTable"
+                                id="selected-materials-{{ item.product.id }}"
+                                data-product-id="{{ item.product.id }}"
+                            >
+                                <thead class="thead-dark">
+                                <tr>
+                                    <th>Material</th>
+                                    <th>Unit</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                    <th>Action</th>
+                                </tr>
+                                </thead>
+                                {% comment %} <tbody></tbody> {% endcomment %}
 
 
-                            <tbody>
-                                {% for usage in item.material_usages.all %}
-                                    <tr data-material="{{ usage.material.id }}">
-                                        <td>{{ usage.material.mr_material_name }}</td>
-                                        <td data-unit-id="{{ usage.unit.id }}">{{ usage.unit.name }}</td>
-                                        <td>{{ usage.quantity_used }}</td>
-                                        <td>${{ usage.material.mr_sell_price }}</td>
-                                        <td>${{ usage.quantity_used|multiply:usage.material.mr_sell_price|floatformat:2 }}</td>
-                                        <td>
-                                            <button type="button"
-                                                class="btn btn-sm btn-danger remove-btn"
-                                                data-material="{{ usage.material.id }}"
-                                                data-product="{{ item.product.id }}">
-                                                <span style="color: white; font-size: 20px;"><i class="fa-solid fa-xmark"></i></span>
-                                            </button>
-                                        </td>
+                                <tbody>
+                                    {% for usage in item.material_usages.all %}
+                                        <tr data-material="{{ usage.material.id }}">
+                                            <td>{{ usage.material.mr_material_name }}</td>
+                                            <td data-unit-id="{{ usage.unit.id }}">{{ usage.unit.name }}</td>
+                                            <td>{{ usage.quantity_used|div:usage.order_item.quantity|floatformat:2 }}</td>
+                                            <td>${{ usage.material.mr_sell_price }}</td>
+                                            <td>${{ usage.quantity_used|div:usage.order_item.quantity|multiply:usage.material.mr_sell_price|floatformat:2 }}</td>
+                                            <td>
+                                                <button type="button"
+                                                    class="btn btn-sm btn-danger remove-btn"
+                                                    data-material="{{ usage.material.id }}"
+                                                    data-product="{{ item.product.id }}">
+                                                    <span style="color: white; font-size: 20px;"><i class="fa-solid fa-xmark"></i></span>
+                                                </button>
+                                            </td>
 
-                                        <!-- ✅ Hidden inputs with unique selectors -->
-                                        <input type="hidden"
-                                            name="materials_{{ item.product.id }}[]"
-                                            value="{{ usage.material.id }}"
-                                            data-material-id="{{ usage.material.id }}"
-                                            data-product-id="{{ item.product.id }}">
-                                        
-                                        <input type="hidden"
-                                            name="units_{{ item.product.id }}[]"
-                                            value="{{ usage.unit.id }}"
-                                            class="hidden-unit"
-                                            data-material-id="{{ usage.material.id }}"
-                                            data-product-id="{{ item.product.id }}">
-                                        
-                                        <input type="hidden"
-                                            name="quantities_{{ item.product.id }}[]"
-                                            value="{{ usage.quantity_used }}"
-                                            class="hidden-qty"
-                                            data-material-id="{{ usage.material.id }}"
-                                            data-product-id="{{ item.product.id }}">
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
+                                            <!-- Hidden inputs with unique selectors -->
+                                            <input type="hidden"
+                                                name="materials_{{ item.product.id }}[]"
+                                                value="{{ usage.material.id }}"
+                                                data-material-id="{{ usage.material.id }}"
+                                                data-product-id="{{ item.product.id }}">
+                                            
+                                            <input type="hidden"
+                                                name="units_{{ item.product.id }}[]"
+                                                value="{{ usage.unit.id }}"
+                                                class="hidden-unit"
+                                                data-material-id="{{ usage.material.id }}"
+                                                data-product-id="{{ item.product.id }}">
+                                            
+                                            <input type="hidden"
+                                                name="quantities_{{ item.product.id }}[]"
+                                                value="{{ usage.quantity_used|div:usage.order_item.quantity|floatformat:2 }}"
+                                                class="hidden-qty"
+                                                data-material-id="{{ usage.material.id }}"
+                                                data-product-id="{{ item.product.id }}">
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
 
 
-                            <tfoot>
-                            <tr>
-                                <td colspan="4" class="text-right">
-                                <strong>Total for this product:</strong>
-                                </td>
-                                <td
-                                class="product-total"
-                                id="product-total-{{ item.product.id }}"
-                                style="font-weight: 600;"
-                                >
-                                $0.00
-                                </td>
-                                <td></td>
-                            </tr>
-                            </tfoot>
-                        </table>
+                                <tfoot>
+                                <tr>
+                                    <td colspan="4" class="text-right">
+                                    <strong>Total for this product:</strong>
+                                    </td>
+                                    <td
+                                    class="product-total"
+                                    id="product-total-{{ item.product.id }}"
+                                    style="font-weight: 600;"
+                                    >
+                                    $0.00
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            </div>
                         </div>
-                    </div>
                     {% endfor %}
 
                     <div class="mt-4 text-end pe-12">
@@ -352,91 +352,91 @@
             updateGrandTotal();
         // 1) WHEN “Add” IS CLICKED:
         $('.add-btn').click(function () {
-    const selectedProductId = $('#productSelector').val();
-    if (!selectedProductId) {
-        alert('Please select a product first.');
-        return;
-    }
+            const selectedProductId = $('#productSelector').val();
+            if (!selectedProductId) {
+                alert('Please select a product first.');
+                return;
+            }
 
-    const materialId = $(this).data('material');
-    const row = $(this).closest('tr');
-    const quantity = row.find('.quantity-input').val();
-    const unitId = row.find('.unit-select').val();
-    const unitText = row.find('.unit-select option:selected').text();
-    const materialName = row.find('.material-name').text();
-    const price = parseFloat(row.find('.price').text().replace('$', '')) || 0;
+            const materialId = $(this).data('material');
+            const row = $(this).closest('tr');
+            const quantity = row.find('.quantity-input').val();
+            const unitId = row.find('.unit-select').val();
+            const unitText = row.find('.unit-select option:selected').text();
+            const materialName = row.find('.material-name').text();
+            const price = parseFloat(row.find('.price').text().replace('$', '')) || 0;
 
-    if (!quantity || quantity <= 0) {
-        alert('Please enter a valid quantity.');
-        return;
-    }
+            if (!quantity || quantity <= 0) {
+                alert('Please enter a valid quantity.');
+                return;
+            }
 
-    const tableBody = $(`#selected-materials-${selectedProductId} tbody`);
-    const total = price * quantity;
+            const tableBody = $(`#selected-materials-${selectedProductId} tbody`);
+            const total = price * quantity;
 
-    const existingRow = tableBody.find(`tr[data-material="${materialId}"]`);
-    const hiddenQtyInput = $(`input.hidden-qty[data-material-id="${materialId}"][data-product-id="${selectedProductId}"]`);
-    const hiddenUnitInput = $(`input.hidden-unit[data-material-id="${materialId}"][data-product-id="${selectedProductId}"]`);
+            const existingRow = tableBody.find(`tr[data-material="${materialId}"]`);
+            const hiddenQtyInput = $(`input.hidden-qty[data-material-id="${materialId}"][data-product-id="${selectedProductId}"]`);
+            const hiddenUnitInput = $(`input.hidden-unit[data-material-id="${materialId}"][data-product-id="${selectedProductId}"]`);
 
-    if (existingRow.length > 0) {
-        // ✅ Update visible table
-        existingRow.find('td:eq(2)').text(quantity);
-        existingRow.find('td:eq(4)').text(`$${total.toFixed(2)}`);
+            if (existingRow.length > 0) {
+                // Update visible table
+                existingRow.find('td:eq(2)').text(quantity);
+                existingRow.find('td:eq(4)').text(`$${total.toFixed(2)}`);
 
-        // ✅ Update hidden inputs (existing from Django or previously created)
-        if (hiddenQtyInput.length > 0) {
-            hiddenQtyInput.val(quantity);
-        }
+                // Update hidden inputs (existing from Django or previously created)
+                if (hiddenQtyInput.length > 0) {
+                    hiddenQtyInput.val(quantity);
+                }
 
-        if (hiddenUnitInput.length > 0) {
-            hiddenUnitInput.val(unitId);
-        }
+                if (hiddenUnitInput.length > 0) {
+                    hiddenUnitInput.val(unitId);
+                }
 
-        updateProductTotal(selectedProductId);
-        updateGrandTotal();
-        return;
-    }
+                updateProductTotal(selectedProductId);
+                updateGrandTotal();
+                return;
+            }
 
-    // ✅ Add new visible row
-    const newRow = $(`
-        <tr data-material="${materialId}">
-            <td>${materialName}</td>
-            <td>${unitText}</td>
-            <td>${quantity}</td>
-            <td>$${price.toFixed(2)}</td>
-            <td>$${total.toFixed(2)}</td>
-            <td>
-                <button type="button" class="btn btn-sm btn-danger remove-btn"
-                    data-material="${materialId}"
-                    data-product="${selectedProductId}">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `);
-    tableBody.append(newRow);
+            // Add new visible row
+            const newRow = $(`
+                <tr data-material="${materialId}">
+                    <td>${materialName}</td>
+                    <td>${unitText}</td>
+                    <td>${quantity}</td>
+                    <td>$${price.toFixed(2)}</td>
+                    <td>$${total.toFixed(2)}</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-danger remove-btn"
+                            data-material="${materialId}"
+                            data-product="${selectedProductId}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+            tableBody.append(newRow);
 
-    // ✅ Append new hidden inputs only if not already present
-    if (hiddenQtyInput.length === 0 && hiddenUnitInput.length === 0) {
-        const hiddenInputs = $(`
-            <div class="hidden-${selectedProductId}-${materialId}">
-                <input type="hidden" name="product_ids[]" value="${selectedProductId}">
-                <input type="hidden" name="materials_${selectedProductId}[]" value="${materialId}"
-                    data-material-id="${materialId}" data-product-id="${selectedProductId}">
-                <input type="hidden" name="units_${selectedProductId}[]" value="${unitId}"
-                    class="hidden-unit" data-material-id="${materialId}" data-product-id="${selectedProductId}">
-                <input type="hidden" name="quantities_${selectedProductId}[]" value="${quantity}"
-                    class="hidden-qty" data-material-id="${materialId}" data-product-id="${selectedProductId}">
-            </div>
-        `);
-        $('#hiddenInputsContainer').append(hiddenInputs);
-    }
+            // Append new hidden inputs only if not already present
+            if (hiddenQtyInput.length === 0 && hiddenUnitInput.length === 0) {
+                const hiddenInputs = $(`
+                    <div class="hidden-${selectedProductId}-${materialId}">
+                        <input type="hidden" name="product_ids[]" value="${selectedProductId}">
+                        <input type="hidden" name="materials_${selectedProductId}[]" value="${materialId}"
+                            data-material-id="${materialId}" data-product-id="${selectedProductId}">
+                        <input type="hidden" name="units_${selectedProductId}[]" value="${unitId}"
+                            class="hidden-unit" data-material-id="${materialId}" data-product-id="${selectedProductId}">
+                        <input type="hidden" name="quantities_${selectedProductId}[]" value="${quantity}"
+                            class="hidden-qty" data-material-id="${materialId}" data-product-id="${selectedProductId}">
+                    </div>
+                `);
+                $('#hiddenInputsContainer').append(hiddenInputs);
+            }
 
-    $(`#selected-wrapper-${selectedProductId}`).show();
+            $(`#selected-wrapper-${selectedProductId}`).show();
 
-    updateProductTotal(selectedProductId);
-    updateGrandTotal();
-});
+            updateProductTotal(selectedProductId);
+            updateGrandTotal();
+        });
 
 
         // 2) WHEN “REMOVE” IS CLICKED:

@@ -78,6 +78,7 @@ urlpatterns = [
     path('initial-order-update/<int:id>/',views.initial_order_update,name='initial_order_update'),
     path('approve-order/<int:id>',views.approve_order,name='approve_order'),
     path('orders/<int:order_id>/product/<int:product_id>/materials/', views.get_materials_by_product, name='get_materials_by_product'),
+    path('order_detail/<int:id>',views.order_detail,name='order_detail'),
     # Order urls
     
     path('product_list/',views.product_list,name='product_list'),
@@ -145,6 +146,9 @@ urlpatterns = [
     
     
     path('reports/inventory-stock/', views.inventory_stock_report, name='inventory_stock_report'),
+    path('report/daily-report/', views.daily_purchase_report, name='daily_purchase_report'),
+     path('report/low-stock-report/', views.low_stock_report, name='low_stock_report'),
+
     path('reports/material-transactions/', views.material_transactions_report, name='material_transactions_report'),
     path('reports/sales/', views.sales_report, name='sales_report'),
     path('reports/product-material-usage/', views.product_material_usage_report, name='product_material_usage_report'),
@@ -189,9 +193,21 @@ urlpatterns = [
     path('order_summary',views.order_summary,name='order_summary'),
     path('delete-order/', views.delete_order, name='delete_order'),
     path('update-order-status/', views.update_order_status, name='update_order_status'),
+    
 
     #checkout#
-
-
+    path('supplier-payment/', views.supplier_payment, name='supplier_payment'),
+    path('get-invoices/', views.get_invoices_for_party, name='get_invoices_for_party'),
+    path('get-invoice-details/', views.get_invoice_details, name='get_invoice_details'),
+    path('purchase/<int:purchase_id>/invoice/', views.invoice_purchase, name='invoice_purchase'),
+    path('purchase/<int:purchase_id>/invoice/print/', views.print_invoice_purchase, name='print_invoice_purchase'),
     
+    
+    #search banner
+    path('search_banner/', views.search_banner, name='search_banner'),
+    #search banner 
+    
+    #thankyou banner
+    path('thankyou_banner/', views.thankyou_banner, name='thankyou_banner'),
+    #thankyou banner
 ]

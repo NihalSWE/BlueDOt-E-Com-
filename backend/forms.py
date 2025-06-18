@@ -109,10 +109,12 @@ class ContactUsBannerForm(forms.ModelForm):
 class ContactLocationForm(forms.ModelForm):
     class Meta:
         model = ContactLocation
-        fields = ['city', 'address', 'image']
+        fields = ['city', 'address', 'email', 'number', 'image']
         widgets = {
             'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City'}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Address'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
+            'number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
         }
 
     def clean_image(self):

@@ -83,7 +83,7 @@
             <th>Material</th>
             <th>Invoice</th>
             <th>Qty</th>
-            <th>Unit Price</th>
+            <th>Total Price</th>
             <th>Total Paid</th>
             <th>Status</th>
             <th>Actions</th>
@@ -120,6 +120,10 @@
                 <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this purchase?')">
                   <i class="fas fa-trash-alt"></i>
                 </button>
+                
+                  <a href="{% url 'print_invoice_purchase' purchase.id %}" target="_blank" class="btn btn-outline-secondary d-grid w-100 me-4">
+                    Print
+                </a>
               </form>
             </td>
           </tr>
@@ -143,38 +147,50 @@
         <div class="modal-body">
           <div class="row g-3">
             <div class="col-md-6">
+                <label class="form-label">Supplier <span class="text-danger">*</span></label>
+                <select name="mid_party" class="form-select" required>
+                  <option value="">Select Supplier</option>
+                  {% for supplier in suppliers %}
+                    <option value="{{ supplier.prs_slid }}">{{ supplier.prs_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            <div class="col-md-6">
               <label class="form-label">Material <span class="text-danger">*</span></label>
-            <select id="materialSelect" name="mid_material_id" class="form-select" required>
-  <option value="">Select Material</option>
-  {% for material in materials %}
-  <option value="{{ material.id }}" data-unit="{{ material.unit }}">
-    {{ material.mr_material_name }}
-  </option>
-  {% endfor %}
-</select>
+              <select id="materialSelect" name="mid_material_id" class="form-select" required>
+                <option value="">Select Material</option>
+                {% for material in materials %}
+                  <option value="{{ material.id }}" 
+                          data-unit="{{ material.unit }}"
+                          data-price="{{ material.mr_buy_price }}">
+                    {{ material.mr_material_name }}
+                  </option>
+                {% endfor %}
+              </select>
             </div>
             <div class="col-md-6">
               <label class="form-label">Invoice ID <span class="text-danger">*</span></label>
               <input type="text" name="mid_invoice_id" class="form-control" required>
             </div>
           <div class="col-md-6">
-  <label class="form-label">Quantity <span class="text-danger">*</span></label>
-  <div class="input-group">
-    <input type="number" step="0.01" name="mid_buy_quentity" class="form-control" required>
-    <span class="input-group-text" id="unitDisplay">unit</span>
-  </div>
-</div>
+            <label class="form-label">Quantity <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input type="number" step="0.01" name="mid_buy_quentity" class="form-control" required>
+              <span class="input-group-text" id="unitDisplay">unit</span>
+            </div>
+          </div>
             <div class="col-md-6">
               <label class="form-label">Unit Price <span class="text-danger">*</span></label>
               <div class="input-group">
-                <span class="input-group-text">$</span>
-                <input type="number" step="0.01" name="mid_buy_prices" class="form-control" required>
+                <span class="input-group-text">Tk</span>
+            <input type="number" step="0.01" name="mr_buy_price" id="unitPriceInput" class="form-control" required>
+
               </div>
             </div>
             <div class="col-md-6">
               <label class="form-label">Amount Paid <span class="text-danger">*</span></label>
               <div class="input-group">
-                <span class="input-group-text">$</span>
+                <span class="input-group-text">Tk</span>
                 <input type="number" step="0.01" name="mid_buy_paid" class="form-control" required>
               </div>
             </div>
@@ -208,6 +224,17 @@
         <div class="modal-body">
           <div class="row g-3">
             <div class="col-md-6">
+  <label class="form-label">Supplier <span class="text-danger">*</span></label>
+  <select name="mid_party" class="form-select" required>
+    <option value="">Select Supplier</option>
+    {% for supplier in suppliers %}
+    <option value="{{ supplier.prs_slid }}" {% if supplier.prs_slid == purchase.mid_party_id %}selected{% endif %}>
+      {{ supplier.prs_name }}
+    </option>
+    {% endfor %}
+  </select>
+</div>
+            <div class="col-md-6">
               <label class="form-label">Material <span class="text-danger">*</span></label>
               <select name="mid_material_id" class="form-select" required>
                 {% for material in materials %}
@@ -223,13 +250,13 @@
               <label class="form-label">Quantity <span class="text-danger">*</span></label>
               <input type="number" step="0.01" name="mid_buy_quentity" class="form-control" value="{{ purchase.mid_buy_quentity }}" required>
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Unit Price <span class="text-danger">*</span></label>
-              <div class="input-group">
-                <span class="input-group-text">$</span>
-                <input type="number" step="0.01" name="mid_buy_prices" class="form-control" value="{{ purchase.mid_buy_prices }}" required>
-              </div>
-            </div>
+        <div class="col-md-6">
+          <label class="form-label">Total Price <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text">Tk</span>
+            <input type="number" step="0.01" name="mid_buy_prices" value="{{ purchase.mid_buy_prices }}" class="form-control" required>
+          </div>
+        </div>
             <div class="col-md-6">
               <label class="form-label">Amount Paid <span class="text-danger">*</span></label>
               <div class="input-group">
@@ -266,6 +293,21 @@
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+<script>
+  const materialSelect = document.getElementById('materialSelect');
+  const unitDisplay = document.getElementById('unitDisplay');
+  const unitPriceInput = document.getElementById('unitPriceInput');
+
+  materialSelect.addEventListener('change', function () {
+    const selectedOption = this.options[this.selectedIndex];
+    const unit = selectedOption.getAttribute('data-unit') || 'unit';
+    const price = selectedOption.getAttribute('data-price') || '';
+
+    unitDisplay.textContent = unit;
+    unitPriceInput.value = price;
+  });
+</script>
+
 <script>
   // Prepare a JS object with material ID → unit mapping
   const materialUnits = {

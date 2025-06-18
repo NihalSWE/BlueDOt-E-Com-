@@ -82,6 +82,7 @@
             <th>Type</th>
             <th>Buy Price</th>
             <th>Sell Price</th>
+            <th>Stock</th>
             <th>Margin</th>
             <th>Actions</th>
           </tr>
@@ -104,6 +105,16 @@
             </td>
             <td class="price-cell">${{ material.mr_buy_price|floatformat:2 }}</td>
             <td class="price-cell">${{ material.mr_sell_price|floatformat:2 }}</td>
+          <td>
+    {% if material.stock > 0 %}
+        <span class="badge bg-success">{{ material.stock }}</span>
+    {% elif material.stock == 0 %}
+        <span class="badge bg-warning text-dark">0</span>
+    {% else %}
+        <span class="badge bg-danger">{{ material.stock }}</span>
+    {% endif %}
+</td>
+
             <td class="profit-cell">
               {% widthratio material.mr_sell_price material.mr_buy_price 100 as margin %}
               {{ margin|add:"-100" }}%

@@ -2,6 +2,15 @@
 <!-- header area start -->
     <header class="tp-header-height p-relative z-index-11">
         <div class="tp-header-2-top d-none d-xl-block">
+            {% comment %} <div class="container-fluid">
+                <div class="row align-items-center justify-content-center">
+                    <div class="col-xl-8">
+                        <div class="tp-header-2-top-text text-center">
+                            <span>Free metro delivery* Sign Up for $30 off your order! </span>
+                        </div>
+                    </div>
+                </div>
+            </div> {% endcomment %}
         </div>
         <div id="header-sticky" class="tp-header-bottom tp-header-2-bottom">
             <div class="container-fluid">
@@ -20,6 +29,12 @@
                                     </li>
                                     
                                     <li class="has-dropdown"><a href="{% url 'shop' %}">Products</a>
+                                        {% comment %} <ul class="submenu tp-submenu">
+                                            <li><a href="{% url 'shop' %}">Products</a></li>
+                                            <li><a href="{% url 'shop_details' %}">Shop Details</a></li>
+                                            <li><a href="{% url 'cart' %}">Cart</a></li>
+                                            <li><a href="{% url 'checkout' %}">Checkout</a></li>
+                                        </ul> {% endcomment %}
                                     </li>
                                
                                     <li><a href="{% url 'blog' %}">Blog</a></li>
@@ -31,7 +46,7 @@
                     </div>
                     <div class="col-xl-5 col-lg-6 col-md-6 col-sm-6 col-7">
                         <div class="tp-header-bottom-item d-flex justify-content-end mt-10">
-                            <!-- Header input -->
+                           <!-- Header input -->
                             <div class="tp-header-2-input-search p-relative mr-30">
                                 <form method="get" action="{% url 'search' %}">
                                     <div class="tp-header-2-input">

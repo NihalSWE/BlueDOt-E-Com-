@@ -111,35 +111,7 @@ class MaterialRegistrationAdmin(admin.ModelAdmin):
     search_fields = ['mr_material_name']
     list_filter = ['mr_type', 'unit']
 
-@admin.register(MaterialInventoryDetail)
-class MaterialInventoryDetailAdmin(admin.ModelAdmin):
-    list_display = ['id', 'mid_material', 'mid_invoice_id', 'mid_entry_by', 'order_id', 'mid_deal_type', 'mid_entry_date']
-    list_filter = ['mid_deal_type', 'mid_entry_date']
-    search_fields = ['mid_invoice_id', 'mid_material__mr_material_name']
+admin.site.register(MaterialInventoryDetail)
+admin.site.register(PartyRegSupplier)
 # admin.site.register(Material)
 # admin.site.register(ProductMaterial)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@admin.register(AddCart)
-class AddCartAdmin(admin.ModelAdmin):
-    list_display = ['id', 'product', 'quantity', 'created_at']
-    search_fields = ['product__name']
-    list_filter = ['created_at']
-
-
-
-
-

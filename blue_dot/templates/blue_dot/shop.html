@@ -447,9 +447,9 @@
                       <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default"></span>
                     </div>
                     
-        <div class="tp-shop-price-filter mt-25">
-  <input type="text" id="amount" readonly style="border:none; font-weight:bold; width:200px; margin-right:10px;">
-</div>
+                      <div class="tp-shop-price-filter mt-25">
+                        <input type="text" id="amount" readonly style="border:none; font-weight:bold; width:200px; margin-right:10px;">
+                  .</div>
 
                     <!-- Hidden inputs to submit min and max -->
                     <input type="hidden" id="min_price" name="min_price" value="{{ request.GET.min_price }}">
@@ -638,7 +638,10 @@ data-product-category="{{ product.category }}">
                                 {% for num in products.paginator.page_range %}
                                     {% if products.number == num %}
                                         <li>
-                                            <a class="active" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}">
+                                            <a style="    width: 35px !important;
+                                            height: 35px !important;
+                                            line-height: 35px !important;
+                                        "  class="active" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}">
                                                 {{ num }}
                                             </a>
                                         </li>

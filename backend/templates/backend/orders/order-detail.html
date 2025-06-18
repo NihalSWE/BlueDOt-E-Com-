@@ -1,0 +1,788 @@
+{% extends "backend/base.html" %}
+{% load static %}
+{% load math_filters %}
+
+
+
+{% block custom_css %}
+{%endblock custom_css %}
+
+
+
+{% block content %}
+<!-- Content wrapper -->
+<div class="content-wrapper">
+    <!-- Content -->
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <divclass="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-6 gap-6">
+            <div class="d-flex flex-column justify-content-center">
+                <div class="d-flex align-items-center mb-1">
+                    <h5 class="mb-0">Order #32543</h5>
+                    <span class="badge bg-label-success me-2 ms-2 rounded-pill" >Paid</span>
+                    <span class="badge bg-label-info rounded-pill">Ready to Pickup</span>
+                </div>
+                <p class="mb-0">Aug 17, <span id="orderYear"></span>, 5:48 (ET)</p>
+            </div>
+            <div class="d-flex align-content-center flex-wrap gap-2">
+                <button class="btn btn-outline-danger delete-order">
+                  Delete Order
+                </button>
+            </div>
+        </div>
+
+        <!-- Order Details Table -->
+
+        <div class="row">
+            <div class="col-12 col-lg-8">
+                <div class="card mb-6">
+                    <div class="card-datatable">
+                        <div id="DataTables_Table_0_wrapper" class="dt-container dt-bootstrap5 dt-empty-footer">
+                            <div class="row card-header mx-0 px-2">
+                              <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
+                                  <h5 class="card-title mb-0">Order details</h5>
+                              </div>
+                              <div class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
+                                  <h6 class="m-0"><a href=" javascript:void(0)">Edit</a></h6>
+                              </div>
+                            </div>
+                            <div class="justify-content-between dt-layout-table">
+                                <div class="d-md-flex justify-content-between align-items-center dt-layout-full table-responsive">
+                                    <table class="datatables-order-details table mb-0 dataTable dtr-column" id="DataTables_Table_0">
+                                        <colgroup>
+                                            <col data-dt-column="0" />
+                                            <col data-dt-column="1" />
+                                            <col data-dt-column="2" />
+                                            <col data-dt-column="3" />
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th
+                                                    class="w-50 dt-orderable-none dt-ordering-asc"
+                                                    data-dt-column="0"
+                                                    rowspan="1"
+                                                    colspan="1"
+                                                    aria-sort="ascending"
+                                                    aria-label="products"
+                                                >
+                                                    <span class="dt-column-title">products</span>
+                                                    <span class="dt-column-order"></span>
+                                                </th>
+                                                <th
+                                                    data-dt-column="1"
+                                                    rowspan="1"
+                                                    colspan="1"
+                                                    class="dt-orderable-none"
+                                                    aria-label="price"
+                                                >
+                                                    <span class="dt-column-title">price</span>
+                                                    <span class="dt-column-order"></span>
+                                                </th>
+                                                <th
+                                                    data-dt-column="2"
+                                                    rowspan="1"
+                                                    colspan="1"
+                                                    class="dt-orderable-none"
+                                                    aria-label="qty"
+                                                >
+                                                    <span class="dt-column-title">qty</span>
+                                                    <span class="dt-column-order"></span>
+                                                </th>
+                                                <th
+                                                    data-dt-column="3"
+                                                    rowspan="1"
+                                                    colspan="1"
+                                                    class="dt-orderable-none"
+                                                    aria-label="total"
+                                                >
+                                                    <span class="dt-column-title">total</span>
+                                                    <span class="dt-column-order"></span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in order_items %}
+                                              <tr>
+                                                <td style="font-size: 22px; color: #0035ff;"><strong>{{ item.product.name }}</strong></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                              </tr>
+
+                                              {% for usage in item.material_usages.all %}
+                                                <tr class="text-muted" style="background-color: #f7f7f7;">
+                                                    <td colspan="1">
+                                                        <ul class="list-unstyled mb-0">
+                                                            <li>
+                                                              Material: {{ usage.material.mr_material_name }},
+                                                              Used: {{ usage.order_item.quantity }} * {{ usage.quantity_used|div:usage.order_item.quantity|floatformat:2 }} {{ usage.unit.unit_name }},
+                                                              
+                                                            </li>
+                                                        </ul>
+                                                    </td>
+                                                    <td>{{ usage.material.mr_sell_price }}</td>
+                                                    <td>
+                                                        <span style="color: #08d9d1">{{ usage.order_item.quantity }}</span> * 
+                                                        <span style="color: #d908d1">{{ usage.quantity_used|div:usage.order_item.quantity|floatformat:2 }}</span>
+                                                    </td>
+                                                    <td>{{ usage.order_item.quantity|multiply:usage.quantity_used|div:usage.order_item.quantity|multiply:usage.material.mr_sell_price|floatformat:2 }}</td>
+                                                </tr>
+                                              {% endfor %}
+                                              <tr>
+                                                <td><strong>Total for Product</strong></td>
+                                                <td>{{ item.price }}</td>
+                                                <td>{{ item.quantity }}</td>
+                                                <td>{{ item.total_price }}</td>
+                                              </tr>
+                                              <tr style="height: 40px;"></tr>
+                                            {% empty %}
+                                              <tr>
+                                                <td colspan="6">No items found.</td>
+                                              </tr>
+                                              
+                                            {% endfor %}
+
+                                            <tr style="border-top: 2px solid blue;">
+                                                <td></td>
+                                                <td></td>
+                                                <td style="font-size: 18px; font-weight: 600;">Subtotal</td>
+                                                <td>{{ order_total_price }}</td>
+                                              </tr>
+                                          </tbody>
+                                          <tfoot></tfoot>
+                                     </table>
+                                  </div>
+                              </div>
+                          <div class="mt-0">
+                              <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto"></div>
+                              <div class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto"></div>
+                          </div>
+                      </div>
+                      {% comment %} <div class="d-flex justify-content-end align-items-center m-4 p-1 mb-0 pb-0">
+                          <div class="order-calculations">
+                              <div class="d-flex justify-content-start gap-4">
+                                  <span class="w-px-100 text-heading">Subtotal:</span>
+                                  <h6 class="mb-0">$5000.25</h6>
+                              </div>
+                              <div class="d-flex justify-content-start gap-4">
+                                  <span class="w-px-100 text-heading">Discount:</span>
+                                  <h6 class="mb-0">$00.00</h6>
+                              </div>
+                              <div class="d-flex justify-content-start gap-4">
+                                  <span class="w-px-100 text-heading">Tax:</span>
+                                  <h6 class="mb-0">$100.00</h6>
+                              </div>
+                              <div class="d-flex justify-content-start gap-4">
+                                  <h6 class="w-px-100 mb-0">Total:</h6>
+                                  <h6 class="mb-0">$5100.25</h6>
+                              </div>
+                          </div>
+                      </div> {% endcomment %}
+                    </div>
+                </div>
+                <div class="card mb-6">
+                    <div class="card-header">
+                      <h5 class="card-title m-0">Shipping activity</h5>
+                    </div>
+                    <div class="card-body mt-3">
+                        <ul class="timeline pb-0 mb-0">
+                            <li class="timeline-item timeline-item-transparent border-primary">
+                                <span class="timeline-point timeline-point-primary"></span>
+                                <div class="timeline-event">
+                                    <div class="timeline-header mb-2">
+                                        <h6 class="mb-0">Order was placed (Order ID: #{{ order.invoice_id }})</h6>
+                                        <small class="text-body-secondary">Tuesday 11:29 AM</small>
+                                    </div>
+                                    <p class="mt-1 mb-2">Customer's Order has been placed successfully</p>
+                                </div>
+                            </li>
+
+                            <li class="timeline-item timeline-item-transparent {% if order.status == 1 or order.status == 2 or order.status == 3 or order.status == 6 %}border-primary{% else %}border-dashed{% endif %}">
+                                <span class="timeline-point {% if order.status == 0 or order.status == 1 or order.status == 2 or order.status == 3 or order.status == 6 %}border-primary{% else %}timeline-point-secondary{% endif %}"></span>
+                                <div class="timeline-event">
+                                    <div class="timeline-header mb-2">
+                                        <h6 class="mb-0">Pending (Order ID: #{{ order.invoice_id }})</h6>
+                                        <small class="text-body-secondary">Tuesday 11:29 AM</small>
+                                    </div>
+                                    <p class="mt-1 mb-2">The order is yet to reviewed by a staff</p>
+                                </div>
+                            </li>
+
+                            <li class="timeline-item timeline-item-transparent {% if order.status == 2 or order.status == 3 or order.status == 6 %}border-primary{% else %}border-dashed{% endif %}">
+                                <span class="timeline-point {% if order.status == 1 or order.status == 2 or order.status == 3 or order.status == 6 %}border-primary{% else %}timeline-point-secondary{% endif %}"></span>
+                                <div class="timeline-event">
+                                    <div class="timeline-header mb-2">
+                                        <h6 class="mb-0">Approved</h6>
+                                        <small class="text-body-secondary">Wednesday 11:29 AM</small>
+                                    </div>
+                                    <p class="mt-1 mb-2">Materials has been associated with the product</p>
+                                </div>
+                            </li>
+                            <li class="timeline-item timeline-item-transparent {% if order.status == 3 or order.status == 6 %}border-primary{% else %}border-dashed{% endif %}">
+                                <span class="timeline-point {% if order.status == 2 or order.status == 3 or order.status == 6 %}border-primary{% else %}timeline-point-secondary{% endif %}"></span>
+                                <div class="timeline-event">
+                                    <div class="timeline-header mb-2">
+                                        <h6 class="mb-0">Processing</h6>
+                                        <small class="text-body-secondary">Thursday 11:29 AM</small>
+                                    </div>
+                                    <p class="mt-1 mb-2">The Product is under processing and the materials has been added to the products</p>
+                                </div>
+                            </li>
+                              <li class="timeline-item timeline-item-transparent {% if order.status == 6 %}border-primary{% else %}border-dashed{% endif %}">
+                                  <span class="timeline-point {% if order.status == 3 or order.status == 6 %}border-primary{% else %}timeline-point-secondary{% endif %}"></span>
+                                  <div class="timeline-event">
+                                      <div class="timeline-header mb-2">
+                                          <h6 class="mb-0">Completed</h6>
+                                          <small class="text-body-secondary">Saturday 15:20 AM</small>
+                                      </div>
+                                      <p class="mt-1 mb-2">
+                                          The product is completed and ready to be shipped
+                                      </p>
+                                  </div>
+                              </li>
+                            <li class="timeline-item timeline-item-transparent border-transparent">
+                                  <span class="timeline-point {% if order.status == 6 %}border-primary{% else %}timeline-point-secondary{% endif %}"></span>
+                                  <div class="timeline-event">
+                                      <div class="timeline-header mb-2">
+                                          <h6 class="mb-0">Delivered</h6>
+                                          <small class="text-body-secondary">Saturday 15:20 AM</small>
+                                      </div>
+                                      <p class="mt-1 mb-2">
+                                          The product has been delivered
+                                      </p>
+                                  </div>
+                              </li>
+                        </ul>
+                    </div>
+                </div>
+              </div>
+              <div class="col-12 col-lg-4">
+                <div class="card mb-6">
+                  <div class="card-body">
+                    <h5 class="card-title mb-6">Customer details</h5>
+                    <div class="d-flex justify-content-start align-items-center mb-6">
+                      <div class="avatar me-3">
+                        <img
+                          src="../../assets/img/avatars/1.png"
+                          alt="Avatar"
+                          class="rounded-circle"
+                        />
+                      </div>
+                      <div class="d-flex flex-column">
+                        <a href="app-user-view-account.html">
+                          <h6 class="mb-0">Shamus Tuttle</h6>
+                        </a>
+                        <span>Customer ID: #58909</span>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-start align-items-center mb-6">
+                      <span
+                        class="avatar rounded-circle bg-label-success me-3 d-flex align-items-center justify-content-center"
+                        ><i class="icon-base ri ri-shopping-cart-line icon-24px"></i
+                      ></span>
+                      <h6 class="text-nowrap mb-0">12 Orders</h6>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                      <h6 class="mb-1">Contact info</h6>
+                      <h6 class="mb-1">
+                        <a
+                          href=" javascript:;"
+                          data-bs-toggle="modal"
+                          data-bs-target="#editUser"
+                          >Edit</a
+                        >
+                      </h6>
+                    </div>
+                    <p class="mb-1">Email: Shamus889@yahoo.com</p>
+                    <p class="mb-0">Mobile: +1 (609) 972-22-22</p>
+                  </div>
+                </div>
+
+                <div class="card mb-6">
+                  <div class="card-header d-flex justify-content-between">
+                    <h5 class="card-title mb-1">Shipping address</h5>
+                    <h6 class="m-0">
+                      <a
+                        href=" javascript:void(0)"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addNewAddress"
+                        >Edit</a
+                      >
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <p class="mb-0">
+                      45 Roker Terrace <br />Latheronwheel <br />KW5 8NW,London <br />UK
+                    </p>
+                  </div>
+                </div>
+                <div class="card mb-6">
+                  <div class="card-header d-flex justify-content-between pb-0">
+                    <h5 class="card-title mb-1">Billing address</h5>
+                    <h6 class="m-0">
+                      <a
+                        href=" javascript:void(0)"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addNewAddress"
+                        >Edit</a
+                      >
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <p class="mb-6">
+                      45 Roker Terrace <br />Latheronwheel <br />KW5 8NW,London <br />UK
+                    </p>
+                    <h5 class="mb-1">Mastercard</h5>
+                    <p class="mb-0">Card Number: ******4291</p>
+                  </div>
+                </div>
+            </div>
+        </div>
+
+      <!-- Edit User Modal -->
+      <div class="modal fade" id="editUser" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-simple modal-edit-user">
+          <div class="modal-content">
+            <div class="modal-body p-0">
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+              <div class="text-center mb-6">
+                <h4 class="mb-2">Edit User Information</h4>
+                <p class="mb-6">
+                  Updating user details will receive a privacy audit.
+                </p>
+              </div>
+              <form id="editUserForm" class="row g-5" onsubmit="return false">
+                <div class="col-12 col-md-6">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalEditUserFirstName"
+                      name="modalEditUserFirstName"
+                      class="form-control"
+                      value="Oliver"
+                      placeholder="Oliver"
+                    />
+                    <label for="modalEditUserFirstName">First Name</label>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalEditUserLastName"
+                      name="modalEditUserLastName"
+                      class="form-control"
+                      value="Queen"
+                      placeholder="Queen"
+                    />
+                    <label for="modalEditUserLastName">Last Name</label>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalEditUserName"
+                      name="modalEditUserName"
+                      class="form-control"
+                      value="oliver.queen"
+                      placeholder="oliver.queen"
+                    />
+                    <label for="modalEditUserName">Username</label>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalEditUserEmail"
+                      name="modalEditUserEmail"
+                      class="form-control"
+                      value="oliverqueen@gmail.com"
+                      placeholder="oliverqueen@gmail.com"
+                    />
+                    <label for="modalEditUserEmail">Email</label>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="form-floating form-floating-outline">
+                    <select
+                      id="modalEditUserStatus"
+                      name="modalEditUserStatus"
+                      class="form-select"
+                      aria-label="Default select example"
+                    >
+                      <option value="1" selected>Active</option>
+                      <option value="2">Inactive</option>
+                      <option value="3">Suspended</option>
+                    </select>
+                    <label for="modalEditUserStatus">Status</label>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalEditTaxID"
+                      name="modalEditTaxID"
+                      class="form-control modal-edit-tax-id"
+                      placeholder="123 456 7890"
+                    />
+                    <label for="modalEditTaxID">Tax ID</label>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="input-group input-group-merge">
+                    <span class="input-group-text">US (+1)</span>
+                    <div class="form-floating form-floating-outline">
+                      <input
+                        type="text"
+                        id="modalEditUserPhone"
+                        name="modalEditUserPhone"
+                        class="form-control phone-number-mask"
+                        value="+1 609 933 4422"
+                        placeholder="+1 609 933 4422"
+                      />
+                      <label for="modalEditUserPhone">Phone Number</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      id="modalEditUserLanguage"
+                      name="modalEditUserLanguage"
+                      class="form-control h-auto"
+                      placeholder="select technologies"
+                      value="English"
+                    />
+                    <label for="modalEditUserLanguage"
+                      >Custom List Suggestions</label
+                    >
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="form-floating form-floating-outline">
+                    <select
+                      id="modalEditUserCountry"
+                      name="modalEditUserCountry"
+                      class="select2 form-select"
+                      data-allow-clear="true"
+                    >
+                      <option value="">Select</option>
+                      <option value="Australia">Australia</option>
+                      <option value="Bangladesh">Bangladesh</option>
+                      <option value="Belarus">Belarus</option>
+                      <option value="Brazil">Brazil</option>
+                      <option value="Canada">Canada</option>
+                      <option value="China">China</option>
+                      <option value="France">France</option>
+                      <option value="Germany">Germany</option>
+                      <option value="India" selected>India</option>
+                      <option value="Indonesia">Indonesia</option>
+                      <option value="Israel">Israel</option>
+                      <option value="Italy">Italy</option>
+                      <option value="Japan">Japan</option>
+                      <option value="Korea">Korea, Republic of</option>
+                      <option value="Mexico">Mexico</option>
+                      <option value="Philippines">Philippines</option>
+                      <option value="Russia">Russian Federation</option>
+                      <option value="South Africa">South Africa</option>
+                      <option value="Thailand">Thailand</option>
+                      <option value="Turkey">Turkey</option>
+                      <option value="Ukraine">Ukraine</option>
+                      <option value="United Arab Emirates">
+                        United Arab Emirates
+                      </option>
+                      <option value="United Kingdom">United Kingdom</option>
+                      <option value="United States">United States</option>
+                    </select>
+                    <label for="modalEditUserCountry">Country</label>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-check form-switch">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="editBillingAddress"
+                    />
+                    <label for="editBillingAddress" class="text-heading"
+                      >Use as a billing address?</label
+                    >
+                  </div>
+                </div>
+                <div class="col-12 text-center">
+                  <button type="submit" class="btn btn-primary me-3">
+                    Submit
+                  </button>
+                  <button
+                    type="reset"
+                    class="btn btn-outline-secondary"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--/ Edit User Modal -->
+
+      <!-- Add New Address Modal -->
+      <div class="modal fade" id="addNewAddress" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-simple modal-add-new-address">
+          <div class="modal-content">
+            <div class="modal-body p-0">
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+              <div class="text-center mb-6">
+                <h4 class="address-title mb-2">Add New Address</h4>
+                <p class="address-subtitle">
+                  Add new address for express delivery
+                </p>
+              </div>
+              <form
+                id="addNewAddressForm"
+                class="row g-5"
+                onsubmit="return false"
+              >
+                <div class="col-12 form-control-validation">
+                  <div class="row g-5">
+                    <div class="col-md mb-md-0">
+                      <div class="form-check custom-option custom-option-basic">
+                        <label
+                          class="form-check-label custom-option-content"
+                          for="customRadioHome"
+                        >
+                          <input
+                            name="customRadioTemp"
+                            class="form-check-input"
+                            type="radio"
+                            value=""
+                            id="customRadioHome"
+                            checked
+                          />
+                          <span class="custom-option-header">
+                            <span class="h6 mb-0 d-flex align-items-center"
+                              ><i
+                                class="icon-base ri ri-home-smile-2-line icon-20px me-1"
+                              ></i
+                              >Home</span
+                            >
+                          </span>
+                          <span class="custom-option-body">
+                            <small>Delivery time (9am – 9pm)</small>
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-md mb-md-0">
+                      <div class="form-check custom-option custom-option-basic">
+                        <label
+                          class="form-check-label custom-option-content"
+                          for="customRadioOffice"
+                        >
+                          <input
+                            name="customRadioTemp"
+                            class="form-check-input"
+                            type="radio"
+                            value=""
+                            id="customRadioOffice"
+                          />
+                          <span class="custom-option-header">
+                            <span class="h6 mb-0 d-flex align-items-center"
+                              ><i
+                                class="icon-base ri ri-building-line icon-20px me-1"
+                              ></i
+                              >Office</span
+                            >
+                          </span>
+                          <span class="custom-option-body">
+                            <small>Delivery time (9am – 5pm) </small>
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12 form-control-validation col-md-6">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalAddressFirstName"
+                      name="modalAddressFirstName"
+                      class="form-control"
+                      placeholder="John"
+                    />
+                    <label for="modalAddressFirstName">First Name</label>
+                  </div>
+                </div>
+                <div class="col-12 form-control-validation col-md-6">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalAddressLastName"
+                      name="modalAddressLastName"
+                      class="form-control"
+                      placeholder="Doe"
+                    />
+                    <label for="modalAddressLastName">Last Name</label>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-floating form-floating-outline">
+                    <select
+                      id="modalAddressCountry"
+                      name="modalAddressCountry"
+                      class="select2 form-select"
+                      data-allow-clear="true"
+                    >
+                      <option value="">Select</option>
+                      <option value="Australia">Australia</option>
+                      <option value="Bangladesh">Bangladesh</option>
+                      <option value="Belarus">Belarus</option>
+                      <option value="Brazil">Brazil</option>
+                      <option value="Canada">Canada</option>
+                      <option value="China">China</option>
+                      <option value="France">France</option>
+                      <option value="Germany">Germany</option>
+                      <option value="India">India</option>
+                      <option value="Indonesia">Indonesia</option>
+                      <option value="Israel">Israel</option>
+                      <option value="Italy">Italy</option>
+                      <option value="Japan">Japan</option>
+                      <option value="Korea">Korea, Republic of</option>
+                      <option value="Mexico">Mexico</option>
+                      <option value="Philippines">Philippines</option>
+                      <option value="Russia">Russian Federation</option>
+                      <option value="South Africa">South Africa</option>
+                      <option value="Thailand">Thailand</option>
+                      <option value="Turkey">Turkey</option>
+                      <option value="Ukraine">Ukraine</option>
+                      <option value="United Arab Emirates">
+                        United Arab Emirates
+                      </option>
+                      <option value="United Kingdom">United Kingdom</option>
+                      <option value="United States">United States</option>
+                    </select>
+                    <label for="modalAddressCountry">Country</label>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalAddressAddress1"
+                      name="modalAddressAddress1"
+                      class="form-control"
+                      placeholder="12, Business Park"
+                    />
+                    <label for="modalAddressAddress1">Address Line 1</label>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalAddressAddress2"
+                      name="modalAddressAddress2"
+                      class="form-control"
+                      placeholder="Mall Road"
+                    />
+                    <label for="modalAddressAddress2">Address Line 2</label>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalAddressLandmark"
+                      name="modalAddressLandmark"
+                      class="form-control"
+                      placeholder="Nr. Hard Rock Cafe"
+                    />
+                    <label for="modalAddressLandmark">Landmark</label>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalAddressCity"
+                      name="modalAddressCity"
+                      class="form-control"
+                      placeholder="Los Angeles"
+                    />
+                    <label for="modalAddressCity">City</label>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="form-floating form-floating-outline">
+                      <input
+                        type="text"
+                        id="modalAddressState"
+                        name="modalAddressState"
+                        class="form-control"
+                        placeholder="California"
+                      />
+                    <label for="modalAddressLandmark">State</label>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="form-floating form-floating-outline">
+                    <input
+                      type="text"
+                      id="modalAddressZipCode"
+                      name="modalAddressZipCode"
+                      class="form-control"
+                      placeholder="99950"
+                    />
+                    <label for="modalAddressZipCode">Zip Code</label>
+                  </div>
+                </div>
+                <div class="col-12 mt-6">
+                  <div class="form-check form-switch">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="billingAddress"
+                    />
+                    <label for="billingAddress">Use as a billing address?</label>
+                  </div>
+                </div>
+                <div
+                  class="col-12 mt-6 d-flex flex-wrap justify-content-center gap-4 row-gap-4"
+                >
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                  <button
+                    type="reset"
+                    class="btn btn-outline-secondary"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--/ Add New Address Modal -->
+    </div>
+    <!-- / Content -->
+
+</div>
+{% endblock content %} {% block custom_js %} {% endblock custom_js %}

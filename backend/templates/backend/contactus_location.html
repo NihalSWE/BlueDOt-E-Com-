@@ -4,7 +4,7 @@
 {% block custom_css %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-    .modal-lg { max-width: 600px; }
+    .modal-lg { max-width: 700px; }
     .table th, .table td {
         vertical-align: middle; /* Align content vertically in the middle */
     }
@@ -16,12 +16,20 @@
     .table td:nth-child(2) {
         text-align: left;
     }
-    .table th:nth-child(3), /* Image header */
+    .table th:nth-child(3), /* Email header */
     .table td:nth-child(3) {
+        text-align: left;
+    }
+    .table th:nth-child(4), /* Number header */
+    .table td:nth-child(4) {
+        text-align: left;
+    }
+    .table th:nth-child(5), /* Image header */
+    .table td:nth-child(5) {
         text-align: center;
     }
-    .table th:nth-child(4), /* Actions header */
-    .table td:nth-child(4) {
+    .table th:nth-child(6), /* Actions header */
+    .table td:nth-child(6) {
         text-align: center;
     }
 </style>
@@ -38,6 +46,8 @@
             <tr>
                 <th>City</th>
                 <th>Address</th>
+                <th>Email</th>
+                <th>Phone</th>
                 <th class="text-center">Image</th>
                 <th class="text-center">Actions</th>
             </tr>
@@ -47,6 +57,8 @@
                 <tr data-id="{{ loc.id }}">
                     <td class="city">{{ loc.city }}</td>
                     <td class="address">{{ loc.address|linebreaksbr }}</td>
+                    <td class="email">{{ loc.email|default:"—" }}</td>
+                    <td class="number">{{ loc.number|default:"—" }}</td>
                     <td class="image text-center">
                         {% if loc.image %}
                             <img src="{{ loc.image.url }}" alt="{{ loc.city }}" style="height:54px; width:80px; object-fit: cover;"/>
@@ -60,7 +72,7 @@
                     </td>
                 </tr>
             {% empty %}
-                <tr><td colspan="4" class="text-center">No locations added yet.</td></tr>
+                <tr><td colspan="6" class="text-center">No locations added yet.</td></tr>
             {% endfor %}
         </tbody>
     </table>
@@ -87,6 +99,16 @@
                         <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
                         <textarea class="form-control" name="address" id="address" rows="3" required></textarea>
                         <div class="invalid-feedback" id="addressError"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" id="email">
+                        <div class="invalid-feedback" id="emailError"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="number" class="form-label">Phone Number</label>
+                        <input type="text" class="form-control" name="number" id="number">
+                        <div class="invalid-feedback" id="numberError"></div>
                     </div>
                     <div class="mb-3">
                         <label for="image" class="form-label">Image (160x108)</label>
@@ -116,8 +138,10 @@
     function clearFormErrors() {
         $('#cityError').text('');
         $('#addressError').text('');
+        $('#emailError').text('');
+        $('#numberError').text('');
         $('#imageError').text('');
-        $('#city, #address, #image').removeClass('is-invalid');
+        $('#city, #address, #email, #number, #image').removeClass('is-invalid');
     }
 
     // Open modal for Add
@@ -138,6 +162,8 @@
         const id = $(this).data('id');
         const city = row.find('.city').text().trim();
         const address = row.find('.address').text().trim();
+        const email = row.find('.email').text().trim();
+        const number = row.find('.number').text().trim();
         const imgTag = row.find('td.image img');
         let currentImgHTML = '';
 
@@ -151,6 +177,8 @@
         $('#locationId').val(id);
         $('#city').val(city);
         $('#address').val(address);
+        $('#email').val(email === '—' ? '' : email);
+        $('#number').val(number === '—' ? '' : number);
         $('#currentImage').html(currentImgHTML);
         $('#image').val('');
         locationModal.show();
@@ -208,6 +236,14 @@
                         if(response.errors.address){
                             $('#addressError').text(response.errors.address[0]);
                             $('#address').addClass('is-invalid');
+                        }
+                        if(response.errors.email){
+                            $('#emailError').text(response.errors.email[0]);
+                            $('#email').addClass('is-invalid');
+                        }
+                        if(response.errors.number){
+                            $('#numberError').text(response.errors.number[0]);
+                            $('#number').addClass('is-invalid');
                         }
                         if(response.errors.image){
                             $('#imageError').text(response.errors.image[0]);

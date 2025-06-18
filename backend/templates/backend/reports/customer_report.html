@@ -182,15 +182,15 @@
                         <td class="text-end">
                             <div class="fw-semibold">
                                 {% if customer.dabite %}
-                                    <span class="text-danger">-${{ customer.dabite }}</span>
+                                    <span class="text-danger">-৳{{ customer.dabite }}</span>
                                 {% elif customer.cradit %}
-                                    <span class="text-success">+${{ customer.cradit }}</span>
+                                    <span class="text-success">+৳{{ customer.cradit }}</span>
                                 {% else %}
-                                    $0.00
+                                    ৳0.00
                                 {% endif %}
                             </div>
                             {% if customer.open_due %}
-                            <small class="text-muted">Due: ${{ customer.open_due }}</small>
+                            <small class="text-muted">Due: ৳{{ customer.open_due }}</small>
                             {% endif %}
                         </td>
                         <td>
@@ -233,9 +233,9 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
-$(document).ready(function() {
+৳(document).ready(function() {
     // Initialize DataTable
-    var table = $('#customer-table').DataTable({
+    var table = ৳('#customer-table').DataTable({
         dom: '<"top"Bf>rt<"bottom"lip><"clear">',
         buttons: [
             {
@@ -290,13 +290,13 @@ $(document).ready(function() {
     });
 
     // Initialize datepickers
-    $('#date_from, #date_to').flatpickr({
+    ৳('#date_from, #date_to').flatpickr({
         dateFormat: 'Y-m-d',
         allowInput: true
     });
 
     // Initialize tooltips
-    $('[title]').tooltip({
+    ৳('[title]').tooltip({
         placement: 'top'
     });
 });

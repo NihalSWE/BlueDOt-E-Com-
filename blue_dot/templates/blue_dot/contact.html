@@ -396,23 +396,40 @@
 <section class="tp-contact-ip-area pt-50 pb-90">
     <div class="container">
         <!-- branch or warehouse locations -->
-        <div class="row ">
-            {% for location in locations %}
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="tp-contact-ip-wrapper mb-30 text-center wow fadeInUp" data-wow-delay="{{ forloop.counter0|add:"0.3"|floatformat:1 }}s" data-wow-duration="1s">
-                        <div class="tp-contact-ip-img" data-tilt>
-                            <img src="{{ location.image.url }}" alt="{{ location.city }}">
-                        </div>
-                        <div class="tp-contact-ip-content">
-                            <h4 class="tp-contact-ip-title">{{ location.city }}</h4>
-                            <p class="tp-contact-ip-paragraph">{{ location.address|linebreaksbr }}</p>
-                        </div>
-                    </div>
-                </div>
-            {% empty %}
-                <p>No locations available at the moment.</p>
-            {% endfor %}
-        </div>
+        <div class="row">
+          {% for location in locations %}
+              <div class="col-xl-4 col-lg-6 col-md-6">
+                  <div class="tp-contact-ip-wrapper mb-30 text-center wow fadeInUp" data-wow-delay="{{ forloop.counter0|add:"0.3"|floatformat:1 }}s" data-wow-duration="1s">
+                      <div class="tp-contact-ip-img" data-tilt>
+                          <img src="{{ location.image.url }}" alt="{{ location.city }}">
+                      </div>
+                      <div class="tp-contact-ip-content">
+                          <h4 class="tp-contact-ip-title">{{ location.city }}</h4>
+                          <p class="tp-contact-ip-paragraph">{{ location.address|linebreaksbr }}</p>
+                          
+                          {% if location.email or location.number %}
+                              <div class="tp-contact-ip-details">
+                                  {% if location.email %}
+                                      <p class="tp-contact-ip-email">
+                                          <i class="fa fa-envelope"></i> 
+                                          <a href="mailto:{{ location.email }}">{{ location.email }}</a>
+                                      </p>
+                                  {% endif %}
+                                  {% if location.number %}
+                                      <p class="tp-contact-ip-phone">
+                                          <i class="fa fa-phone"></i> 
+                                          <a href="tel:{{ location.number }}">{{ location.number }}</a>
+                                      </p>
+                                  {% endif %}
+                              </div>
+                          {% endif %}
+                      </div>
+                  </div>
+              </div>
+          {% empty %}
+              <p>No locations available at the moment.</p>
+          {% endfor %}
+      </div>
         
 
         <!--Get in touch form-->

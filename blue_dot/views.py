@@ -569,9 +569,9 @@ def cart_checkout(request):
 
 
 
-
 def thank_you(request):
-    return render(request, 'blue_dot/thankyou.html')
+    banner = ThankyouBanner.objects.last()
+    return render(request, 'blue_dot/thankyou.html',{'banner':banner})
 
 
 
@@ -582,9 +582,88 @@ from django.db.models import Q
 
 
 def search_view(request):
+    banner = SearchViewBanner.objects.last()
     query = request.GET.get('q')
     results = []
+    recent_products = Product.objects.order_by('-created_at')[:3]
+    parent_categories = Category.objects.filter(
+        parent_category__isnull=True
+    ).order_by('position')[:4]
 
+    center_cards = CenterCard.objects.all()
+    products = Product.objects.all()
+
+    # Get global price range
+    prices = Product.objects.aggregate(
+        min_price=Min('base_price'), max_price=Max('base_price')
+    )
+
+    # Price filter
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+
+    if min_price and max_price:
+        try:
+            min_price = Decimal(min_price)
+            max_price = Decimal(max_price)
+        except:
+            min_price = Decimal(0)
+            max_price = Decimal(999999)
+
+        products = products.annotate(
+            calculated_final_price=Case(
+                When(discount_type='flat', discount_value__isnull=False,
+                     then=F('base_price') - F('discount_value')),
+                When(discount_type='percent', discount_value__isnull=False,
+                     then=F('base_price') * (1 - F('discount_value') / 100)),
+                default=F('base_price'),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            )
+        ).filter(
+            calculated_final_price__gte=min_price,
+            calculated_final_price__lte=max_price
+        )
+
+    # Sorting
+    sort_option = request.GET.get('sort')
+    if sort_option == 'price_asc':
+        products = products.order_by('base_price')
+    elif sort_option == 'price_desc':
+        products = products.order_by('-base_price')
+    elif sort_option == 'newest':
+        products = products.order_by('-created_at')
+    elif sort_option == 'sale':
+        products = products.filter(discount_type__isnull=False)
+
+    # Apply distinct before pagination
+    products = products.distinct()
+
+    # Pagination
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    home_cta = HomeCTA.objects.first()
+    pricing_card = PricingCard.objects.first()
+    brands = Brand.objects.all()
+
+    # Prepare category data with sample product and count
+    category_data = []
+    for category in parent_categories:
+        category_products = Product.objects.filter(
+            category=category
+        ).order_by('-created_at')[:1]
+
+        product_count = Product.objects.filter(category=category).count()
+
+        if category_products.exists():
+            category_data.append({
+                'category': category,
+                'products': category_products,
+                'product_count': product_count,
+            })
+
+    # If there's a search query
     if query:
         results = Product.objects.filter(
             Q(name__icontains=query) |
@@ -594,7 +673,18 @@ def search_view(request):
 
     return render(request, 'blue_dot/search_results.html', {
         'query': query,
-        'results': results
+        'results': results,
+        'parent_categories': parent_categories,
+         'recent_products': recent_products,
+        'products': page_obj,
+        'home_cta': home_cta,
+        'pricing_card': pricing_card,
+        'category_data': category_data,
+        'brands': brands,
+        'min_price': prices['min_price'] or 0,
+        'max_price': prices['max_price'] or 10000,
+        'sort_option': sort_option or 'default',
+        'banner':banner,
     })
 
 def buy_now(request, slug):
