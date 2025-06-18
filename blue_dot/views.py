@@ -165,12 +165,6 @@ def shop_details(request):
     return render(request, 'blue_dot/shop-details.html', context)
 
 
-
-
-def cart_checkout(request):
-    return render(request, 'blue_dot/checkout.html')
-
-
 def blog(request):
     return render(request, 'blue_dot/blog.html')
 
@@ -461,7 +455,23 @@ from datetime import date
 
 def cart_checkout(request):
     banner = CheckoutBanner.objects.last()
-    cart_items = AddCart.objects.select_related('product').all()
+    
+    # Check if this is a buy now checkout
+    if 'buy_now_product' in request.session:
+        buy_now_data = request.session['buy_now_product']
+        
+        # Create a fake cart item for buy now
+        from types import SimpleNamespace
+        fake_cart_item = SimpleNamespace()
+        fake_cart_item.product = get_object_or_404(Product, id=buy_now_data['product_id'])
+        fake_cart_item.quantity = buy_now_data['quantity']
+        fake_cart_item.final_price = Decimal(str(buy_now_data['unit_price']))
+        
+        cart_items = [fake_cart_item]
+        is_buy_now = True
+    else:
+        cart_items = AddCart.objects.select_related('product').all()
+        is_buy_now = False
 
     if request.method == 'POST':
         # Step 1: Extract form data
@@ -528,8 +538,11 @@ def cart_checkout(request):
                 notes=""
             )
 
-        # Step 5: Clear the cart
-        AddCart.objects.all().delete()
+        # Step 5: Clear the cart OR buy now session
+        if is_buy_now:
+            del request.session['buy_now_product']
+        else:
+            AddCart.objects.all().delete()
 
         return redirect('thank_you')  # Update with your URL name
 
@@ -549,9 +562,11 @@ def cart_checkout(request):
         'cart_data': cart_data,
         'cart_items': cart_items,
         'subtotal': total,
-        'total': total + Decimal('100.00')
+        'total': total + Decimal('100.00'),
+        'is_buy_now': is_buy_now,  # Added this line
     }
     return render(request, 'blue_dot/checkout.html', context)
+
 
 
 
@@ -582,3 +597,24 @@ def search_view(request):
         'results': results
     })
 
+def buy_now(request, slug):
+    """Handle Buy Now - bypass cart and go directly to checkout"""
+    if request.method == 'POST':
+        product = get_object_or_404(Product, slug=slug)
+        quantity = int(request.POST.get('quantity', 1))
+        
+        # Store buy now data in session
+        request.session['buy_now_product'] = {
+            'product_id': product.id,
+            'product_name': product.name,
+            'quantity': quantity,
+            'unit_price': float(product.final_price or product.base_price),
+            'total_price': float((product.final_price or product.base_price) * quantity),
+            'product_slug': product.slug,
+        }
+        
+        # Redirect to checkout
+        return redirect('cart_checkout')
+    
+    # If GET request, redirect to product detail
+    return redirect('product_detail', slug=slug)

@@ -166,9 +166,6 @@
                                 <div class="product_wrapper two mb-30 wow fadeInUp" data-wow-delay=".3s" data-wow-duration="1s">
                                     <div class="product__item p-relative">
                                         <div class="product__top-brand d-flex justify-content-between mb-15">
-                                            {% comment %} <div class="product__top-name">
-                                                <span>bag</span>
-                                            </div> {% endcomment %}
                                             <div class="product__top-price">
                                                 <a href="{% url 'product_detail' slug=product.slug %}">{% if product.final_price < product.base_price %}
                                                     <span style="text-decoration: line-through; color: #999;">৳ {{ product.base_price }}</span>
@@ -190,22 +187,54 @@
                                             </a>
                                             <div class="product__action d-flex flex-column flex-wrap">
                                                 
-                                                <button type="button" class="product-action-btn" data-bs-toggle="modal" data-bs-target="#productModal">
-                                                    <svg width="19" height="16" viewBox="0 0 19 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M9.49943 5.34978C8.23592 5.34978 7.20896 6.37595 7.20896 7.63732C7.20896 8.89774 8.23592 9.92296 9.49943 9.92296C10.7629 9.92296 11.7908 8.89774 11.7908 7.63732C11.7908 6.37595 10.7629 5.34978 9.49943 5.34978M9.49941 11.3456C7.45025 11.3456 5.78394 9.68213 5.78394 7.63738C5.78394 5.59169 7.45025 3.92725 9.49941 3.92725C11.5486 3.92725 13.2158 5.59169 13.2158 7.63738C13.2158 9.68213 11.5486 11.3456 9.49941 11.3456" fill="currentColor"></path>
-
-                                                        <path d="M1.49145 7.63683C3.25846 11.5338 6.23484 13.8507 9.50001 13.8517C12.7652 13.8507 15.7416 11.5338 17.5086 7.63683C15.7416 3.7408 12.7652 1.42386 9.50001 1.42291C6.23579 1.42386 3.25846 3.7408 1.49145 7.63683V7.63683ZM9.50173 15.2742H9.49793H9.49698C5.56775 15.2714 2.03943 12.5219 0.0577129 7.91746C-0.0192376 7.73822 -0.0192376 7.53526 0.0577129 7.35601C2.03943 2.75248 5.5687 0.00306822 9.49698 0.000223018C9.49888 -0.000725381 9.49888 -0.000725381 9.49983 0.000223018C9.50173 -0.000725381 9.50173 -0.000725381 9.50268 0.000223018C13.4319 0.00306822 16.9602 2.75248 18.942 7.35601C19.0199 7.53526 19.0199 7.73822 18.942 7.91746C16.9612 12.5219 13.4319 15.2714 9.50268 15.2742H9.50173Z" fill="currentColor"></path>
-
-                                                    </svg>
-                                                    <span class="product-action-tooltip">Quick view</span>
-                                                </button>
+                                               <!-- Update the quick view button in your product loop -->
+<button type="button" class="product-action-btn" 
+data-bs-toggle="modal" 
+data-bs-target="#productModal"
+data-product-name="{{ product.name }}"
+data-product-image="{{ product.thumbnail.url }}"
+data-product-price="{{ product.final_price }}"
+data-product-old-price="{% if product.final_price < product.base_price %}{{ product.base_price }}{% endif %}"
+data-product-description="{{ product.description|slice:':100' }}..."
+data-product-slug="{{ product.slug }}"
+data-product-stock="12"
+data-product-category="{{ product.category }}">
+<svg width="19" height="16" viewBox="0 0 19 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9.49943 5.34978C8.23592 5.34978 7.20896 6.37595 7.20896 7.63732C7.20896 8.89774 8.23592 9.92296 9.49943 9.92296C10.7629 9.92296 11.7908 8.89774 11.7908 7.63732C11.7908 6.37595 10.7629 5.34978 9.49943 5.34978M9.49941 11.3456C7.45025 11.3456 5.78394 9.68213 5.78394 7.63738C5.78394 5.59169 7.45025 3.92725 9.49941 3.92725C11.5486 3.92725 13.2158 5.59169 13.2158 7.63738C13.2158 9.68213 11.5486 11.3456 9.49941 11.3456" fill="currentColor"></path>
+<path d="M1.49145 7.63683C3.25846 11.5338 6.23484 13.8507 9.50001 13.8517C12.7652 13.8507 15.7416 11.5338 17.5086 7.63683C15.7416 3.7408 12.7652 1.42386 9.50001 1.42291C6.23579 1.42386 3.25846 3.7408 1.49145 7.63683V7.63683ZM9.50173 15.2742H9.49793H9.49698C5.56775 15.2714 2.03943 12.5219 0.0577129 7.91746C-0.0192376 7.73822 -0.0192376 7.53526 0.0577129 7.35601C2.03943 2.75248 5.5687 0.00306822 9.49698 0.000223018C9.49888 -0.000725381 9.49888 -0.000725381 9.49983 0.000223018C9.50173 -0.000725381 9.50173 -0.000725381 9.50268 0.000223018C13.4319 0.00306822 16.9602 2.75248 18.942 7.35601C19.0199 7.53526 19.0199 7.73822 18.942 7.91746C16.9612 12.5219 13.4319 15.2714 9.50268 15.2742H9.50173Z" fill="currentColor"></path>
+</svg>
+<span class="product-action-tooltip">Quick view</span>
+</button>
                                                 
                                             </div>
                                             <div class="product__add transition-3">
-                                                <button type="button" class="product-add-cart-btn w-100">
-                                                    Add to Cart
-                                                </button>
+                                                <!-- Add to Cart Button -->
+                                                <form method="post" action="{% url 'add_to_cart' product.slug %}" class="mb-2">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="quantity" value="1">
+                                                    <button type="submit" class="product-add-cart-btn w-100">
+                                                        <!-- Modern Cart Icon -->
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18" style="margin-right: 6px; vertical-align: middle;">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386a.75.75 0 0 1 .728.574L5.7 7.5h12.6a.75.75 0 0 1 .728.926l-1.5 6A.75.75 0 0 1 16.8 15H7.2a.75.75 0 0 1-.728-.574L4.5 9.75m0 0L3.364 4.5H2.25M6 18.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm10.5 0a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" />
+                                                        </svg>
+                                                        Add to Cart
+                                                    </button>
+                                                </form>
+                                            
+                                                <!-- Buy Now Button -->
+                                                <form method="post" action="{% url 'buy_now' product.slug %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="quantity" value="1">
+                                                    <button type="submit" class="product-add-cart-btn w-100" style="background-color: #28a745; border-color: #28a745;">
+                                                        <!-- Modern Bolt Icon -->
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18" style="margin-right: 6px; vertical-align: middle;">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L6 14.25h7.5L10.5 21l7.5-9.75H10.5L13.5 4.5z" />
+                                                        </svg>
+                                                        Buy Now
+                                                    </button>
+                                                </form>
                                             </div>
+                                            
                                         </div>
                                         <div class="product__content text-center">
                                             <div class="product__content-wrapper">
@@ -283,20 +312,54 @@
                             </a>
                             <div class="product__action d-flex flex-column flex-wrap">
                                 
-                                <button type="button" class="product-action-btn" data-bs-toggle="modal" data-bs-target="#productModal">
-                                    <svg width="19" height="16" viewBox="0 0 19 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M9.49943 5.34978C8.23592 5.34978 7.20896 6.37595 7.20896 7.63732C7.20896 8.89774 8.23592 9.92296 9.49943 9.92296C10.7629 9.92296 11.7908 8.89774 11.7908 7.63732C11.7908 6.37595 10.7629 5.34978 9.49943 5.34978M9.49941 11.3456C7.45025 11.3456 5.78394 9.68213 5.78394 7.63738C5.78394 5.59169 7.45025 3.92725 9.49941 3.92725C11.5486 3.92725 13.2158 5.59169 13.2158 7.63738C13.2158 9.68213 11.5486 11.3456 9.49941 11.3456" fill="currentColor"></path>
-                                        <path d="M1.49145 7.63683C3.25846 11.5338 6.23484 13.8507 9.50001 13.8517C12.7652 13.8507 15.7416 11.5338 17.5086 7.63683C15.7416 3.7408 12.7652 1.42386 9.50001 1.42291C6.23579 1.42386 3.25846 3.7408 1.49145 7.63683V7.63683ZM9.50173 15.2742H9.49793H9.49698C5.56775 15.2714 2.03943 12.5219 0.0577129 7.91746C-0.0192376 7.73822 -0.0192376 7.53526 0.0577129 7.35601C2.03943 2.75248 5.5687 0.00306822 9.49698 0.000223018C9.49888 -0.000725381 9.49888 -0.000725381 9.49983 0.000223018C9.50173 -0.000725381 9.50173 -0.000725381 9.50268 0.000223018C13.4319 0.00306822 16.9602 2.75248 18.942 7.35601C19.0199 7.53526 19.0199 7.73822 18.942 7.91746C16.9612 12.5219 13.4319 15.2714 9.50268 15.2742H9.50173Z" fill="currentColor"></path>
-                                    </svg>
-                                    <span class="product-action-tooltip">Quick view</span>
-                                </button>
+                                <!-- Update the quick view button in your product loop -->
+<button type="button" class="product-action-btn" 
+data-bs-toggle="modal" 
+data-bs-target="#productModal"
+data-product-name="{{ product.name }}"
+data-product-image="{{ product.thumbnail.url }}"
+data-product-price="{{ product.final_price }}"
+data-product-old-price="{% if product.final_price < product.base_price %}{{ product.base_price }}{% endif %}"
+data-product-description="{{ product.description|slice:':100' }}..."
+data-product-slug="{{ product.slug }}"
+data-product-stock="12"
+data-product-category="{{ product.category }}">
+<svg width="19" height="16" viewBox="0 0 19 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9.49943 5.34978C8.23592 5.34978 7.20896 6.37595 7.20896 7.63732C7.20896 8.89774 8.23592 9.92296 9.49943 9.92296C10.7629 9.92296 11.7908 8.89774 11.7908 7.63732C11.7908 6.37595 10.7629 5.34978 9.49943 5.34978M9.49941 11.3456C7.45025 11.3456 5.78394 9.68213 5.78394 7.63738C5.78394 5.59169 7.45025 3.92725 9.49941 3.92725C11.5486 3.92725 13.2158 5.59169 13.2158 7.63738C13.2158 9.68213 11.5486 11.3456 9.49941 11.3456" fill="currentColor"></path>
+<path d="M1.49145 7.63683C3.25846 11.5338 6.23484 13.8507 9.50001 13.8517C12.7652 13.8507 15.7416 11.5338 17.5086 7.63683C15.7416 3.7408 12.7652 1.42386 9.50001 1.42291C6.23579 1.42386 3.25846 3.7408 1.49145 7.63683V7.63683ZM9.50173 15.2742H9.49793H9.49698C5.56775 15.2714 2.03943 12.5219 0.0577129 7.91746C-0.0192376 7.73822 -0.0192376 7.53526 0.0577129 7.35601C2.03943 2.75248 5.5687 0.00306822 9.49698 0.000223018C9.49888 -0.000725381 9.49888 -0.000725381 9.49983 0.000223018C9.50173 -0.000725381 9.50173 -0.000725381 9.50268 0.000223018C13.4319 0.00306822 16.9602 2.75248 18.942 7.35601C19.0199 7.53526 19.0199 7.73822 18.942 7.91746C16.9612 12.5219 13.4319 15.2714 9.50268 15.2742H9.50173Z" fill="currentColor"></path>
+</svg>
+<span class="product-action-tooltip">Quick view</span>
+</button>
                                 
                             </div>
                             <div class="product__add transition-3">
-                                <button type="button" class="product-add-cart-btn w-100">
-                                    Add to Cart
-                                </button>
+                                <!-- Add to Cart Button -->
+                                <form method="post" action="{% url 'add_to_cart' product.slug %}" class="mb-2">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="product-add-cart-btn w-100">
+                                        <!-- Modern Cart Icon -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18" style="margin-right: 6px; vertical-align: middle;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386a.75.75 0 0 1 .728.574L5.7 7.5h12.6a.75.75 0 0 1 .728.926l-1.5 6A.75.75 0 0 1 16.8 15H7.2a.75.75 0 0 1-.728-.574L4.5 9.75m0 0L3.364 4.5H2.25M6 18.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm10.5 0a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" />
+                                        </svg>
+                                        Add to Cart
+                                    </button>
+                                </form>
+                            
+                                <!-- Buy Now Button -->
+                                <form method="post" action="{% url 'buy_now' product.slug %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="product-add-cart-btn w-100" style="background-color: #28a745; border-color: #28a745;">
+                                        <!-- Modern Bolt Icon -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18" style="margin-right: 6px; vertical-align: middle;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L6 14.25h7.5L10.5 21l7.5-9.75H10.5L13.5 4.5z" />
+                                        </svg>
+                                        Buy Now
+                                    </button>
+                                </form>
                             </div>
+                            
                         </div>
                         <div class="product__content text-center">
                             <div class="product__content-wrapper">
@@ -399,22 +462,54 @@
                                                         </a>
                                                         <div class="product__action d-flex flex-column flex-wrap">
                                                            
-                                                            <button type="button" class="product-action-btn" data-bs-toggle="modal" data-bs-target="#productModal">
-                                                                <svg width="19" height="16" viewBox="0 0 19 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path d="M9.49943 5.34978C8.23592 5.34978 7.20896 6.37595 7.20896 7.63732C7.20896 8.89774 8.23592 9.92296 9.49943 9.92296C10.7629 9.92296 11.7908 8.89774 11.7908 7.63732C11.7908 6.37595 10.7629 5.34978 9.49943 5.34978M9.49941 11.3456C7.45025 11.3456 5.78394 9.68213 5.78394 7.63738C5.78394 5.59169 7.45025 3.92725 9.49941 3.92725C11.5486 3.92725 13.2158 5.59169 13.2158 7.63738C13.2158 9.68213 11.5486 11.3456 9.49941 11.3456" fill="currentColor"></path>
-
-                                                                    <path d="M1.49145 7.63683C3.25846 11.5338 6.23484 13.8507 9.50001 13.8517C12.7652 13.8507 15.7416 11.5338 17.5086 7.63683C15.7416 3.7408 12.7652 1.42386 9.50001 1.42291C6.23579 1.42386 3.25846 3.7408 1.49145 7.63683V7.63683ZM9.50173 15.2742H9.49793H9.49698C5.56775 15.2714 2.03943 12.5219 0.0577129 7.91746C-0.0192376 7.73822 -0.0192376 7.53526 0.0577129 7.35601C2.03943 2.75248 5.5687 0.00306822 9.49698 0.000223018C9.49888 -0.000725381 9.49888 -0.000725381 9.49983 0.000223018C9.50173 -0.000725381 9.50173 -0.000725381 9.50268 0.000223018C13.4319 0.00306822 16.9602 2.75248 18.942 7.35601C19.0199 7.53526 19.0199 7.73822 18.942 7.91746C16.9612 12.5219 13.4319 15.2714 9.50268 15.2742H9.50173Z" fill="currentColor"></path>
-
-                                                                </svg>
-                                                                <span class="product-action-tooltip">Quick view</span>
-                                                            </button>
+                                                            <!-- Update the quick view button in your product loop -->
+<button type="button" class="product-action-btn" 
+data-bs-toggle="modal" 
+data-bs-target="#productModal"
+data-product-name="{{ product.name }}"
+data-product-image="{{ product.thumbnail.url }}"
+data-product-price="{{ product.final_price }}"
+data-product-old-price="{% if product.final_price < product.base_price %}{{ product.base_price }}{% endif %}"
+data-product-description="{{ product.description|slice:':100' }}..."
+data-product-slug="{{ product.slug }}"
+data-product-stock="12"
+data-product-category="{{ product.category }}">
+<svg width="19" height="16" viewBox="0 0 19 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9.49943 5.34978C8.23592 5.34978 7.20896 6.37595 7.20896 7.63732C7.20896 8.89774 8.23592 9.92296 9.49943 9.92296C10.7629 9.92296 11.7908 8.89774 11.7908 7.63732C11.7908 6.37595 10.7629 5.34978 9.49943 5.34978M9.49941 11.3456C7.45025 11.3456 5.78394 9.68213 5.78394 7.63738C5.78394 5.59169 7.45025 3.92725 9.49941 3.92725C11.5486 3.92725 13.2158 5.59169 13.2158 7.63738C13.2158 9.68213 11.5486 11.3456 9.49941 11.3456" fill="currentColor"></path>
+<path d="M1.49145 7.63683C3.25846 11.5338 6.23484 13.8507 9.50001 13.8517C12.7652 13.8507 15.7416 11.5338 17.5086 7.63683C15.7416 3.7408 12.7652 1.42386 9.50001 1.42291C6.23579 1.42386 3.25846 3.7408 1.49145 7.63683V7.63683ZM9.50173 15.2742H9.49793H9.49698C5.56775 15.2714 2.03943 12.5219 0.0577129 7.91746C-0.0192376 7.73822 -0.0192376 7.53526 0.0577129 7.35601C2.03943 2.75248 5.5687 0.00306822 9.49698 0.000223018C9.49888 -0.000725381 9.49888 -0.000725381 9.49983 0.000223018C9.50173 -0.000725381 9.50173 -0.000725381 9.50268 0.000223018C13.4319 0.00306822 16.9602 2.75248 18.942 7.35601C19.0199 7.53526 19.0199 7.73822 18.942 7.91746C16.9612 12.5219 13.4319 15.2714 9.50268 15.2742H9.50173Z" fill="currentColor"></path>
+</svg>
+<span class="product-action-tooltip">Quick view</span>
+</button>
                                                            
                                                         </div>
                                                         <div class="product__add transition-3">
-                                                            <button type="button" class="product-add-cart-btn w-100">
-                                                                Add to Cart
-                                                            </button>
+                                                            <!-- Add to Cart Button -->
+                                                            <form method="post" action="{% url 'add_to_cart' product.slug %}" class="mb-2">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="quantity" value="1">
+                                                                <button type="submit" class="product-add-cart-btn w-100">
+                                                                    <!-- Modern Cart Icon -->
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18" style="margin-right: 6px; vertical-align: middle;">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386a.75.75 0 0 1 .728.574L5.7 7.5h12.6a.75.75 0 0 1 .728.926l-1.5 6A.75.75 0 0 1 16.8 15H7.2a.75.75 0 0 1-.728-.574L4.5 9.75m0 0L3.364 4.5H2.25M6 18.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm10.5 0a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" />
+                                                                    </svg>
+                                                                    Add to Cart
+                                                                </button>
+                                                            </form>
+                                                        
+                                                            <!-- Buy Now Button -->
+                                                            <form method="post" action="{% url 'buy_now' product.slug %}">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="quantity" value="1">
+                                                                <button type="submit" class="product-add-cart-btn w-100" style="background-color: #28a745; border-color: #28a745;">
+                                                                    <!-- Modern Bolt Icon -->
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18" style="margin-right: 6px; vertical-align: middle;">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L6 14.25h7.5L10.5 21l7.5-9.75H10.5L13.5 4.5z" />
+                                                                    </svg>
+                                                                    Buy Now
+                                                                </button>
+                                                            </form>
                                                         </div>
+                                                        
                                                     </div>
                                                     <div class="product__content text-center">
                                                         <div class="product__content-wrapper">
@@ -566,6 +661,102 @@
                     </div>
                 </section>
                 <!-- subscribe area end -->
+                     <!-- product quick view start -->
+<div class="product-popup__modal modal fade" id="productModal" tabindex="-1" aria-labelledby="productModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+       <div class="modal-content">
+          <div class="product-popup__modal-wrapper">
+                <div class="product-popup__modal-close">
+                <button class="product-popup__modal-close-btn" type="button" data-bs-dismiss="modal">
+                   <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <g opacity="0.4">
+                         <path d="M21 1L1 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                         <path d="M1 1L21 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </g>
+                   </svg>
+                </button>
+                </div>
+                <div class="row">
+                   <div class="col-xl-7 col-lg-6">
+                      <div class="product-popup__details-thumb-tab mr-70">
+                         <div class="product-popup__details-thumb-content w-img">
+                            <img id="modal-product-image" src="" alt="" style="width: 100%; height: auto;">
+                         </div>
+                      </div>
+                   </div>
+                   <div class="col-xl-5 col-lg-6">
+                      <div class="product-popup__details-wrapper">
+                         <div class="product-popup__details-stock">
+                            <span id="modal-stock">12 In Stock</span>
+                         </div>
+                         <h3 class="product-popup__details-title" id="modal-product-name">Product Name</h3>
+  
+                         <div class="product-popup__details-rating d-flex align-items-center">
+                            <div class="product-popup__rating product-popup__rating-2 d-flex">
+                                  <span><i class="fa-solid fa-star-sharp"></i></span>
+                                  <span><i class="fa-solid fa-star-sharp"></i></span>
+                                  <span><i class="fa-solid fa-star-sharp"></i></span>
+                                  <span><i class="fa-solid fa-star-sharp"></i></span>
+                                  <span><i class="fa-regular fa-star-half-stroke"></i></span>
+                            </div>
+                            <div class="product-popup__details-rating-count">
+                               <span>(5 customer review)</span>
+                            </div>
+                         </div>
+  
+                         <p id="modal-product-description">Product description will appear here...</p>
+  
+                         <div class="product-popup__details-price">
+                            <span class="product-popup__details-ammount old-ammount" id="modal-old-price" style="display: none;"></span>
+                            <span class="product-popup__details-ammount new-ammount" style="color:red" id="modal-price">৳0.00</span>
+                         </div>
+  
+                         <div class="product-popup__details-quantity">
+                            <div class="tp-product-popup-quantity mt-10 mb-10">
+                               <span class="tp-cart-minus two">
+                                  <svg width="14" height="2" viewBox="0 0 14 2" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                     <path d="M1 1H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                  </svg>                                                             
+                               </span>
+                               <input class="tp-cart-input two" type="text" value="1" id="modal-quantity">
+                               <span class="tp-cart-plus two">
+                                  <svg width="15" height="14" viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                     <path d="M1.21924 7H13.3836" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                     <path d="M7.30176 13V1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                  </svg>
+                               </span>
+                            </div>
+                         </div>
+  
+                         <div class="product-popup__details-action d-flex flex-wrap align-items-center">
+                            <form method="post" id="modal-add-to-cart-form" action="">
+                               {% csrf_token %}
+                               <input type="hidden" name="quantity" id="modal-cart-quantity" value="1">
+                               <button type="submit" class="product-popup-add-cart-btn product-popup-add-cart-btn-3">
+                                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M3.54431 4.80484L4.08701 11.2487C4.12661 11.7447 4.53251 12.1167 5.02841 12.1167H5.03201H14.8519H14.8537C15.3227 12.1167 15.7232 11.7681 15.7898 11.3053L16.6448 5.41221C16.6646 5.27205 16.6295 5.13189 16.544 5.01868C16.4594 4.90457 16.3352 4.8309 16.1948 4.81113C16.0067 4.81832 8.20092 4.80754 3.54431 4.80484ZM5.02647 13.4642C3.84117 13.4642 2.83766 12.5405 2.74136 11.359L1.91696 1.57098L0.560653 1.33738C0.192551 1.27269 -0.0531497 0.924974 0.00985058 0.557495C0.0746508 0.190017 0.430152 -0.0489788 0.790154 0.00852392L2.66216 0.331977C2.96366 0.384987 3.19316 0.634765 3.21926 0.940248L3.43076 3.45689C16.2792 3.46228 16.3206 3.46857 16.3827 3.47576C16.884 3.54854 17.325 3.80999 17.6256 4.21251C17.9262 4.61413 18.0522 5.1092 17.9802 5.60516L17.1261 11.4974C16.965 12.6187 15.9894 13.4642 14.8554 13.4642H14.8509H5.03367H5.02647Z" fill="currentColor"/>
+                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M13.4079 8.12567H10.9131C10.5396 8.12567 10.2381 7.82379 10.2381 7.45181C10.2381 7.07984 10.5396 6.77795 10.9131 6.77795H13.4079C13.7805 6.77795 14.0829 7.07984 14.0829 7.45181C14.0829 7.82379 13.7805 8.12567 13.4079 8.12567Z" fill="currentColor"/>
+                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M4.63943 15.9048C4.91033 15.9048 5.12903 16.1235 5.12903 16.3944C5.12903 16.6653 4.91033 16.8849 4.63943 16.8849C4.36763 16.8849 4.14893 16.6653 4.14893 16.3944C4.14893 16.1235 4.36763 15.9048 4.63943 15.9048Z" fill="currentColor"/>
+                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M4.63859 16.2097C4.53689 16.2097 4.45409 16.2925 4.45409 16.3942C4.45409 16.5985 4.82399 16.5985 4.82399 16.3942C4.82399 16.2925 4.74029 16.2097 4.63859 16.2097ZM4.6386 17.5569C3.996 17.5569 3.474 17.0349 3.474 16.3933C3.474 15.7518 3.996 15.2307 4.6386 15.2307C5.28121 15.2307 5.80411 15.7518 5.80411 16.3933C5.80411 17.0349 5.28121 17.5569 4.6386 17.5569Z" fill="currentColor"/>
+                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M14.7918 15.9048C15.0627 15.9048 15.2823 16.1235 15.2823 16.3944C15.2823 16.6653 15.0627 16.8849 14.7918 16.8849C14.52 16.8849 14.3013 16.6653 14.3013 16.3944C14.3013 16.1235 14.52 15.9048 14.7918 15.9048Z" fill="currentColor"/>
+                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M14.7906 16.2098C14.6898 16.2098 14.607 16.2926 14.607 16.3943C14.6079 16.6004 14.9769 16.5986 14.976 16.3943C14.976 16.2926 14.8923 16.2098 14.7906 16.2098ZM14.7909 17.5569C14.1483 17.5569 13.6263 17.0349 13.6263 16.3933C13.6263 15.7518 14.1483 15.2307 14.7909 15.2307C15.4344 15.2307 15.9573 15.7518 15.9573 16.3933C15.9573 17.0349 15.4344 17.5569 14.7909 17.5569Z" fill="currentColor"/>
+                                  </svg>
+                                  Add to Cart
+                               </button>
+                            </form>
+                         </div>
+                         <div class="product-popup__details-categories product-popup__details-more">
+                            <p>Categories:</p>
+                            <span id="modal-category">Category</span>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+          </div>
+       </div>
+    </div>
+  </div>
+    <!-- product quick view end -->
 
 
 <script>
@@ -602,4 +793,74 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 {% endblock content %}
 
-{% block custom_js %}{% endblock custom_js %}
+{% block custom_js %}
+ <!-- Add this JavaScript to your custom_js block -->
+ <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle modal data population
+        const productModal = document.getElementById('productModal');
+        
+        productModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            
+            // Get data from button attributes
+            const productName = button.getAttribute('data-product-name');
+            const productImage = button.getAttribute('data-product-image');
+            const productPrice = button.getAttribute('data-product-price');
+            const productOldPrice = button.getAttribute('data-product-old-price');
+            const productDescription = button.getAttribute('data-product-description');
+            const productSlug = button.getAttribute('data-product-slug');
+            const productStock = button.getAttribute('data-product-stock');
+            const productCategory = button.getAttribute('data-product-category');
+            
+            // Update modal content
+            document.getElementById('modal-product-name').textContent = productName;
+            document.getElementById('modal-product-image').src = productImage;
+            document.getElementById('modal-product-image').alt = productName;
+            document.getElementById('modal-price').textContent = '৳' + productPrice;
+            document.getElementById('modal-product-description').textContent = productDescription;
+            document.getElementById('modal-stock').textContent = productStock + ' In Stock';
+            document.getElementById('modal-category').textContent = productCategory;
+            
+            // Handle old price display
+            const oldPriceElement = document.getElementById('modal-old-price');
+            if (productOldPrice && productOldPrice !== '') {
+                oldPriceElement.textContent = '৳' + productOldPrice;
+                oldPriceElement.style.display = 'inline';
+            } else {
+                oldPriceElement.style.display = 'none';
+            }
+            
+            // Update form action URL
+            const addToCartForm = document.getElementById('modal-add-to-cart-form');
+            addToCartForm.action = '/add-to-cart/' + productSlug + '/'; // Adjust URL pattern as needed
+        });
+        
+        // Handle quantity controls in modal
+        const minusBtn = document.querySelector('.tp-cart-minus.two');
+        const plusBtn = document.querySelector('.tp-cart-plus.two');
+        const quantityInput = document.getElementById('modal-quantity');
+        const hiddenQuantityInput = document.getElementById('modal-cart-quantity');
+        
+        if (minusBtn && plusBtn && quantityInput) {
+            minusBtn.addEventListener('click', function() {
+                let currentValue = parseInt(quantityInput.value);
+                if (currentValue > 1) {
+                    quantityInput.value = currentValue - 1;
+                    hiddenQuantityInput.value = currentValue - 1;
+                }
+            });
+            
+            plusBtn.addEventListener('click', function() {
+                let currentValue = parseInt(quantityInput.value);
+                quantityInput.value = currentValue + 1;
+                hiddenQuantityInput.value = currentValue + 1;
+            });
+            
+            quantityInput.addEventListener('input', function() {
+                hiddenQuantityInput.value = this.value;
+            });
+        }
+    });
+    </script>
+{% endblock custom_js %}

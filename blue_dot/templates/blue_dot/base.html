@@ -124,10 +124,13 @@
                             <span class="cartmini__quantity">x{{ cart.item.quantity }}</span>
                         </div>
                     </div>
-                    <form method="POST" action="{% url 'remove_from_cart' cart.item.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="cartmini__del"><i class="fal fa-times"></i></button>
-                    </form>
+                    {% if cart.item and cart.item.product %}
+    <form method="POST" action="{% url 'remove_from_cart' cart.item.product.slug %}">
+        {% csrf_token %}
+        <button type="submit" class="cartmini__del"><i class="fal fa-times"></i></button>
+    </form>
+{% endif %}
+
                 </div>
                 {% endfor %}
             </div>

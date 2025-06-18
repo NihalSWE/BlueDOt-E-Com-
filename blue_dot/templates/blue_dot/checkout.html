@@ -7,6 +7,96 @@
     .select2-container {
         z-index: 9999;
     }
+    
+    /* Phone validation styles */
+    .tp-checkout-input.error input {
+        border-color: #ff0000;
+        border-width: 2px;
+        box-shadow: 0 0 0 0.2rem rgba(255, 0, 0, 0.25);
+    }
+    
+    .error-message {
+        color: red;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: block;
+        font-weight: 500;
+    }
+    
+    .tp-checkout-input.success input {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+
+    /* Empty cart styling */
+    .empty-cart-warning {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .tp-btn:disabled {
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+
+    /* Alert styles */
+    .validation-alert {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        min-width: 300px;
+        max-width: 500px;
+        padding: 15px 20px;
+        border-radius: 5px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .validation-alert.error {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    .validation-alert.warning {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .validation-alert .close-btn {
+        float: right;
+        font-size: 20px;
+        font-weight: bold;
+        line-height: 1;
+        color: inherit;
+        opacity: 0.5;
+        cursor: pointer;
+        margin-left: 15px;
+    }
+
+    .validation-alert .close-btn:hover {
+        opacity: 0.8;
+    }
 </style>
 {% endblock custom_css %}
 
@@ -46,7 +136,16 @@
 <!-- checkout area start -->
 <section class="tp-checkout-area pt-120 pb-120">
     <div class="container">
-        <form method="post" action="{% url 'cart_checkout' %}">
+        <!-- Empty cart warning -->
+        {% if not cart_data or cart_data|length == 0 %}
+        <div class="empty-cart-warning">
+            <h4>⚠️ Your cart is empty!</h4>
+            <p>You need to add products to your cart before placing an order.</p>
+            <a href="{% url 'shop' %}" class="tp-btn theme-bg">Continue Shopping</a>
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'cart_checkout' %}" id="checkout-form">
             {% csrf_token %}
             <div class="row">
                 <div class="col-lg-7">
@@ -56,44 +155,45 @@
                             <div class="tp-checkout-bill-inner">
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="tp-checkout-input">
+                                        <div class="tp-checkout-input" id="phone-input-container">
                                             <label>Phone <span>*</span></label>
-                                            <input type="text" name="phone" placeholder="Enter Your Phone Number">
+                                            <input type="text" name="phone" id="phone-input" placeholder="Enter Your Phone Number (11 digits)" maxlength="11" required>
+                                            <span class="error-message" id="phone-error" style="display: none; color:red"></span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="tp-checkout-input">
                                             <label>First Name <span>*</span></label>
-                                            <input type="text" name="first_name" placeholder="First Name">
+                                            <input type="text" name="first_name" placeholder="First Name" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="tp-checkout-input">
                                             <label>Last Name <span>*</span></label>
-                                            <input type="text" name="last_name" placeholder="Last Name">
+                                            <input type="text" name="last_name" placeholder="Last Name" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="tp-checkout-input position-relative z-index-10">
-                                            <label>District</label>
-                                            <select name="district" id="district-select" class="form-control">
+                                            <label>District <span>*</span></label>
+                                            <select name="district" id="district-select" class="form-control" required>
                                                 <option value="">Select District</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="tp-checkout-input position-relative z-index-10">
-                                            <label>Thana</label>
-                                            <select name="thana" id="thana-select" class="form-control">
+                                            <label>Thana <span>*</span></label>
+                                            <select name="thana" id="thana-select" class="form-control" required>
                                                 <option value="">Select Thana</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-12">
                                         <div class="tp-checkout-input">
-                                            <label>Address</label>
+                                            <label>Address <span>*</span></label>
                                             <input type="text" name="address"
-                                                placeholder="House number , street name, apartment, suite, unit, etc.">
+                                                placeholder="House number, street name, apartment, suite, unit, etc." required>
                                         </div>
                                     </div>
                                     <div class="col-md-12">
@@ -153,7 +253,8 @@
                             </ul>
                         </div>
                         <div class="tp-checkout-btn-wrapper">
-                            <button type="submit" class="tp-btn theme-bg text-center w-100">
+                            <button type="submit" class="tp-btn theme-bg text-center w-100" id="place-order-btn"
+                                {% if not cart_data or cart_data|length == 0 %}disabled{% endif %}>
                                 <span>Place Order</span>
                             </button>
                         </div>
@@ -174,16 +275,55 @@
     $(document).ready(function () {
         const $districtSelect = $('#district-select');
         const $thanaSelect = $('#thana-select');
+        const $phoneInput = $('#phone-input');
+        const $phoneContainer = $('#phone-input-container');
+        const $phoneError = $('#phone-error');
+        const $placeOrderBtn = $('#place-order-btn');
+
+        // Check if cart has products
+        const hasProducts = {{ cart_data|length|default:0 }} > 0;
+        const subtotal = parseFloat({{ subtotal|floatformat:"2" }});
+
+        // Show custom alert
+        function showAlert(message, type = 'error') {
+            // Remove existing alerts
+            $('.validation-alert').remove();
+            
+            const alertHtml = `
+                <div class="validation-alert ${type}">
+                    <span class="close-btn">&times;</span>
+                    <strong>${type === 'error' ? 'Error!' : 'Warning!'}</strong> ${message}
+                </div>
+            `;
+            
+            $('body').append(alertHtml);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                $('.validation-alert').fadeOut(300, function() {
+                    $(this).remove();
+                });
+            }, 5000);
+            
+            // Close button functionality
+            $('.validation-alert .close-btn').on('click', function() {
+                $(this).parent().fadeOut(300, function() {
+                    $(this).remove();
+                });
+            });
+        }
 
         // Load districts
         $.get("https://bdapi.vercel.app/api/v.1/district", function (data) {
             $districtSelect.append(data.data.map(d => `<option value="${d.id}-${d.name}">${d.name}</option>`));
+        }).fail(function() {
+            showAlert("Failed to load districts. Please refresh the page and try again.", "error");
         });
 
         // Load thanas based on district
         $districtSelect.on('change', function () {
-            const fullValue = $(this).val(); // e.g., "15-Dhaka"
-            const districtId = fullValue ? fullValue.split('-')[0] : ""; // extract only the ID
+            const fullValue = $(this).val();
+            const districtId = fullValue ? fullValue.split('-')[0] : "";
         
             $thanaSelect.html('<option value="">Loading...</option>');
             if (!districtId) return;
@@ -193,16 +333,165 @@
                 data.data.forEach(thana => {
                     $thanaSelect.append(`<option value="${thana.id}-${thana.name}">${thana.name}</option>`);
                 });
+            }).fail(function() {
+                $thanaSelect.html('<option value="">Failed to load</option>');
+                showAlert("Failed to load thanas. Please try selecting the district again.", "error");
             });
         });
-        
 
         // Initialize Select2
         $districtSelect.select2({ width: '100%' });
         $thanaSelect.select2({ width: '100%' });
 
+        // Phone Number Validation
+        function validateBDPhone(phone) {
+            const cleanPhone = phone.replace(/\D/g, '');
+            
+            if (cleanPhone.length !== 11) {
+                return { valid: false, message: "Phone number must be exactly 11 digits" };
+            }
+            
+            const validPrefixes = ['013', '014', '015', '016', '017', '018', '019'];
+            const prefix = cleanPhone.substring(0, 3);
+            
+            if (!validPrefixes.includes(prefix)) {
+                return { valid: false, message: "Please enter a valid Bangladesh mobile number (013x, 014x, 015x, 016x, 017x, 018x, 019x)" };
+            }
+            
+            return { valid: true, message: "" };
+        }
+
+        function showPhoneError(message) {
+            $phoneContainer.addClass('error').removeClass('success');
+            $phoneError.text(message).show();
+        }
+
+        function showPhoneSuccess() {
+            $phoneContainer.addClass('success').removeClass('error');
+            $phoneError.hide();
+        }
+
+        function clearPhoneValidation() {
+            $phoneContainer.removeClass('error success');
+            $phoneError.hide();
+        }
+
+        // Real-time phone validation
+        $phoneInput.on('input', function() {
+            const phone = $(this).val();
+            
+            if (phone.length === 0) {
+                clearPhoneValidation();
+                return;
+            }
+            
+            const cleanPhone = phone.replace(/\D/g, '');
+            if (phone !== cleanPhone) {
+                $(this).val(cleanPhone);
+            }
+            
+            const validation = validateBDPhone(cleanPhone);
+            
+            if (!validation.valid) {
+                showPhoneError(validation.message);
+            } else {
+                showPhoneSuccess();
+            }
+        });
+
+        // Comprehensive form validation
+        function validateForm() {
+            let errors = [];
+            
+            // Check if cart has products
+            if (!hasProducts || subtotal <= 0) {
+                errors.push("Your cart is empty. Please add products before placing an order.");
+            }
+            
+            // Validate phone
+            const phone = $phoneInput.val().trim();
+            if (!phone) {
+                errors.push("Phone number is required.");
+            } else {
+                const phoneValidation = validateBDPhone(phone);
+                if (!phoneValidation.valid) {
+                    errors.push(phoneValidation.message);
+                }
+            }
+            
+            // Validate required fields
+            const requiredFields = [
+                { name: 'first_name', label: 'First Name' },
+                { name: 'last_name', label: 'Last Name' },
+                { name: 'address', label: 'Address' }
+            ];
+            
+            requiredFields.forEach(field => {
+                const value = $(`input[name="${field.name}"]`).val().trim();
+                if (!value) {
+                    errors.push(`${field.label} is required.`);
+                }
+            });
+            
+            // Validate district selection
+            const district = $districtSelect.val();
+            if (!district) {
+                errors.push("Please select a district.");
+            }
+            
+            // Validate thana selection
+            const thana = $thanaSelect.val();
+            if (!thana) {
+                errors.push("Please select a thana.");
+            }
+            
+            // Validate shipping method
+            const shipping = $('input[name="shipping"]:checked').val();
+            if (!shipping) {
+                errors.push("Please select a shipping method.");
+            }
+            
+            return errors;
+        }
+
+        // Form submission validation
+        $('#checkout-form').on('submit', function(e) {
+            e.preventDefault();
+            
+            const errors = validateForm();
+            
+            if (errors.length > 0) {
+                const errorMessage = errors.join('<br>• ');
+                showAlert(`• ${errorMessage}`, 'error');
+                
+                // Focus on first error field
+                if (!hasProducts) {
+                    // If no products, don't focus on any field
+                } else if (!$phoneInput.val().trim()) {
+                    $phoneInput.focus();
+                } else if (!$('input[name="first_name"]').val().trim()) {
+                    $('input[name="first_name"]').focus();
+                } else if (!$('input[name="last_name"]').val().trim()) {
+                    $('input[name="last_name"]').focus();
+                } else if (!$districtSelect.val()) {
+                    $districtSelect.select2('open');
+                } else if (!$thanaSelect.val()) {
+                    $thanaSelect.select2('open');
+                } else if (!$('input[name="address"]').val().trim()) {
+                    $('input[name="address"]').focus();
+                }
+                
+                return false;
+            }
+            
+            // If all validations pass, show loading state and submit
+            $placeOrderBtn.prop('disabled', true).html('<span>Processing...</span>');
+            
+            // Submit the form
+            this.submit();
+        });
+
         // Shipping Calculation
-        const subtotal = parseFloat({{ subtotal|floatformat:"2" }});
         const totalElement = $('#checkout-total');
 
         function updateTotal() {
@@ -213,6 +502,12 @@
 
         $('input[name="shipping"]').on('change', updateTotal);
         updateTotal(); // Initialize
+
+        // Disable form if no products
+        if (!hasProducts) {
+            $('#checkout-form input, #checkout-form select, #checkout-form textarea').prop('disabled', true);
+            showAlert("Please add products to your cart before proceeding with checkout.", "warning");
+        }
     });
 </script>
 {% endblock custom_js %}

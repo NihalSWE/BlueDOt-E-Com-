@@ -21,6 +21,11 @@ urlpatterns = [
     #cart
     path('cart_checkout/',views.cart_checkout,name='cart_checkout'),
     # Home
+    #buy now
+    path('buy-now/<slug:slug>/', views.buy_now, name='buy_now'),
+    #buy now
+    
+    
     # Blog
     path('blog/',views.blog,name='blog'),
     path('blog_details/<slug:slug>/',views.blog_details,name='blog_details'),

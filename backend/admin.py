@@ -118,3 +118,28 @@ class MaterialInventoryDetailAdmin(admin.ModelAdmin):
     search_fields = ['mid_invoice_id', 'mid_material__mr_material_name']
 # admin.site.register(Material)
 # admin.site.register(ProductMaterial)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@admin.register(AddCart)
+class AddCartAdmin(admin.ModelAdmin):
+    list_display = ['id', 'product', 'quantity', 'created_at']
+    search_fields = ['product__name']
+    list_filter = ['created_at']
+
+
+
+
+

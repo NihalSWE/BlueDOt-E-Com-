@@ -499,6 +499,7 @@
                           <button type="submit" class="tp-btn" >
                             <span>Add to Cart</span>
                           </button>
+                          
                         </div>
                       </div>
                     </form>
@@ -506,6 +507,20 @@
                     <div class="product__details-catagory wow fadeInUp">
                         <h5><span>Category:</span> {{ product.category }}</h5>
                     </div>
+                    <div class="product__details-catagory wow fadeInUp">
+                      <h5 style="display: flex; align-items: center; gap: 8px;">
+                        <span style="white-space: nowrap;">Any Query:</span>
+                        <a href="tel:01332500075"
+                           style="display: flex; align-items: center; gap: 6px; color: #000; text-decoration: none; white-space: nowrap;"
+                           onmouseover="this.style.color='#E60000';"
+                           onmouseout="this.style.color='#000';">
+                          <img src="{% static 'assets/img/footer/phone-icon2.svg' %}" alt="Phone Icon" style="width: 16px; height: 16px;">
+                          01332-500075
+                        </a>
+                      </h5>
+                      
+                      
+                  </div>
                     <div class="product__details-socials d-flex align-items-center mt-40 wow fadeInUp">
                         <span>Share:</span>
                         <div class="product__details-social">
