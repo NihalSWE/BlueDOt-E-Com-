@@ -1,0 +1,339 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="card mb-6 border-0 shadow-sm">
+  <!-- Card Header -->
+  <div class="card-header bg-primary text-white py-3">
+    <h4 class="mb-0"><i class="ri-user-3-line me-2"></i>Profile Settings</h4>
+  </div>
+  <!-- START FORM TAG -->
+  <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+  <!-- Avatar Section -->
+  <div class="card-body py-4">
+    <div class="d-flex flex-column flex-sm-row align-items-center gap-5">
+      <div class="position-relative">
+        {% if profile.image %}
+        <img src="{{ profile.image.url }}" alt="user-avatar" 
+             class="d-block rounded-circle shadow" 
+             style="width: 120px; height: 120px; object-fit: cover;" 
+             id="uploadedAvatar" />
+        {% else %}
+        <img src="{% static 'assets/img/avatars/default.png' %}" alt="default-avatar" 
+             class="d-block rounded-circle shadow" 
+             style="width: 120px; height: 120px; object-fit: cover;" 
+             id="uploadedAvatar" />
+        {% endif %}
+        <span class="badge bg-success position-absolute bottom-0 end-0 rounded-circle p-2 border-white">
+          <i class="ri-camera-line"></i>
+        </span>
+      </div>
+      
+      <div class="flex-grow-1">
+        <h5 class="mb-3">Profile Photo</h5>
+        <div class="d-flex flex-wrap gap-3 mb-2">
+          <label for="image" class="btn btn-primary px-4">
+            <i class="ri-upload-2-line me-2"></i>Upload
+            <input type="file" id="image" name="image" class="account-file-input" hidden accept="image/png, image/jpeg" />
+          </label>
+          <button type="button" class="btn btn-outline-secondary px-4" onclick="document.getElementById('image').value = '';">
+            <i class="ri-refresh-line me-2"></i>Reset
+          </button>
+        </div>
+        <p class="text-muted small mb-0"><i class="ri-information-line me-1"></i> Allowed JPG, GIF or PNG. Max size 800KB</p>
+      </div>
+    </div>
+  </div>
+  
+  <hr class="my-0">
+
+<!-- Form Section -->
+<div class="card-body pt-4">
+    {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      {% endfor %}
+    {% endif %}
+    
+
+
+          <div class="row g-4">
+              <!-- Personal Info -->
+              <div class="col-12">
+                  <h5 class="mb-4 text-primary">Personal Information</h5>
+              </div>
+
+              <div class="col-md-6">
+                  <div class="form-floating">
+                      <input class="form-control"
+                          type="text"
+                          id="name"
+                          name="name"
+                          value="{{ user.name|default_if_none:'' }}"
+                          placeholder="Full Name"
+                          required>
+                      <label for="name">Full Name</label>
+                  </div>
+              </div>
+
+              <div class="col-md-6">
+                  <div class="form-floating">
+                      <select class="form-select"
+                            id="gender"
+                            name="gender">
+                        <option value="">Select Gender</option>
+                        {% for g in gender_choices %}
+                            <option value="{{ g }}"
+                                    {% if profile.gender == g %}selected{% endif %}>
+                              {{ g }}
+                            </option>
+                        {% endfor %}
+                      </select>
+                      <label for="gender">Gender</label>
+                  </div>
+              </div>
+
+              <div class="col-md-6">
+                  <div class="form-floating">
+                      <input class="form-control"
+                            type="email"
+                            id="email"
+                            name="email"
+                            value="{{ user.email }}"
+                            disabled>
+                      <label for="email">Email</label>
+                  </div>
+              </div>
+
+              <div class="col-md-6">
+                  <div class="form-floating">
+                      <input class="form-control"
+                          type="tel"
+                          id="phone_number"
+                          name="phone_number"
+                          value="{{ user.phone_number|default_if_none:'' }}"
+                          placeholder="Phone Number">
+                      <label for="phone_number">Phone Number</label>
+                  </div>
+              </div>
+
+              <div class="col-md-6">
+                  <div class="form-floating">
+                      <input class="form-control"
+                            type="date"
+                            id="date_of_birth"
+                            name="date_of_birth"
+                            value="{{ profile.date_of_birth|date:'Y-m-d'|default_if_none:'' }}">
+                      <label for="date_of_birth">Date of Birth</label>
+                  </div>
+              </div>
+
+              <!-- Address -->
+              <div class="col-12 mt-4">
+                  <h5 class="mb-4 text-primary">Address Information</h5>
+              </div>
+
+              <div class="col-12">
+                  <div class="form-floating">
+                      <input class="form-control"
+                            type="text"
+                            id="address"
+                            name="address"
+                            value="{{ profile.address|default_if_none:user.address|default_if_none:'' }}"
+                            placeholder="Street Address">
+                      <label for="address">Street Address</label>
+                  </div>
+              </div>
+
+              <div class="col-md-4">
+                  <div class="form-floating">
+                      <input class="form-control"
+                            type="text"
+                            id="city"
+                            name="city"
+                            value="{{ profile.city|default_if_none:'' }}">
+                      <label for="city">City</label>  
+                  </div>
+              </div>
+
+              <div class="col-md-4">
+                  <div class="form-floating">
+                      <input class="form-control"
+                            type="text"
+                            id="state"
+                            name="state"
+                            value="{{ profile.state|default_if_none:'' }}">
+                      <label for="state">State/Province</label>
+                  </div>
+              </div>
+
+              <div class="col-md-4">
+                  <div class="form-floating">
+                      <input class="form-control"
+                            type="text"
+                            id="postal_code"
+                            name="postal_code"
+                            value="{{ profile.postal_code|default_if_none:'' }}">
+                      <label for="postal_code">Zip/Postal Code</label>
+                  </div>
+              </div>
+
+              <div class="col-md-6">
+                  <div class="form-floating">
+                      <select class="form-select"
+                          id="country"
+                          name="country">
+                        <option value="">Select Country</option>
+                        {% for c in countries %}
+                            <option value="{{ c }}"
+                                    {% if profile.country == c %}selected{% endif %}>
+                              {{ c }}
+                            </option>
+                        {% endfor %}
+                      </select>
+                      <label for="country">Country</label>
+                  </div>
+              </div>
+
+              <div class="col-md-6">
+                  <div class="form-floating">
+                      <select class="form-select"
+                          id="timezone"
+                          name="timezone">
+                          <option value="">Select Timezone</option>
+                          {% for tz in timezones %}
+                            <option value="{{ tz }}"
+                                    {% if profile.timezone == tz %}selected{% endif %}>
+                              GMT{{ tz }}
+                            </option>
+                          {% endfor %}
+                      </select>
+                      <label for="timezone">Timezone</label>
+                  </div>
+              </div>
+
+              <!-- Professional -->
+              <div class="col-12 mt-4">
+                  <h5 class="mb-4 text-primary">Professional Information</h5>
+              </div>
+
+              <div class="col-md-6">
+                  <div class="form-floating">
+                      <input class="form-control"
+                          type="text"
+                          id="job_title"
+                          name="job_title"
+                          value="{{ profile.job_title|default_if_none:'' }}"
+                          placeholder="Job Title">
+                      <label for="job_title">Job Title</label>
+                  </div>
+              </div>
+
+              <div class="col-md-6">
+                  <div class="form-floating">
+                      <input class="form-control"
+                          id="skills"
+                          name="skills"
+                          value="{{ profile.skills|default_if_none:'' }}"
+                          placeholder="Skills (comma‑separated)">
+                      <label for="skills">Skills</label>
+                  </div>
+                  <div class="form-text">Separate with commas</div>
+              </div>
+
+              <!-- Social & Bio -->
+              <div class="col-12 mt-4">
+                <h5 class="mb-4 text-primary">Social & Biography</h5>
+              </div>
+
+              <div class="col-md-6">
+                  <div class="form-floating">
+                      <input class="form-control"
+                          type="url"
+                          id="linkedin_profile"
+                          name="linkedin_profile"
+                          value="{{ profile.linkedin_profile|default_if_none:'' }}">
+                      <label for="linkedin_profile">LinkedIn URL</label>
+                  </div>
+              </div>
+
+              <div class="col-md-6">
+                  <div class="form-floating">
+                      <input class="form-control"
+                          type="url"
+                          id="github_profile"
+                          name="github_profile"
+                          value="{{ profile.github_profile|default_if_none:'' }}">
+                      <label for="github_profile">GitHub URL</label>
+                  </div>
+              </div>
+
+              <div class="col-12">
+                  <div class="form-floating">
+                      <textarea class="form-control"
+                          id="biography"
+                          name="biography"
+                          style="height:120px"
+                          placeholder="Biography">{{ profile.biography|default_if_none:'' }}</textarea>
+                      <label for="biography">Biography</label>
+                  </div>
+              </div>
+
+              
+          </div>
+
+          <!-- Actions -->
+          <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-3">
+                <button type="reset" class="btn btn-outline-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+      
+  </div>
+  </form>
+</div>  
+
+<style>
+  .form-control, .form-select, .form-textarea {
+    border-radius: 8px;
+    padding: 12px 15px;
+    transition: all 0.3s;
+  }
+  .form-control:focus, .form-select:focus, .form-textarea:focus {
+    box-shadow: 0 0 0 3px rgba(105, 108, 255, 0.15);
+    border-color: #696cff;
+  }
+  .card {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  // Preview image when selected
+  document.getElementById('image').addEventListener('change', function(e) {
+    const [file] = e.target.files;
+    if (file) {
+      document.getElementById('uploadedAvatar').src = URL.createObjectURL(file);
+    }
+  });
+
+  // Initialize tagify for skills input
+  document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('TagifyLanguageSuggestion');
+    if (input) {
+      new Tagify(input, {
+        delimiters: ',| ',
+        pattern: /^[a-zA-Z0-9\s\-]+$/,
+        dropdown: {
+          enabled: 0 // always show suggestions dropdown
+        }
+      });
+    }
+  });
+</script>
+
+{% endblock %}

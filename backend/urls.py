@@ -132,10 +132,16 @@ urlpatterns = [
     path('material-purchases/<int:id>/update/', views.material_purchase_update, name='material_purchase_update'),  # Update purchase
     path('material-purchases/<int:id>/delete/', views.material_purchase_delete, name='material_purchase_delete'),  # Delete purchase
 
+    # customers
     path('customers/', views.customer_list, name='customer_list'),
     path('customers/create/', views.customer_create, name='customer_create'),
     path('customers/update/<int:id>/', views.customer_update, name='customer_update'),
     path('customers/delete/<int:id>/', views.customer_delete, name='customer_delete'),
+    path('customer-payment/', views.customer_payment, name='customer_payment'),
+    # AJAX: Get invoices for selected customer
+    path('get-customer-invoices/', views.get_customer_invoices, name='get_customer_invoices'),
+    path('get-customer-invoice-details/', views.get_customer_invoice_details, name='get_customer_invoice_details'),
+    # customers
     # WareHouse
 
 
@@ -202,12 +208,56 @@ urlpatterns = [
     path('purchase/<int:purchase_id>/invoice/', views.invoice_purchase, name='invoice_purchase'),
     path('purchase/<int:purchase_id>/invoice/print/', views.print_invoice_purchase, name='print_invoice_purchase'),
     
+ # Main invoice router
+    path('order-invoice/<int:order_id>/', views.view_order_invoice, name='view_order_invoice'),
     
-    #search banner
+    # Specific initial invoice views
+    path('initial-order-invoice/<int:order_id>/', views.view_initial_order_invoice, name='view_initial_order_invoice'),
+    path('print-initial-order-invoice/<int:order_id>/', views.print_initial_order_invoice, name='print_initial_order_invoice'),
+    
+    
+        #search banner
     path('search_banner/', views.search_banner, name='search_banner'),
     #search banner 
+    
     
     #thankyou banner
     path('thankyou_banner/', views.thankyou_banner, name='thankyou_banner'),
     #thankyou banner
+    
+        path('machine', views.machine_list, name='machine_list'),
+    path('machine/<int:pk>/', views.machine_detail, name='machine_detail'),
+    path('machine/add/', views.machine_create, name='machine_create'),
+    path('machine/edit/<int:pk>/', views.machine_edit, name='machine_edit'),
+       path('machine/delete/<int:pk>/', views.machine_delete, name='machine_delete'),
+       
+     
+    path('banners/', views.machine_banner_list, name='machine_banner_list'),
+    path('banners/create/', views.machine_banner_create, name='machine_banner_create'),
+    path('banners/<int:pk>/edit/', views.machine_banner_edit, name='machine_banner_edit'),
+    path('banners/<int:pk>/delete/', views.machine_banner_delete, name='machine_banner_delete'),
+     path('profile/', views.profile_view_edit, name='profile_view_edit'),
+    
+    
+        path('notifications/', views.all_notifications, name='notifications_all'),
+    path('notifications/<int:pk>/read/', views.mark_as_read, name='notification_mark_as_read'),
+    path('notifications/read-all/', views.mark_all_as_read, name='notification_mark_all_as_read'),
+    
+       path('sales-invoice/<str:sales_id>/', views.view_sales_invoice, name='view_sales_invoice'),
+     path('print-sales-invoice/<int:sales_id>/', views.print_sales_invoice, name='print_sales_invoice'),
+    path('get-sales-invoice-details/', views.get_sales_invoice_details, name='get_sales_invoice_details'),
+    
+    
+    
+    path('types/', views.shippingcosttype_list, name='shippingcosttype_list'),
+    path('types/add/', views.shippingcosttype_create, name='shippingcosttype_add'),
+    path('types/<int:pk>/edit/', views.shippingcosttype_edit, name='shippingcosttype_edit'),
+    path('types/<int:pk>/delete/', views.shippingcosttype_delete, name='shippingcosttype_delete'),
+
+    # ShippingCost URLs
+    path('costs/', views.shippingcost_list, name='shippingcost_list'),
+    path('costs/add/', views.shippingcost_create, name='shippingcost_add'),
+    path('costs/<int:pk>/edit/', views.shippingcost_edit, name='shippingcost_edit'),
+    path('costs/<int:pk>/delete/', views.shippingcost_delete, name='shippingcost_delete'),
+    
 ]

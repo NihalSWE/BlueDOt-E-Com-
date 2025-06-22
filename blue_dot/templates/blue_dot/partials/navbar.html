@@ -1,84 +1,93 @@
 {% load static %}
+
 <!-- header area start -->
-    <header class="tp-header-height p-relative z-index-11">
-        <div class="tp-header-2-top d-none d-xl-block">
-            {% comment %} <div class="container-fluid">
-                <div class="row align-items-center justify-content-center">
-                    <div class="col-xl-8">
-                        <div class="tp-header-2-top-text text-center">
-                            <span>Free metro delivery* Sign Up for $30 off your order! </span>
-                        </div>
+<header class="tp-header-height p-relative z-index-11">
+    <div class="tp-header-2-top d-none d-xl-block">
+        {% comment %} <div class="container-fluid">
+            <div class="row align-items-center justify-content-center">
+                <div class="col-xl-8">
+                    <div class="tp-header-2-top-text text-center">
+                        <span>Free metro delivery* Sign Up for $30 off your order! </span>
                     </div>
                 </div>
-            </div> {% endcomment %}
-        </div>
-        <div id="header-sticky" class="tp-header-bottom tp-header-2-bottom">
-            <div class="container-fluid">
-                <div class="row align-items-center">
-                    <div class="col-xl-2 col-lg-6 col-md-6 col-sm-6 col-5">
-                        <div class="tp-header-2-logo">
-                      <a href="/"><img src="{% static 'assets/img/logo/logo.png' %}" alt="" style="width: 60px;"></a>
-
-                        </div>
+            </div>
+        </div> {% endcomment %}
+    </div>
+    <div id="header-sticky" class="tp-header-bottom tp-header-2-bottom">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-xl-2 col-lg-6 col-md-6 col-sm-6 col-5">
+                    <div class="tp-header-2-logo" style="display: flex; align-items: center;">
+                        <a href="/" style="display: flex; align-items: center; text-decoration: none;">
+                            <img src="{% static 'assets/img/logo/logo.png' %}" alt="Blue Dots Logo" style="width: 100px; margin-right: 10px;">
+                            <span style="font-size: 20px; font-weight: bold; color: #000;">Blue Dots</span>
+                        </a>
                     </div>
-                    <div class="col-xl-5 d-none d-xl-block">
-                        <div class="tp-header-main-menu tp-header-2-main-menu">
-                            <nav class="tp-main-menu-content">
-                                <ul>
-                                    <li class="has-dropdown"><a href="{% url 'home' %}">Home</a>
-                                    </li>
-                                    
-                                    <li class="has-dropdown"><a href="{% url 'shop' %}">Products</a>
-                                        {% comment %} <ul class="submenu tp-submenu">
-                                            <li><a href="{% url 'shop' %}">Products</a></li>
-                                            <li><a href="{% url 'shop_details' %}">Shop Details</a></li>
-                                            <li><a href="{% url 'cart' %}">Cart</a></li>
-                                            <li><a href="{% url 'checkout' %}">Checkout</a></li>
-                                        </ul> {% endcomment %}
-                                    </li>
-                               
-                                    <li><a href="{% url 'blog' %}">Blog</a></li>
-                                    <li><a href="{% url 'promotion' %}">Promotions</a></li>
-                                    <li class="has-dropdown"><a href="{% url 'contact' %}">Contact</a></li>
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
-                    <div class="col-xl-5 col-lg-6 col-md-6 col-sm-6 col-7">
-                        <div class="tp-header-bottom-item d-flex justify-content-end mt-10">
-                           <!-- Header input -->
-                            <div class="tp-header-2-input-search p-relative mr-30">
-                                <form method="get" action="{% url 'search' %}">
-                                    <div class="tp-header-2-input">
-                                        <input type="text" name="q" placeholder="Search Products">
-                                        <button type="submit"><i class="flaticon-search"></i></button>
-                                    </div>
-                                </form>
+                </div>
+                <div class="col-xl-5 d-none d-xl-block">
+                    <div class="tp-header-main-menu tp-header-2-main-menu">
+                        <nav class="tp-main-menu-content">
+                            <ul>
+                                <li class="has-dropdown {% if request.path == '/' %}active{% endif %}">
+                                    <a href="{% url 'home' %}">Home</a>
+                                </li>
                                 
-                            </div>
+                                <li class="has-dropdown {% if '/shop/' in request.path or '/category/' in request.path %}active{% endif %}">
+                                    <a href="{% url 'shop' %}">Products</a>
+                                    <ul class="submenu tp-submenu">
+                                        {% for global_category in global_categories %}
+                                            <li><a href="{% url 'category_products' global_category.slug %}" {% if request.path == '/category/'|add:global_category.slug|add:'/' %}class="active"{% endif %}>{{ global_category.name }}</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                               
+                                <!--<li><a href="{% url 'blog' %}" {% if request.path == '/blog/' %}class="active"{% endif %}>Blog</a></li>-->
+                                <li class="{% if request.path == '/promotion/' %}active{% endif %}">
+                                    <a href="{% url 'promotion' %}">Promotions</a>
+                                </li>
+                                <li class="{% if '/machines/' in request.path %}active{% endif %}">
+                                    <a href="{% url 'machine_front_list' %}">Our Machines</a>
+                                </li>
+                                <li class="has-dropdown {% if request.path == '/contact/' %}active{% endif %}">
+                                    <a href="{% url 'contact' %}">Contact</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                <div class="col-xl-5 col-lg-6 col-md-6 col-sm-6 col-7">
+                    <div class="tp-header-bottom-item d-flex justify-content-end mt-10">
+                       <!-- Header input -->
+                        <div class="tp-header-2-input-search p-relative mr-30">
+                            <form method="get" action="{% url 'search' %}">
+                                <div class="tp-header-2-input">
+                                    <input type="text" name="q" placeholder="Search Products">
+                                    <button type="submit"><i class="flaticon-search"></i></button>
+                                </div>
+                            </form>
+                        </div>
 
-                            <!-- Header Button -->
-                            <div class="tp-header-bottom-button tp-header-2-bottom-button mr-30">
-                                <a class="tp-header-btn tp-header-2-btn" href="{% url 'contact' %}"><span>Get a Quete</span></a>
-                            </div>
+                        <!-- Header Button -->
+                        <div class="tp-header-bottom-button tp-header-2-bottom-button mr-30">
+                            <a class="tp-header-btn tp-header-2-btn" href="{% url 'contact' %}"><span>Get a Quote</span></a>
+                        </div>
 
-                            <!-- Header shop -->
-                            <div class="tp-header-2-shop p-relative">
+                        <!-- Header shop -->
+                        <div class="tp-header-2-shop p-relative">
                                 <button class="click-cart tp-header-cart-home cartmini-open-btn">
                                     <i class="flaticon-shopping-cart"></i>
                                     <span class="cart-count">{{ cart_item_count }}</span>
                                 </button>
                             </div>
 
-                            <!-- Header menu Button -->
-                            <div class="tp-header-bottom-toggle tp-header-2-bottom-toggle p-relative">
-                                <button class="tp-menu-bar"><img src="{% static 'assets/img/header/toggle.svg'%}" alt=""></button>
-                            </div>
-
+                        <!-- Header menu Button -->
+                        <div class="tp-header-bottom-toggle tp-header-2-bottom-toggle p-relative">
+                            <button class="tp-menu-bar"><img src="{% static 'assets/img/header/toggle.svg'%}" alt=""></button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 <!-- header area end -->

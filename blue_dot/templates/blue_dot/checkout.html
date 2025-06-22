@@ -173,13 +173,14 @@
                                             <input type="text" name="last_name" placeholder="Last Name" required>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="tp-checkout-input position-relative z-index-10">
-                                            <label>District <span>*</span></label>
-                                            <select name="district" id="district-select" class="form-control" required>
-                                                <option value="">Select District</option>
-                                            </select>
-                                        </div>
+                                 <div class="col-md-6">
+                                    <div class="tp-checkout-input position-relative z-index-10">
+                                        <label>District <span>*</span></label>
+                                        <select name="district" id="district-select" class="form-control" required>
+                                        <option value="">Select District</option>
+                                        <!-- You should populate this select with district IDs and names (see below) -->
+                                        </select>
+                                    </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="tp-checkout-input position-relative z-index-10">
@@ -233,19 +234,23 @@
                                     <span>Subtotal</span>
                                     <span>৳{{ subtotal|floatformat:2 }}</span>
                                 </li>
-                                <li class="tp-order-info-list-shipping">
-                                    <span>Shipping</span>
-                                    <div class="tp-order-info-list-shipping-item d-flex flex-column align-items-end">
-                                        <span>
-                                            <input id="flat_rate" type="radio" name="shipping" value="100" checked>
-                                            <label for="flat_rate">Flat rate: <span>৳ 100.00</span></label>
-                                        </span>
-                                        <span>
-                                            <input id="free_shipping" type="radio" name="shipping" value="0">
-                                            <label for="free_shipping">Free shipping</label>
-                                        </span>
-                                    </div>
-                                </li>
+             <li class="tp-order-info-list-shipping">
+  <span>Shipping</span>
+  <div id="shipping-options" class="tp-order-info-list-shipping-item d-flex flex-column align-items-end">
+    {% if shipping_cost %}
+      <span class="shipping-cost-display" >
+        {{ shipping_cost.shipping_type.name }}: ৳{{ shipping_cost.cost }}
+<input type="hidden" name="shipping_cost" value="{{ shipping_option.cost }}">
+<input type="hidden" name="shipping_method_id" value="{{ shipping_option.id }}">
+      </span>
+    {% else %}
+      <span class="shipping-loading">Select district to view shipping options</span>
+    {% endif %}
+  </div>
+</li>
+
+
+
                                 <li class="tp-order-info-list-total">
                                     <span>Total</span>
                                     <span id="checkout-total">৳{{ subtotal|floatformat:2|add:"100.00" }}</span>
@@ -270,78 +275,173 @@
 {% block custom_js %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  document.getElementById("district-select").addEventListener("change", function() {
+    const district = this.value;
+    const container = document.getElementById("shipping-options");
+
+    if (!district) {
+      container.innerHTML = '<span>Please select a district.</span>';
+      return;
+    }
+
+    fetch(`/get-shipping-options/?district=${encodeURIComponent(district)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.shipping_options || data.shipping_options.length === 0) {
+          container.innerHTML = '<span>No shipping options found.</span>';
+          return;
+        }
+
+        container.innerHTML = data.shipping_options.map((opt, index) => `
+          <span class="mb-1">
+            <input type="radio" id="${opt.id}" name="shipping" value="${opt.cost}" ${index === 0 ? 'checked' : ''} required>
+            <label for="${opt.id}">${opt.name}: <span>৳ ${opt.cost}</span></label>
+          </span>
+        `).join('');
+      })
+      .catch(() => {
+        container.innerHTML = '<span>Error loading shipping options.</span>';
+      });
+  });
+</script>
 
 <script>
     $(document).ready(function () {
+        // DOM Elements
         const $districtSelect = $('#district-select');
         const $thanaSelect = $('#thana-select');
         const $phoneInput = $('#phone-input');
         const $phoneContainer = $('#phone-input-container');
         const $phoneError = $('#phone-error');
         const $placeOrderBtn = $('#place-order-btn');
+        const $shippingOptions = $('#shipping-options');
+        const $checkoutTotal = $('#checkout-total');
+        const $checkoutForm = $('#checkout-form');
+        const $shippingCostInput = $('#shipping_cost');
+        const $shippingMethodInput = $('#shipping_method_id');
 
-        // Check if cart has products
+        // Cart Data
         const hasProducts = {{ cart_data|length|default:0 }} > 0;
         const subtotal = parseFloat({{ subtotal|floatformat:"2" }});
-
-        // Show custom alert
-        function showAlert(message, type = 'error') {
-            // Remove existing alerts
-            $('.validation-alert').remove();
-            
-            const alertHtml = `
-                <div class="validation-alert ${type}">
-                    <span class="close-btn">&times;</span>
-                    <strong>${type === 'error' ? 'Error!' : 'Warning!'}</strong> ${message}
-                </div>
-            `;
-            
-            $('body').append(alertHtml);
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                $('.validation-alert').fadeOut(300, function() {
-                    $(this).remove();
-                });
-            }, 5000);
-            
-            // Close button functionality
-            $('.validation-alert .close-btn').on('click', function() {
-                $(this).parent().fadeOut(300, function() {
-                    $(this).remove();
-                });
-            });
-        }
-
-        // Load districts
-        $.get("https://bdapi.vercel.app/api/v.1/district", function (data) {
-            $districtSelect.append(data.data.map(d => `<option value="${d.id}-${d.name}">${d.name}</option>`));
-        }).fail(function() {
-            showAlert("Failed to load districts. Please refresh the page and try again.", "error");
-        });
-
-        // Load thanas based on district
-        $districtSelect.on('change', function () {
-            const fullValue = $(this).val();
-            const districtId = fullValue ? fullValue.split('-')[0] : "";
-        
-            $thanaSelect.html('<option value="">Loading...</option>');
-            if (!districtId) return;
-        
-            $.get(`https://bdapi.vercel.app/api/v.1/upazilla/${districtId}`, function (data) {
-                $thanaSelect.empty().append('<option value="">Select Thana</option>');
-                data.data.forEach(thana => {
-                    $thanaSelect.append(`<option value="${thana.id}-${thana.name}">${thana.name}</option>`);
-                });
-            }).fail(function() {
-                $thanaSelect.html('<option value="">Failed to load</option>');
-                showAlert("Failed to load thanas. Please try selecting the district again.", "error");
-            });
-        });
 
         // Initialize Select2
         $districtSelect.select2({ width: '100%' });
         $thanaSelect.select2({ width: '100%' });
+
+        // Load Districts
+        function loadDistricts() {
+            $.get("https://bdapi.vercel.app/api/v.1/district", function (data) {
+                $districtSelect.empty().append('<option value="">Select District</option>');
+                $.each(data.data, function(index, district) {
+                    $districtSelect.append(`<option value="${district.id}-${district.name}">${district.name}</option>`);
+                });
+            }).fail(function() {
+                showAlert("Failed to load districts. Please refresh the page and try again.", "error");
+            });
+        }
+
+        // Load Thanas
+        function loadThanas(districtId, districtName) {
+            $thanaSelect.html('<option value="">Loading...</option>');
+            
+            if (!districtId) {
+                resetShippingOptions();
+                return;
+            }
+            
+            $.get(`https://bdapi.vercel.app/api/v.1/upazilla/${districtId}`, function (data) {
+                $thanaSelect.empty().append('<option value="">Select Thana</option>');
+                $.each(data.data, function(index, thana) {
+                    $thanaSelect.append(`<option value="${thana.id}-${thana.name}">${thana.name}</option>`);
+                });
+                
+                loadShippingOptions(districtName);
+            }).fail(function() {
+                $thanaSelect.html('<option value="">Failed to load thanas</option>');
+                showAlert("Failed to load thanas. Please try selecting the district again.", "error");
+            });
+        }
+
+        // Load Shipping Options
+        function loadShippingOptions(districtName) {
+            $shippingOptions.html('<span class="shipping-loading">Loading shipping options...</span>');
+            
+            $.get(`/get-shipping-options/?district=${encodeURIComponent(districtName)}`, function(data) {
+                if (data.shipping_options && data.shipping_options.length > 0) {
+                    renderShippingOptions(data.shipping_options);
+                } else {
+                    showNoShippingOptions();
+                }
+            }).fail(function() {
+                showShippingOptionsError();
+            });
+        }
+
+        function renderShippingOptions(options) {
+            let optionsHtml = '';
+            $.each(options, function(index, option) {
+                optionsHtml += `
+                    <div class="shipping-option">
+                        <input type="radio" id="${option.id}" name="shipping_method" 
+                               value="${option.cost}" ${index === 0 ? 'checked' : ''}
+                               data-shipping-type-id="${option.id.split('_')[2]}">
+                        <label for="${option.id}">
+                            ${option.name} - ৳${option.cost}
+                        </label>
+                    </div>
+                `;
+            });
+            $shippingOptions.html(optionsHtml);
+            
+            // Set initial values
+            const initialOption = options[0];
+            if (initialOption) {
+                $shippingCostInput.val(initialOption.cost);
+                $shippingMethodInput.val(initialOption.id);
+            }
+            
+            // Update when selection changes
+            $('input[name="shipping_method"]').on('change', function() {
+                const cost = $(this).val();
+                const typeId = $(this).data('shipping-type-id');
+                $shippingCostInput.val(cost);
+                $shippingMethodInput.val(`shipping_type_${typeId}`);
+                updateTotal();
+            });
+            
+            updateTotal();
+        }
+
+        function showNoShippingOptions() {
+            $shippingOptions.html('<span class="text-danger">No shipping options available for this district</span>');
+            $shippingCostInput.val('0');
+            $shippingMethodInput.val('');
+            updateTotal();
+        }
+
+        function showShippingOptionsError() {
+            $shippingOptions.html('<span class="text-danger">Error loading shipping options</span>');
+            $shippingCostInput.val('0');
+            $shippingMethodInput.val('');
+            showAlert("Failed to load shipping options. Please try again.", "error");
+            updateTotal();
+        }
+
+        function resetShippingOptions() {
+            $shippingOptions.html('<span class="shipping-loading">Select district to view shipping options</span>');
+            $shippingCostInput.val('0');
+            $shippingMethodInput.val('');
+            updateTotal();
+        }
+
+        // Update Total Price
+        function updateTotal() {
+            const shippingCost = parseFloat($shippingCostInput.val()) || 0;
+            const total = subtotal + shippingCost;
+            $checkoutTotal.text('৳' + total.toFixed(2));
+        }
+
 
         // Phone Number Validation
         function validateBDPhone(phone) {
@@ -399,7 +499,36 @@
             }
         });
 
-        // Comprehensive form validation
+        // Alert System
+        function showAlert(message, type = 'error') {
+            // Remove existing alerts
+            $('.validation-alert').remove();
+            
+            const alertHtml = `
+                <div class="validation-alert ${type}">
+                    <span class="close-btn">&times;</span>
+                    <strong>${type === 'error' ? 'Error!' : 'Warning!'}</strong> ${message}
+                </div>
+            `;
+            
+            $('body').append(alertHtml);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                $('.validation-alert').fadeOut(300, function() {
+                    $(this).remove();
+                });
+            }, 5000);
+            
+            // Close button functionality
+            $('.validation-alert .close-btn').on('click', function() {
+                $(this).parent().fadeOut(300, function() {
+                    $(this).remove();
+                });
+            });
+        }
+
+        // Form Validation
         function validateForm() {
             let errors = [];
             
@@ -446,7 +575,7 @@
             }
             
             // Validate shipping method
-            const shipping = $('input[name="shipping"]:checked').val();
+            const shipping = $('input[name="shipping_method"]:checked').val();
             if (!shipping) {
                 errors.push("Please select a shipping method.");
             }
@@ -454,8 +583,8 @@
             return errors;
         }
 
-        // Form submission validation
-        $('#checkout-form').on('submit', function(e) {
+        // Form Submission
+        $checkoutForm.on('submit', function(e) {
             e.preventDefault();
             
             const errors = validateForm();
@@ -466,7 +595,7 @@
                 
                 // Focus on first error field
                 if (!hasProducts) {
-                    // If no products, don't focus on any field
+                    return false;
                 } else if (!$phoneInput.val().trim()) {
                     $phoneInput.focus();
                 } else if (!$('input[name="first_name"]').val().trim()) {
@@ -479,6 +608,8 @@
                     $thanaSelect.select2('open');
                 } else if (!$('input[name="address"]').val().trim()) {
                     $('input[name="address"]').focus();
+                } else if (!$('input[name="shipping_method"]:checked').val()) {
+                    $('input[name="shipping_method"]').first().focus();
                 }
                 
                 return false;
@@ -491,21 +622,23 @@
             this.submit();
         });
 
-        // Shipping Calculation
-        const totalElement = $('#checkout-total');
+        // District Change Handler
+        $districtSelect.on('change', function() {
+            const fullValue = $(this).val();
+            const parts = fullValue ? fullValue.split('-') : [];
+            const districtId = parts[0] || "";
+            const districtName = parts[1] || "";
+            
+            loadThanas(districtId, districtName);
+        });
 
-        function updateTotal() {
-            const shippingCost = parseFloat($('input[name="shipping"]:checked').val()) || 0;
-            const finalTotal = (subtotal + shippingCost).toFixed(2);
-            totalElement.text(`৳${finalTotal}`);
-        }
-
-        $('input[name="shipping"]').on('change', updateTotal);
-        updateTotal(); // Initialize
+        // Initialize
+        loadDistricts();
+        updateTotal();
 
         // Disable form if no products
         if (!hasProducts) {
-            $('#checkout-form input, #checkout-form select, #checkout-form textarea').prop('disabled', true);
+            $checkoutForm.find('input, select, textarea').prop('disabled', true);
             showAlert("Please add products to your cart before proceeding with checkout.", "warning");
         }
     });

@@ -41,8 +41,9 @@
 <section class="tp-product-2-area pt-20 pb-20">
    <div class="container">
        <div class="row">
-           <div class="tp-section-title-wrapper mb-5">
-               <h3 class="tp-section-title mb-10 tp-split-text right">Explore All Categories</h3>
+           <div class="tp-section-title-wrapper mb-30">
+               
+               <h3 class="tp-section-title mb-35 tp-split-text right">Explore All Categories</h3>
            </div>
        </div>
        <div class="row">
@@ -320,9 +321,9 @@ data-product-category="{{ product.category }}">
                                     {% if products.number == num %}
                                         <li>
                                             <a style="    width: 35px !important;
-    height: 35px !important;
-    line-height: 35px !important;
-" class="active" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}">
+                                            height: 35px !important;
+                                            line-height: 35px !important;
+                                        "  class="active" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}">
                                                 {{ num }}
                                             </a>
                                         </li>

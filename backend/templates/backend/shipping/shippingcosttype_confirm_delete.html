@@ -1,0 +1,16 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block custom_css %}{% endblock %}
+
+{% block content %}
+<h2>Delete Shipping Cost Type</h2>
+
+<p>Are you sure you want to delete "<strong>{{ obj.name }}</strong>"?</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Yes, Delete</button>
+  <a href="{% url 'shippingcosttype_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

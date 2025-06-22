@@ -1,0 +1,312 @@
+{% extends "backend/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mt-4">
+            <i class="fas fa-image me-2"></i>
+            {{ banner|default_if_none:"Create New Banner" }}
+        </h1>
+        <a href="{% url 'machine_banner_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">
+                <i class="fas fa-edit me-2"></i>
+                Banner Details
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <!-- Text Fields Section -->
+                        <div class="mb-4">
+                            <div class="form-group mb-4">
+                                <label for="title" class="form-label">Title *</label>
+                                <input
+                                    type="text"
+                                    id="title"
+                                    name="title"
+                                    class="form-control form-control-lg"
+                                    value="{{ banner.title|default:'' }}"
+                                    required
+                                    placeholder="Enter banner title"
+                                >
+                                <div class="invalid-feedback">
+                                    Please provide a title for the banner.
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-4">
+                                <label for="subtitle" class="form-label">Subtitle</label>
+                                <input
+                                    type="text"
+                                    id="subtitle"
+                                    name="subtitle"
+                                    class="form-control"
+                                    value="{{ banner.subtitle|default:'' }}"
+                                    placeholder="Optional subtitle text"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <!-- Image Upload Section -->
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label class="form-label mb-2">
+                                        Banner Image {% if not banner %}*{% endif %}
+                                    </label>
+                                    
+                                    {% if banner and banner.background_image %}
+                                    <div class="mb-3">
+                                        <div class="image-preview-container">
+                                            <img 
+                                                src="{{ banner.background_image.url }}" 
+                                                alt="Current Banner" 
+                                                class="img-fluid rounded mb-3 border"
+                                                id="imagePreview"
+                                            >
+                                            <div class="form-check mb-3">
+                                                <input 
+                                                    class="form-check-input" 
+                                                    type="checkbox" 
+                                                    id="clearImage"
+                                                    name="background_image-clear"
+                                                >
+                                                <label class="form-check-label" for="clearImage">
+                                                    Remove current image
+                                                </label>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="file-upload-wrapper mb-3">
+                                        <input
+                                            type="file"
+                                            id="background_image"
+                                            name="background_image"
+                                            class="d-none"
+                                            accept="image/*"
+                                            {% if not banner %} required {% endif %}
+                                            onchange="previewImage(this)"
+                                        >
+                                        <label for="background_image" class="file-upload-label">
+                                            <div class="file-upload-content">
+                                                <i class="fas fa-cloud-upload-alt fa-2x mb-2 text-primary"></i>
+                                                <h6 class="file-upload-title">Upload Banner Image</h6>
+                                                <p class="file-upload-subtitle">Drag & drop or click to browse</p>
+                                                <span class="file-upload-filename" id="fileName"></span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div class="invalid-feedback d-block" id="fileError">
+                                        Please select an image file.
+                                    </div>
+                                    <small class="text-muted">
+                                        Recommended size: 1920×600px (JPG/PNG)
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4 gap-3">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-2"></i>
+                        {% if banner %}Update Banner{% else %}Create Banner{% endif %}
+                    </button>
+                    <a href="{% url 'machine_banner_list' %}" class="btn btn-outline-secondary px-4">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .file-upload-wrapper {
+        position: relative;
+    }
+    
+    .file-upload-label {
+        display: block;
+        padding: 2rem;
+        border: 2px dashed #ced4da;
+        border-radius: 0.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        background-color: #f8f9fa;
+        cursor: pointer;
+    }
+    
+    .file-upload-label:hover {
+        border-color: #86b7fe;
+        background-color: #e9f0ff;
+    }
+    
+    .file-upload-content {
+        pointer-events: none; /* Makes the content non-interactive */
+    }
+    
+    .file-upload-title {
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 0.25rem;
+    }
+    
+    .file-upload-subtitle {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+    
+    .file-upload-filename {
+        display: block;
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        color: #0d6efd;
+        word-break: break-all;
+    }
+    
+    .image-preview-container {
+        position: relative;
+        text-align: center;
+    }
+    
+    #imagePreview {
+        max-height: 200px;
+        object-fit: contain;
+        transition: all 0.3s ease;
+    }
+    
+    .card {
+        border-radius: 10px;
+    }
+    
+    .form-control-lg {
+        padding: 0.75rem 1rem;
+        font-size: 1.1rem;
+    }
+    
+    .bg-light {
+        background-color: #f8fafc !important;
+    }
+    
+    #fileError {
+        display: none;
+    }
+    
+    .was-validated #background_image:invalid ~ #fileError {
+        display: block;
+    }
+</style>
+
+<script>
+    // Form validation
+    (function () {
+        'use strict'
+        
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+        
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+    
+    // Image preview function
+    function previewImage(input) {
+        const preview = document.getElementById('imagePreview');
+        const fileName = document.getElementById('fileName');
+        const file = input.files[0];
+        const reader = new FileReader();
+        
+        if (file) {
+            // Show file name
+            fileName.textContent = file.name;
+            
+            // Preview image if we have a preview element
+            if (preview) {
+                reader.onloadend = function () {
+                    preview.src = reader.result;
+                }
+                reader.readAsDataURL(file);
+            }
+            
+            // Hide the error message if it was shown
+            document.getElementById('fileError').style.display = 'none';
+        } else {
+            if (fileName) fileName.textContent = '';
+            if (preview) preview.src = '';
+        }
+        
+        // Show the preview container if hidden
+        const previewContainer = document.querySelector('.image-preview-container');
+        if (previewContainer && file) {
+            previewContainer.style.display = 'block';
+        }
+    }
+    
+    // Clear image checkbox handler
+    document.getElementById('clearImage')?.addEventListener('change', function() {
+        const fileInput = document.getElementById('background_image');
+        if (this.checked) {
+            fileInput.required = true;
+            // Clear any selected file
+            fileInput.value = '';
+            document.getElementById('fileName').textContent = '';
+            document.getElementById('imagePreview').src = '';
+        } else {
+            fileInput.required = {% if not banner %}true{% else %}false{% endif %};
+        }
+    });
+
+    // Drag and drop functionality
+    const fileUploadLabel = document.querySelector('.file-upload-label');
+    if (fileUploadLabel) {
+        fileUploadLabel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadLabel.classList.add('bg-primary', 'bg-opacity-10');
+            fileUploadLabel.style.borderColor = '#0d6efd';
+        });
+
+        fileUploadLabel.addEventListener('dragleave', () => {
+            fileUploadLabel.classList.remove('bg-primary', 'bg-opacity-10');
+            fileUploadLabel.style.borderColor = '#ced4da';
+        });
+
+        fileUploadLabel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadLabel.classList.remove('bg-primary', 'bg-opacity-10');
+            fileUploadLabel.style.borderColor = '#ced4da';
+            
+            const fileInput = document.getElementById('background_image');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                previewImage(fileInput);
+            }
+        });
+    }
+</script>
+{% endblock %}

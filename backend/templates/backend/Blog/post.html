@@ -21,6 +21,7 @@
                     <th>Title</th>
                     <th>Category</th>
                     <th>Author</th>
+                    <th>Video</th>
                     <th style="width: 160px;">Actions</th>
                 </tr>
             </thead>
@@ -32,6 +33,13 @@
                     <td>{{ post.title }}</td>
                     <td>{{ post.category.name|default:"No Category" }}</td>
                     <td>{{ post.author }}</td>
+                    <td>
+                        {% if post.video %}
+                            <span class="badge bg-success">Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </td>
                     <td>
                         <button class="btn btn-sm btn-info" onclick="editPost({{ post.id }})">Edit</button>
                         <button class="btn btn-sm btn-danger" onclick="deletePost({{ post.id }})">Delete</button>
@@ -61,6 +69,11 @@
                 <div class="mb-3">
                     <label class="form-label">Image</label>
                     <input name="image" type="file" class="form-control" id="image">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Video</label>
+                    <input name="video" type="file" class="form-control" id="video" accept="video/*">
+                    <small class="text-muted">Optional: Upload a video for this blog post</small>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Category</label>

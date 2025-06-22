@@ -46,8 +46,12 @@ from django.db.models import Sum, Count, F, DecimalField, ExpressionWrapper, Val
 from django.db.models.functions import Coalesce
 from django.utils.dateparse import parse_date
 from datetime import timedelta
-
+from .data.district_data import DISTRICTS as districts_data
 from decimal import Decimal
+from django.db.models import ProtectedError
+
+
+
 
 @login_required
 def dashboard(request):
@@ -839,6 +843,7 @@ def order_list(request):
     
 #     return render(request, 'backend/orders/create.html', context)
 
+@login_required
 def initial_orders(request):
     customers = CustomerInfo.objects.all()
     products = Product.objects.all()
@@ -862,7 +867,7 @@ def initial_orders(request):
     }
     return render(request, 'backend/orders/initial_orders.html', context)
 
-
+@login_required
 def initial_order_create(request):
     customers = CustomerInfo.objects.all()
     products = Product.objects.all()
@@ -872,6 +877,8 @@ def initial_order_create(request):
             # Get form data
             customer_id = request.POST.get('customer')
             order_notes = request.POST.get('notes', '')
+            district = request.POST.get('district', '')
+            address = request.POST.get('address', '')
             
             # Validate customer
             if not customer_id:
@@ -883,7 +890,8 @@ def initial_order_create(request):
                 customer_id=customer_id,
                 order_date=timezone.now(),
                 status=0,
-                notes=order_notes
+                notes=order_notes,
+                address=address,
             )
             
             # Get product data from the form
@@ -904,8 +912,8 @@ def initial_order_create(request):
                     OrderItem.objects.create(
                         order=order,
                         product=product,
-                        quantity=quantity,
-                        notes=note  # Add product-specific notes
+                        quantity=int(quantity),
+                        notes=note
                     )
                 except Product.DoesNotExist:
                     continue
@@ -920,10 +928,12 @@ def initial_order_create(request):
     context = {
         'customers': customers,
         'products': products,
+        'districts': districts_data,
     }
     return render(request, 'backend/orders/initial_order_create.html', context)
 
 
+@login_required
 def initial_order_update(request, id):
     order = get_object_or_404(Order, id=id)
     customers = CustomerInfo.objects.all()
@@ -933,6 +943,12 @@ def initial_order_update(request, id):
         product_ids = request.POST.getlist('products[]')
         quantities = request.POST.getlist('quantities[]')
         notes = request.POST.getlist('notes[]')
+        
+        address = request.POST.get('address', '')
+        district = request.POST.get('district', '')
+        
+        order.address = address
+        order.district = district
 
         if not product_ids:
             messages.error(request, 'Please select at least one product.')
@@ -959,6 +975,7 @@ def initial_order_update(request, id):
             except Exception as e:
                 messages.error(request, f"An error occurred: {str(e)}")
 
+    existing_product_ids = set(order.items.values_list('product_id', flat=True))
     # Prepare selected items for pre-population in table
     order_items = OrderItem.objects.filter(order=order).select_related('product')
     selected_items = []
@@ -975,6 +992,10 @@ def initial_order_update(request, id):
         'products': products,
         'customers': customers,
         'order_items': selected_items,
+        'districts': districts_data,
+        'selected_district': order.district if order.district else '',
+        'selected_address': order.address if order.address else '',
+        'added_product_ids': existing_product_ids,
     })
 
 # def approve_order(request, id):
@@ -1084,7 +1105,9 @@ def initial_order_update(request, id):
 #     return render(request, 'backend/orders/approve_order.html', context)
 
 
+
 # Approve Order Starts
+@login_required
 def approve_order(request, id):
     order = get_object_or_404(Order, id=id)
     customers = CustomerInfo.objects.all()
@@ -1144,6 +1167,7 @@ def approve_order(request, id):
         'user_type': user_type,
         'product_material_map': dict(product_material_map),
     })
+
 
 def _update_order_fields(order, request):
     customer_id = request.POST.get('customer')
@@ -1209,16 +1233,13 @@ def _update_order_fields(order, request):
 #         material.save()
 
 
+
 def _process_material_usages(order, item, request): 
     prod_id = item.product.id
 
     mat_ids = request.POST.getlist(f'materials_{prod_id}[]')
     unit_ids = request.POST.getlist(f'units_{prod_id}[]')
     qtys = request.POST.getlist(f'quantities_{prod_id}[]')
-    
-    print('//////////////mat_ids/////////////////', mat_ids)
-    print('//////////////unit_ids/////////////////', unit_ids)
-    print('//////////////qtys/////////////////', qtys)
 
     if not mat_ids or len(mat_ids) != len(unit_ids) or len(mat_ids) != len(qtys):
         return
@@ -1237,10 +1258,6 @@ def _process_material_usages(order, item, request):
     total_material_cost = Decimal('0.00')
 
     for mat_id, unit_id, qty_str in zip(mat_ids, unit_ids, qtys):
-        print('******mat_id***** ', mat_id)
-        print('******unit_id***** ', unit_id)
-        print('******qty_str***** ', qty_str)
-        print('----------------------------------------------------------------------------------------------------')
         try:
             qty = Decimal(qty_str) * Decimal(item.quantity)
             if qty <= 0:
@@ -1251,10 +1268,8 @@ def _process_material_usages(order, item, request):
         material = MaterialRegistration.objects.filter(id=mat_id).first()
         unit = Unit.objects.filter(id=unit_id).first()
         if not material or not unit:
-            print('----material not found----')
             continue
 
-        print('--------material get or create')
         usage, created = MaterialUsage.objects.get_or_create(
             order_item=item,
             material=material,
@@ -1266,7 +1281,6 @@ def _process_material_usages(order, item, request):
         )
 
         if not created:
-            print('-----material not ceated------')
             # Restore stock difference
             material.mr_quantity += usage.quantity_used  # revert old usage
             usage.unit = unit
@@ -1291,25 +1305,45 @@ def _process_material_usages(order, item, request):
         
     
 
+# def _update_inventory_details(order, user):
+#     for item in order.items.all():
+#         for usage in item.material_usages.all():
+#             material = usage.material
+#             print('material usages **********: ', material)
+#             inv = MaterialInventoryDetail.objects.filter(mid_material=material).first()
+            
+#             print('material inventory ----------: ', inv)
+
+#             if inv:
+#                 inv.mid_order_id = order
+#                 inv.mid_party = order.customer.id
+#                 inv.mid_sell_quentity = usage.quantity_used
+#                 inv.mid_sell_prices = material.mr_sell_price
+#                 inv.mid_sell_paid = material.mr_sell_price * usage.quantity_used
+#                 inv.mid_deal_type = 'sell'
+#                 inv.mid_debit = material.mr_sell_price * usage.quantity_used
+#                 inv.mid_entry_by = user
+#                 inv.save()
+
+
 def _update_inventory_details(order, user):
     for item in order.items.all():
         for usage in item.material_usages.all():
             material = usage.material
             print('material usages **********: ', material)
-            inv = MaterialInventoryDetail.objects.filter(mid_material=material).first()
-            
-            print('material inventory ----------: ', inv)
 
-            if inv:
-                inv.mid_order_id = order
-                inv.mid_party = order.customer.id
-                inv.mid_sell_quentity = usage.quantity_used
-                inv.mid_sell_prices = material.mr_sell_price
-                inv.mid_sell_paid = material.mr_sell_price * usage.quantity_used
-                inv.mid_deal_type = 'sell'
-                inv.mid_debit = material.mr_sell_price * usage.quantity_used
-                inv.mid_entry_by = user
-                inv.save()
+            MaterialInventoryDetail.objects.create(
+                mid_material=material,
+                mid_order_id=order,
+                mid_party=order.customer.id,
+                mid_sell_quentity=usage.quantity_used,
+                mid_sell_prices=material.mr_sell_price * usage.quantity_used,
+                mid_sell_paid=0,
+                mid_invoice_id=order.invoice_id,
+                mid_deal_type='sell',
+                mid_debit=material.mr_sell_price * usage.quantity_used,
+                mid_entry_by=user
+            )
                 
                 
 def get_materials_by_product(request, order_id, product_id):
@@ -1329,7 +1363,7 @@ def get_materials_by_product(request, order_id, product_id):
     ]
     return JsonResponse({'materials': data})
     
-
+@login_required
 def order_detail(request, id):
     try:
         order = Order.objects.get(id=id)
@@ -1342,14 +1376,143 @@ def order_detail(request, id):
     order_total_price = Decimal('0.00')  # Initialize total price
     for item in order_items:
         order_total_price += item.total_price
+        
+    customer = order.customer
+    total_orders = customer.orders.count()
+    
 
     return render(request, 'backend/orders/order-detail.html', {
         'order': order,
         'order_items': order_items,
-        'order_total_price': order_total_price
+        'order_total_price': order_total_price,
+        'customer': customer,
+        'total_orders': total_orders,
     })
 
 # Approve Order Ends
+
+
+
+
+@login_required
+def customer_payment(request):
+    if request.method == 'POST':
+        invoice_id = request.POST.get('invoice_id')
+        party_name = request.POST.get('party_name')
+        payment_amount_str = request.POST.get('payment_amount')
+
+        try:
+            payment_amount = int(payment_amount_str)
+            if payment_amount <= 0:
+                raise ValueError("Payment amount must be positive")
+
+            sell_entries = MaterialInventoryDetail.objects.filter(
+                mid_invoice_id=invoice_id,
+                mid_party=party_name,
+                mid_deal_type='sell'
+            )
+
+            if not sell_entries.exists():
+                messages.error(request, "No matching customer invoice found.")
+                return redirect('customer_payment')
+
+            totals = sell_entries.aggregate(
+                total_price=Coalesce(Sum('mid_sell_prices'), Value(0), output_field=IntegerField()),
+                total_paid=Coalesce(Sum('mid_sell_paid'), Value(0), output_field=IntegerField())
+            )
+            total_due = totals['total_price'] - totals['total_paid']
+
+            if payment_amount > total_due:
+                messages.warning(request, f"Payment exceeds due amount ({total_due})")
+                return redirect('customer_payment')
+
+            # Record new payment entry
+            MaterialInventoryDetail.objects.create(
+                mid_party=party_name,
+                mid_invoice_id=invoice_id,
+                mid_sell_paid=payment_amount,
+                mid_deal_type='sell',
+            )
+
+            messages.success(request, f"Customer payment of {payment_amount} recorded.")
+            return redirect('customer_payment')
+
+        except (ValueError, Exception) as e:
+            messages.error(request, f"Invalid payment amount: {str(e)}")
+            return redirect('customer_payment')
+
+    # GET request – display list of parties with dues
+    parties_with_due = MaterialInventoryDetail.objects.filter(
+        mid_deal_type='sell'
+    ).values('mid_party').annotate(
+        total_price=Coalesce(Sum('mid_sell_prices'), Value(0), output_field=IntegerField()),
+        total_paid=Coalesce(Sum('mid_sell_paid'), Value(0), output_field=IntegerField()),
+        total_due=F('total_price') - F('total_paid')
+    ).filter(total_due__gt=0)
+
+    return render(request, 'backend/customer/customer_payment.html', {
+        'parties_with_due': parties_with_due
+    })
+
+
+
+@login_required
+def get_customer_invoices(request):
+    party_name = request.GET.get('party_name')
+    if not party_name:
+        return JsonResponse({'invoices': []})
+
+    invoices = MaterialInventoryDetail.objects.filter(
+        mid_party=party_name,
+        mid_deal_type='sell'
+    ).values('mid_invoice_id').annotate(
+        total_price=Coalesce(Sum('mid_sell_prices'), Value(0), output_field=DecimalField()),
+        total_paid=Coalesce(Sum('mid_sell_paid'), Value(0), output_field=DecimalField())
+    )
+
+    # Return only those with outstanding due
+    invoices_with_due = []
+    for inv in invoices:
+        due = inv['total_price'] - inv['total_paid']
+        if due > 0:
+            invoices_with_due.append({
+                'id': inv['mid_invoice_id'],
+                'due': float(due)
+            })
+
+    return JsonResponse({'invoices': invoices_with_due})
+
+@login_required
+def get_customer_invoice_details(request):
+    invoice_id = request.GET.get('invoice_id')
+    party_name = request.GET.get('party_name')
+
+    if not invoice_id or not party_name:
+        return JsonResponse({'details': None})
+
+    entries = MaterialInventoryDetail.objects.filter(
+        mid_invoice_id=invoice_id,
+        mid_party=party_name,
+        mid_deal_type='sell'
+    )
+
+    total_price = entries.aggregate(
+        total_price=Coalesce(Sum('mid_sell_prices'), Value(0, output_field=DecimalField()))
+    )['total_price']
+
+    total_paid = entries.aggregate(
+        total_paid=Coalesce(Sum('mid_sell_paid'), Value(0, output_field=DecimalField()))
+    )['total_paid']
+
+    total_due = total_price - total_paid
+
+    return JsonResponse({
+        'details': {
+            'total_amount': float(total_price),
+            'total_paid': float(total_paid),
+            'total_due': float(total_due)
+        }
+    })
 
 
 @login_required
@@ -1513,7 +1676,11 @@ def units(request):
         elif action == 'delete':
             unit_id = request.POST.get('id')
             unit = get_object_or_404(Unit, pk=unit_id)
-            unit.delete()
+            try:
+                unit.delete()
+                messages.success(request, "Unit deleted successfully.")
+            except ProtectedError:
+                messages.error(request, "Cannot delete this unit because it is being used in other records.")
             return redirect('units')
 
     units = Unit.objects.all()
@@ -2045,8 +2212,8 @@ def material_type_update(request, id):
 @login_required
 # Delete a material type
 @require_http_methods(["POST"])
-def material_type_delete(request, pk):
-    material_type = get_object_or_404(MaterialType, pk=pk)
+def material_type_delete(request, id):
+    material_type = get_object_or_404(MaterialType, pk=id)
     material_type.delete()
     return redirect('material_type_list')
 
@@ -2867,35 +3034,25 @@ def profit_loss_report(request):
         date_from = start_date
         date_to = end_date
 
-    # Revenue
+    # Revenue (using pre-calculated sell prices)
     revenue = MaterialInventoryDetail.objects.filter(
         mid_deal_type='sell',
         mid_entry_date__date__range=[date_from, date_to]
     ).aggregate(
-        total_revenue=Sum(
-            ExpressionWrapper(
-                F('mid_sell_quentity') * F('mid_sell_prices'),
-                output_field=DecimalField(max_digits=20, decimal_places=2)
-            )
-        )
+        total_revenue=Sum('mid_sell_prices', output_field=DecimalField(max_digits=20, decimal_places=2))
     )['total_revenue'] or 0
 
-    # COGS
+    # COGS (using pre-calculated buy prices)
     cogs = MaterialInventoryDetail.objects.filter(
         mid_deal_type='buy',
         mid_entry_date__date__range=[date_from, date_to]
     ).aggregate(
-        total_cogs=Sum(
-            ExpressionWrapper(
-                F('mid_buy_quentity') * F('mid_buy_prices'),
-                output_field=DecimalField(max_digits=20, decimal_places=2)
-            )
-        )
+        total_cogs=Sum('mid_buy_prices', output_field=DecimalField(max_digits=20, decimal_places=2))
     )['total_cogs'] or 0
 
     gross_profit = revenue - cogs
 
-    # Expenses
+    # Expenses (if still needed)
     customer_debits = CustomerInfo.objects.aggregate(
         total=Sum('dabite', output_field=DecimalField(max_digits=20, decimal_places=2))
     )['total'] or 0
@@ -2907,39 +3064,25 @@ def profit_loss_report(request):
     total_expenses = customer_debits + supplier_credits
     net_profit = gross_profit - total_expenses
 
-    # Monthly trends
+    # Monthly trends using pre-calculated prices
     raw_monthly_data = MaterialInventoryDetail.objects.filter(
         mid_entry_date__date__range=[date_from, date_to]
     ).annotate(
         month=TruncMonth('mid_entry_date')
     ).values('month').annotate(
-        revenue=Sum(
-            ExpressionWrapper(
-                F('mid_sell_quentity') * F('mid_sell_prices'),
-                output_field=DecimalField()
-            ),
-            filter=models.Q(mid_deal_type='sell')
-        ),
-        cogs=Sum(
-            ExpressionWrapper(
-                F('mid_buy_quentity') * F('mid_buy_prices'),
-                output_field=DecimalField()
-            ),
-            filter=models.Q(mid_deal_type='buy')
-        )
+        revenue=Sum('mid_sell_prices', filter=models.Q(mid_deal_type='sell')),
+        cogs=Sum('mid_buy_prices', filter=models.Q(mid_deal_type='buy'))
     ).order_by('month')
 
-    # Precompute gross profit for each month (so no math in template)
     monthly_data = []
     for row in raw_monthly_data:
         revenue_val = row['revenue'] or 0
         cogs_val = row['cogs'] or 0
-        month_gross = revenue_val - cogs_val
         monthly_data.append({
             'month': row['month'],
             'revenue': revenue_val,
             'cogs': cogs_val,
-            'gross': month_gross
+            'gross': revenue_val - cogs_val
         })
 
     # CSV export
@@ -3924,9 +4067,9 @@ def print_invoice_purchase(request, purchase_id):
     }
     
     return render(request, 'backend/material/invoice_purchase.html', context)
-
-
-
+    
+    
+    
 @login_required
 def search_banner(request):
     banner = SearchViewBanner.objects.last()
@@ -3945,7 +4088,10 @@ def search_banner(request):
     return render(request, 'backend/search/banner.html', {
         'form': form,
         'banner': banner
-    })
+    })    
+    
+    
+    
     
     
 @login_required
@@ -3966,4 +4112,708 @@ def thankyou_banner(request):
     return render(request, 'backend/thankyou/banner.html', {
         'form': form,
         'banner': banner
+    })    
+    
+
+
+def machine_list(request):
+    machines = Machine.objects.all()
+    return render(request, 'backend/machines/machine_list.html', {'machines': machines})
+
+
+def machine_detail(request, pk):
+    machine = get_object_or_404(Machine, pk=pk)
+    details = machine.details.first()  # Assuming one detail per machine
+    images = machine.images.all()
+    return render(request, 'backend/machines/machine_detail.html', {
+        'machine': machine,
+        'details': details,
+        'images': images,
     })
+
+
+def machine_create(request):
+    if request.method == 'POST':
+        try:
+            # Machine creation
+            machine = Machine.objects.create(
+                m_name=request.POST.get('m_name'),
+                m_type=request.POST.get('m_type'),
+                m_brand=request.POST.get('m_brand'),
+                m_model=request.POST.get('m_model'),
+                m_purchase_date=request.POST.get('m_purchase_date'),
+                m_status=request.POST.get('m_status') == 'on'
+            )
+
+            # Machine details
+            MachineDetails.objects.create(
+                md_machine=machine,
+                md_description=request.POST.get('md_description'),
+                md_serial_number=request.POST.get('md_serial_number'),
+                md_capacity=request.POST.get('md_capacity'),
+                md_location=request.POST.get('md_location'),
+                md_last_service_date=request.POST.get('md_last_service_date')
+            )
+
+            # Handle image uploads
+            images = request.FILES.getlist('images')
+            for image in images:
+                MachineImage.objects.create(machine=machine, image=image)
+
+            messages.success(request, "Machine created successfully with thumbnails.")
+            return redirect('machine_list')
+
+        except Exception as e:
+            messages.error(request, f"Error creating machine: {str(e)}")
+            return redirect('machine_create')
+
+    return render(request, 'backend/machines/machine_form.html', {'edit': False})
+
+def machine_edit(request, pk):
+    machine = get_object_or_404(Machine, pk=pk)
+    details = machine.details.first()
+
+    if request.method == 'POST':
+        try:
+            # Update machine
+            machine.m_name = request.POST.get('m_name')
+            machine.m_type = request.POST.get('m_type')
+            machine.m_brand = request.POST.get('m_brand')
+            machine.m_model = request.POST.get('m_model')
+            machine.m_purchase_date = request.POST.get('m_purchase_date')
+            machine.m_status = request.POST.get('m_status') == 'on'
+            machine.save()
+
+            # Update or create details
+            if details:
+                details.md_description = request.POST.get('md_description')
+                details.md_serial_number = request.POST.get('md_serial_number')
+                details.md_capacity = request.POST.get('md_capacity')
+                details.md_location = request.POST.get('md_location')
+                details.md_last_service_date = request.POST.get('md_last_service_date')
+                details.save()
+            else:
+                MachineDetails.objects.create(
+                    md_machine=machine,
+                    md_description=request.POST.get('md_description'),
+                    md_serial_number=request.POST.get('md_serial_number'),
+                    md_capacity=request.POST.get('md_capacity'),
+                    md_location=request.POST.get('md_location'),
+                    md_last_service_date=request.POST.get('md_last_service_date')
+                )
+
+            # Add new images
+            images = request.FILES.getlist('images')
+            for image in images:
+                MachineImage.objects.create(machine=machine, image=image)
+
+            # Handle image deletions
+            delete_images = request.POST.getlist('delete_images')
+            if delete_images:
+                MachineImage.objects.filter(id__in=delete_images).delete()
+
+            messages.success(request, "Machine updated successfully.")
+            return redirect('machine_detail', pk=machine.pk)
+
+        except Exception as e:
+            messages.error(request, f"Error updating machine: {str(e)}")
+            return redirect('machine_edit', pk=pk)
+
+    return render(request, 'backend/machines/machine_form.html', {
+        'edit': True,
+        'machine': machine,
+        'details': details,
+    })
+def machine_delete(request, pk):
+    machine = get_object_or_404(Machine, pk=pk)
+    machine.delete()
+    messages.success(request, "Machine deleted successfully.")
+    return redirect('machine_list')
+
+    
+    
+# List view (for backend page)
+def machine_banner_list(request):
+    banners = MachineBanner.objects.all()
+    return render(request, 'backend/machines/banner_list.html', {
+        'banners': banners,
+    })
+    
+    
+# Create (no form used)
+def machine_banner_create(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        subtitle = request.POST.get('subtitle')
+        background_image = request.FILES.get('background_image')
+
+        MachineBanner.objects.create(
+            title=title,
+            subtitle=subtitle,
+            background_image=background_image
+        )
+        messages.success(request, 'Banner created successfully.')
+        return redirect('machine_banner_list')
+
+    return render(request, 'backend/machines/banner_form.html')
+
+
+# Edit
+def machine_banner_edit(request, pk):
+    banner = get_object_or_404(MachineBanner, pk=pk)
+
+    if request.method == 'POST':
+        banner.title = request.POST.get('title')
+        banner.subtitle = request.POST.get('subtitle')
+
+        if request.FILES.get('background_image'):
+            banner.background_image = request.FILES['background_image']
+
+        banner.save()
+        messages.success(request, 'Banner updated successfully.')
+        return redirect('machine_banner_list')
+
+    return render(request, 'backend/machines/banner_form.html', {
+        'banner': banner
+    })
+
+
+# Delete
+def machine_banner_delete(request, pk):
+    banner = get_object_or_404(MachineBanner, pk=pk)
+    banner.delete()
+    messages.success(request, 'Banner deleted successfully.')
+    return redirect('machine_banner_list')
+    
+    
+@login_required
+def profile_view_edit(request):
+    user    = request.user
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    # ←–– Define them here
+    countries = [
+        'Bangladesh', 'India', 'United States', 'United Kingdom',
+        'Canada', 'France', 'Germany', 'Japan', 'Australia'
+    ]
+    timezones = [
+        '-12', '-11', '-10', '-9', '-8', '-7', '-6', '-5', '-4', '-3', '-2', '-1',
+        '0', '+1', '+2', '+3', '+4', '+5', '+6', '+7', '+8', '+9', '+10', '+11', '+12'
+    ]
+    gender_choices = ['Male', 'Female', 'Other', 'Prefer not to say']
+
+    if request.method == 'POST':
+        # --- User fields ---
+        user.name         = request.POST.get('name', user.name)
+        user.phone_number = request.POST.get('phone_number', user.phone_number)
+
+        # --- Profile fields ---
+        profile.address          = request.POST.get('address', profile.address)
+        profile.city             = request.POST.get('city', profile.city)
+        profile.state            = request.POST.get('state', profile.state)
+        profile.postal_code      = request.POST.get('postal_code', profile.postal_code)
+        profile.country          = request.POST.get('country', profile.country)
+        profile.timezone         = request.POST.get('timezone', profile.timezone)
+        profile.gender           = request.POST.get('gender', profile.gender)
+        profile.date_of_birth    = request.POST.get('date_of_birth') or profile.date_of_birth
+        profile.job_title        = request.POST.get('job_title', profile.job_title)
+        profile.skills           = request.POST.get('skills', profile.skills)
+        profile.biography        = request.POST.get('biography', profile.biography)
+        profile.linkedin_profile = request.POST.get('linkedin_profile', profile.linkedin_profile)
+        profile.github_profile   = request.POST.get('github_profile', profile.github_profile)
+
+        print("FILES:", request.FILES)
+        # --- Handle file upload ---
+        if request.FILES.get('image'):
+            print("Got image:", request.FILES['image'].name)
+            if profile.image:
+                profile.image.delete(save=False)
+            profile.image = request.FILES['image']
+
+        # --- Save everything ---
+        user.save()
+        profile.save()
+
+        messages.success(request, "Your profile has been updated.")
+        return redirect('profile_view_edit')
+
+    # GET: render form with existing data plus our choice lists
+    context = {
+        'user': user,
+        'profile': profile,
+        'countries': sorted(countries),
+        'timezones': timezones,
+        'gender_choices': gender_choices,
+    }
+    return render(request, 'backend/profile/profile_view_edit.html', context)
+    
+    
+    
+    
+
+from django.contrib.admin.views.decorators import staff_member_required   
+
+@staff_member_required  # Only admin/staff can see all notifications
+def all_notifications(request):
+    notifications = Notification.objects.all().order_by('-created_at')
+    unread_notification_count = notifications.filter(is_read=False).count()
+    return render(request, 'backend/notifications/all.html', {
+        'notifications': notifications,
+        'unread_notification_count': unread_notification_count,
+    })
+
+
+@login_required
+def mark_as_read(request, pk):
+    if request.user.is_staff:
+        notification = get_object_or_404(Notification, pk=pk)
+    else:
+        notification = get_object_or_404(Notification, pk=pk, user=request.user)
+
+    notification.is_read = True
+    notification.save()
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'status': 'success'})
+
+    try:
+        redirect_url = notification.get_absolute_url()
+    except Exception:
+        redirect_url = reverse('notifications_all')  # fallback
+
+    return redirect(redirect_url)
+
+
+@login_required
+def mark_all_as_read(request):
+    request.user.notifications.filter(is_read=False).update(is_read=True)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'status': 'success'})
+
+    return redirect(reverse('notifications_all'))
+    
+    
+    
+@login_required
+def get_sales_invoice_details(request):
+    invoice_id = request.GET.get('invoice_id')
+    customer_id = request.GET.get('customer_id')
+    
+    if not invoice_id or not customer_id:
+        return JsonResponse({'details': {}})
+    
+    sales_details = MaterialInventoryDetail.objects.filter(
+        mid_invoice_id=invoice_id,
+        mid_party=customer_id,
+        mid_deal_type='sell'
+    ).aggregate(
+        total_amount=Sum('mid_sell_prices'),
+        total_paid=Sum('mid_sell_paid'),
+        total_quantity=Sum('mid_sell_quentity')
+    )
+    
+    total_due = (sales_details['total_amount'] or 0) - (sales_details['total_paid'] or 0)
+    
+    return JsonResponse({
+        'details': {
+            'total_amount': sales_details['total_amount'] or 0,
+            'total_paid': sales_details['total_paid'] or 0,
+            'total_due': total_due,
+            'total_quantity': sales_details['total_quantity'] or 0,
+            'deal_type': 'sell'
+        }
+    })
+
+@login_required
+def view_sales_invoice(request, sales_id):
+    sale = get_object_or_404(MaterialInventoryDetail, mid_invoice_id=sales_id, mid_deal_type='sell')
+    
+    # Get customer details
+    customer = None
+    if sale.mid_party:
+        try:
+            customer = CustomerInfo.objects.get(id=sale.mid_party)
+        except CustomerInfo.DoesNotExist:
+            pass
+        
+    # Calculate values
+    unit_price = sale.mid_sell_prices / sale.mid_sell_quentity if sale.mid_sell_quentity else 0
+    balance_due = sale.mid_sell_prices - sale.mid_sell_paid
+    
+    context = {
+        'sale': sale,
+        'customer': customer,
+        'material': sale.mid_material,
+        'entry_by': sale.mid_entry_by.username if hasattr(sale.mid_entry_by, 'username') else sale.mid_entry_by or 'System',
+        'unit_price': unit_price,
+        'total_amount': sale.mid_sell_prices,
+        'paid_amount': sale.mid_sell_paid,
+        'balance_due': balance_due,
+        'quantity': sale.mid_sell_quentity,
+        'current_date': datetime.now().strftime("%B %d, %Y"),
+        'due_date': (sale.mid_entry_date + timedelta(days=30)).strftime("%B %d, %Y") if sale.mid_entry_date else "",
+        'is_sale': True,
+        'print_mode': False,
+    }
+    
+    return render(request, 'backend/invoices/sales_invoice.html', context)
+
+@login_required
+def print_sales_invoice(request, sales_id):
+    sale = get_object_or_404(MaterialInventoryDetail, id=sales_id, mid_deal_type='sell')
+    
+    # Get customer details
+    customer = None
+    if sale.mid_party:
+        try:
+            customer = CustomerInfo.objects.get(CustomerID=sale.mid_party)
+        except CustomerInfo.DoesNotExist:
+            pass
+    
+    # Calculate values
+    unit_price = sale.mid_sell_prices / sale.mid_sell_quentity if sale.mid_sell_quentity else 0
+    balance_due = sale.mid_sell_prices - sale.mid_sell_paid
+    
+    context = {
+        'sale': sale,
+        'customer': customer,
+        'material': sale.mid_material,
+        'entry_by': sale.mid_entry_by.get_username() if sale.mid_entry_by else 'System',
+        'unit_price': unit_price,
+        'total_amount': sale.mid_sell_prices,
+        'paid_amount': sale.mid_sell_paid,
+        'balance_due': balance_due,
+        'quantity': sale.mid_sell_quentity,
+        'current_date': datetime.now().strftime("%B %d, %Y"),
+        'due_date': (sale.mid_entry_date + timedelta(days=30)).strftime("%B %d, %Y") if sale.mid_entry_date else "",
+        'is_sale': True,
+        'print_mode': True,
+    }
+    
+    return render(request, 'backend/invoices/sales_invoice.html', context) 
+    
+
+
+
+
+
+# Add these views to your existing views.py
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from datetime import datetime, timedelta
+from django.db.models import Sum
+from .models import Order, OrderItem, CustomerInfo, MaterialInventoryDetail
+
+@login_required
+def view_initial_order_invoice(request, order_id):
+    """View for initial order invoice (for pending and not viewed orders)"""
+    try:
+        order = get_object_or_404(Order, id=order_id)
+        
+        # Debug print to check order status
+        print(f"Order ID: {order_id}, Status: {order.status}")
+        
+        # Check if order status allows initial invoice (0=Pending, 5=Not Viewed)
+        if order.status not in [0, 5]:
+            messages.warning(request, 'This order has been processed. Redirecting to sales invoice.')
+            # Only redirect if sales invoice exists
+            if hasattr(order, 'invoice_id') and order.invoice_id:
+                return redirect('view_sales_invoice', order.invoice_id)
+            else:
+                messages.error(request, 'No sales invoice found for this processed order.')
+                return redirect('order_list')
+        
+        # Get customer details - handle if customer doesn't exist
+        customer = getattr(order, 'customer', None)
+        if not customer:
+            messages.error(request, 'Customer information not found for this order.')
+            return redirect('order_list')
+        
+        # Get order items
+        order_items = order.items.all()
+        
+        # Calculate totals with proper null handling
+        subtotal = float(order.subtotal or 0)
+        shipping_cost = float(order.shipping_cost or 0)
+        total_amount = float(order.total_amount or 0)
+        
+        # If total_amount is 0, calculate from items
+        if total_amount == 0:
+            total_amount = sum(float(item.total_price or 0) for item in order_items) + shipping_cost
+        
+        context = {
+            'order': order,
+            'customer': customer,
+            'order_items': order_items,
+            'subtotal': subtotal,
+            'shipping_cost': shipping_cost,
+            'total_amount': total_amount,
+            'current_date': datetime.now().strftime("%B %d, %Y"),
+            'due_date': (order.created_at + timedelta(days=7)).strftime("%B %d, %Y"),
+            'is_initial_order': True,
+            'print_mode': False,
+        }
+        
+        # Make sure to use the correct template path based on your file structure
+        # Based on your paste.txt, the template should be in backend/invoices/
+        return render(request, 'backend/invoices/initial_invoice.html', context)
+        
+    except Exception as e:
+        print(f"Error in view_initial_order_invoice: {str(e)}")
+        messages.error(request, f'Error loading initial invoice: {str(e)}')
+        return redirect('order_list')
+
+@login_required
+def print_initial_order_invoice(request, order_id):
+    """Print view for initial order invoice"""
+    try:
+        order = get_object_or_404(Order, id=order_id)
+        
+        # Check if order status allows initial invoice
+        if order.status not in [0, 5]:
+            messages.warning(request, 'This order has been processed and cannot show initial invoice.')
+            return redirect('order_list')
+        
+        customer = getattr(order, 'customer', None)
+        if not customer:
+            messages.error(request, 'Customer information not found.')
+            return redirect('order_list')
+            
+        order_items = order.items.all()
+        
+        subtotal = float(order.subtotal or 0)
+        shipping_cost = float(order.shipping_cost or 0)
+        total_amount = float(order.total_amount or 0)
+        
+        # Calculate total if not set
+        if total_amount == 0:
+            total_amount = sum(float(item.total_price or 0) for item in order_items) + shipping_cost
+        
+        context = {
+            'order': order,
+            'customer': customer,
+            'order_items': order_items,
+            'subtotal': subtotal,
+            'shipping_cost': shipping_cost,
+            'total_amount': total_amount,
+            'current_date': datetime.now().strftime("%B %d, %Y"),
+            'due_date': (order.created_at + timedelta(days=7)).strftime("%B %d, %Y"),
+            'is_initial_order': True,
+            'print_mode': True,
+        }
+        
+        return render(request, 'backend/invoices/initial_invoice.html', context)
+        
+    except Exception as e:
+        print(f"Error in print_initial_order_invoice: {str(e)}")
+        messages.error(request, f'Error loading invoice for printing: {str(e)}')
+        return redirect('order_list')
+
+@login_required
+def view_order_invoice(request, order_id):
+    """Main router for order invoices - SIMPLIFIED VERSION"""
+    try:
+        order = get_object_or_404(Order, id=order_id)
+        
+        print(f"Routing invoice for Order ID: {order_id}, Status: {order.status}")
+        
+        # CORRECTED LOGIC: 
+        # Status 0 (Pending) and 5 (Not Viewed) = Show Initial Invoice
+        # All other statuses = Try to show Sales Invoice
+        
+        if order.status in [0, 5]:  # Pending or Not Viewed - Show Initial Invoice
+            return view_initial_order_invoice(request, order_id)
+        else:  # Other statuses - Try Sales Invoice
+            # Check if sales invoice exists
+            if hasattr(order, 'invoice_id') and order.invoice_id:
+                try:
+                    # Try to find sales invoice by invoice_id
+                    # Adjust this based on your actual sales invoice model
+                    return redirect('view_sales_invoice', order.invoice_id)
+                except:
+                    # If sales invoice not found, fallback to initial invoice
+                    messages.warning(request, 'Sales invoice not found. Showing initial invoice.')
+                    return view_initial_order_invoice(request, order_id)
+            else:
+                # No sales invoice, show initial invoice
+                return view_initial_order_invoice(request, order_id)
+                
+    except Order.DoesNotExist:
+        messages.error(request, 'Order not found.')
+        return redirect('order_list')
+    except Exception as e:
+        print(f"Error in view_order_invoice: {str(e)}")
+        messages.error(request, f'Error loading invoice: {str(e)}')
+        return redirect('order_list')
+
+
+
+
+
+
+
+
+
+
+
+
+
+def shippingcosttype_list(request):
+    types = ShippingCostType.objects.all()
+    return render(request, 'backend/shipping/shippingcosttype_list.html', {'types': types})
+
+
+def shippingcosttype_create(request):
+    if request.method == 'POST':
+        code = request.POST.get('code')
+        name = request.POST.get('name')
+        if code and name:
+            ShippingCostType.objects.create(code=code, name=name)
+            return redirect('shippingcosttype_list')
+    return render(request, 'backend/shipping/shippingcosttype_form.html')
+
+
+def shippingcosttype_edit(request, pk):
+    obj = get_object_or_404(ShippingCostType, pk=pk)
+    if request.method == 'POST':
+        code = request.POST.get('code')
+        name = request.POST.get('name')
+        if code and name:
+            obj.code = code
+            obj.name = name
+            obj.save()
+            return redirect('shippingcosttype_list')
+    return render(request, 'backend/shipping/shippingcosttype_form.html', {'obj': obj})
+
+
+def shippingcosttype_delete(request, pk):
+    obj = get_object_or_404(ShippingCostType, pk=pk)
+    if request.method == 'POST':
+        obj.delete()
+        return redirect('shippingcosttype_list')
+    return render(request, 'backend/shipping/shippingcosttype_confirm_delete.html', {'obj': obj})
+
+
+# --- ShippingCost Views ---
+
+def shippingcost_list(request):
+    costs = ShippingCost.objects.select_related('shipping_type').all()
+    return render(request, 'backend/shipping/shippingcost_list.html', {'costs': costs})
+
+
+import requests
+def shippingcost_create(request, pk=None):
+    shipping_types = ShippingCostType.objects.all()
+    obj = None
+    if pk:
+        obj = get_object_or_404(ShippingCost, pk=pk)
+
+    # Fetch all districts from API
+    districts = []
+    try:
+        response = requests.get('https://bdapi.vercel.app/api/v.1/district')
+        response.raise_for_status()
+        json_data = response.json()
+        if json_data.get('status') == 200 and json_data.get('success'):
+            districts = [d['name'] for d in json_data.get('data', []) if 'name' in d]
+            districts.sort()
+    except requests.RequestException:
+        districts = []
+
+    # Determine selected shipping_type_id from POST or from obj (edit)
+    selected_shipping_type_id = None
+    if request.method == 'POST':
+        selected_shipping_type_id = request.POST.get('shipping_type')
+    elif obj:
+        selected_shipping_type_id = obj.shipping_type.id
+
+    # Get all districts already saved globally (exclude current obj if editing)
+    existing_districts = set()
+    existing_districts_qs = ShippingCost.objects.all()
+    if obj:
+        existing_districts_qs = existing_districts_qs.exclude(pk=obj.pk)
+
+    for sc in existing_districts_qs:
+        if sc.district:
+            existing_districts.update([d.strip() for d in sc.district.split(',')])
+
+    # Remove assigned districts completely (no disabled list)
+    enabled_districts = [d for d in districts if d not in existing_districts]
+
+    # Handle "Outside Dhaka" special case: exclude 'Dhaka' and add 'Outside Dhaka' option
+    selected_shipping_type = None
+    if selected_shipping_type_id:
+        selected_shipping_type = next((st for st in shipping_types if str(st.id) == str(selected_shipping_type_id)), None)
+
+    if selected_shipping_type and selected_shipping_type.name.lower() == 'outside dhaka':
+        # Remove 'Dhaka' from enabled districts
+        enabled_districts = [d for d in enabled_districts if d.lower() != 'dhaka']
+
+        # Add 'Outside Dhaka' as a special option (if not already present)
+        if 'Outside Dhaka' not in enabled_districts:
+            enabled_districts.insert(0, 'Outside Dhaka')
+
+    # Handle POST (Create or Edit)
+    if request.method == 'POST':
+        shipping_type_id = request.POST.get('shipping_type')
+        districts_selected = request.POST.getlist('district')  # multiple districts
+        cost = request.POST.get('cost')
+
+        if shipping_type_id and cost:
+            shipping_type = get_object_or_404(ShippingCostType, pk=shipping_type_id)
+            district_str = ', '.join(districts_selected) if districts_selected else None
+
+            if obj:
+                # Edit existing
+                obj.shipping_type = shipping_type
+                obj.district = district_str
+                obj.cost = cost
+                obj.save()
+            else:
+                # Create new
+                ShippingCost.objects.create(
+                    shipping_type=shipping_type,
+                    district=district_str,
+                    cost=cost
+                )
+            return redirect('shippingcost_list')
+
+    # Preselect districts for editing
+    preselected_districts = []
+    if obj and obj.district:
+        preselected_districts = [d.strip() for d in obj.district.split(',')]
+
+    return render(request, 'backend/shipping/shippingcost_form.html', {
+        'shipping_types': shipping_types,
+        'enabled_districts': enabled_districts,
+        'obj': obj,
+        'preselected_districts': preselected_districts,
+    })
+def shippingcost_edit(request, pk):
+    obj = get_object_or_404(ShippingCost, pk=pk)
+    shipping_types = ShippingCostType.objects.all()
+    if request.method == 'POST':
+        shipping_type_id = request.POST.get('shipping_type')
+        district = request.POST.get('district')
+        cost = request.POST.get('cost')
+
+        if shipping_type_id and cost:
+            shipping_type = get_object_or_404(ShippingCostType, pk=shipping_type_id)
+            obj.shipping_type = shipping_type
+            obj.district = district if district else None
+            obj.cost = cost
+            obj.save()
+            return redirect('shippingcost_list')
+
+    return render(request, 'backend/shipping/shippingcost_form.html', {'obj': obj, 'shipping_types': shipping_types})
+
+
+def shippingcost_delete(request, pk):
+    obj = get_object_or_404(ShippingCost, pk=pk)
+    if request.method == 'POST':
+        obj.delete()
+        return redirect('shippingcost_list')
+    return render(request, 'backend/shipping/shippingcost_confirm_delete.html', {'obj': obj})

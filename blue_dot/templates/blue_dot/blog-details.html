@@ -389,7 +389,28 @@
     transform: none;
   }
 }
-
+<style>
+  .tp-postbox-video {
+      margin-bottom: 20px;
+  }
+  
+  .tp-postbox-video video {
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .tp-postbox-video video:focus {
+      outline: 2px solid #007bff;
+      outline-offset: 2px;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+      .tp-postbox-video video {
+          max-height: 250px;
+      }
+  }
+  </style>
 {% endblock custom_css %}
 
 
@@ -434,18 +455,37 @@
         <div class="row">
             <div class="col-xxl-8 col-xl-8 col-lg-8">
                 <div class="tp-postbox-wrapper">
-                    <article class="tp-postbox-item">
-                        <div class="tp-postbox-thumb">
-                            <img src="{{ blog.image.url }}" alt="{{ blog.title }}">
+                  <article class="tp-postbox-item">
+                    <div class="tp-postbox-thumb">
+                        <img src="{{ blog.image.url }}" alt="{{ blog.title }}">
+                    </div>
+                    
+                    <!-- NEW VIDEO SECTION - Add this after the image -->
+                    {% if blog.video %}
+                    <div class="tp-postbox-video">
+                        <video 
+                            controls 
+                            class="w-100"
+                            style="max-height: 400px; object-fit: cover;"
+                            preload="metadata"
+                            
+                        >
+                            <source src="{{ blog.video.url }}" type="video/mp4">
+                            <source src="{{ blog.video.url }}" type="video/webm">
+                            <source src="{{ blog.video.url }}" type="video/ogg">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="tp-postbox-content">
+                        <h3 class="tp-postbox-title">{{ blog.title }}</h3>
+                        <h5>{{ blog.date }} _ {{ blog.get_category_name }} _ BY {{ blog.author }}</h5>
+                        <div class="tp-postbox-paragraph">
+                            {{ blog.description|safe }}
                         </div>
-                        <div class="tp-postbox-content">
-                            <h3 class="tp-postbox-title">{{ blog.title }}</h3>
-                            <h5>{{ blog.date }} _ {{ blog.get_category_name }} _ BY {{ blog.author }}</h5>
-                            <div class="tp-postbox-paragraph">
-                                {{ blog.description|safe }}
-                            </div>
-                        </div>
-                    </article>
+                    </div>
+                </article>
                     <div class="row align-items-center tp-postbox-details-row mb-50"></div>
                     <div class="post-comments-section mb-50">
                         {% if comments %}

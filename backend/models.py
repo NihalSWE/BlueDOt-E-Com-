@@ -15,7 +15,7 @@ from django.core.files.storage import default_storage
 from io import BytesIO
 from django.core.files.base import ContentFile
 from decimal import Decimal
-
+from django.contrib.auth import get_user_model
 
 
 
@@ -129,6 +129,7 @@ class UserProfile(models.Model):
     country = models.CharField(max_length=100, blank=True, null=True)
     hire_date = models.DateField(null=True, blank=True)
     job_title = models.CharField(max_length=100, blank=True, null=True)
+    image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     skills = models.TextField(blank=True, null=True)
     profile_picture = models.URLField(blank=True, null=True)
     linkedin_profile = models.URLField(blank=True, null=True)
@@ -483,7 +484,35 @@ class ProductMaterial(models.Model):
     def __str__(self):
         return f"{self.material.name} for {self.product.name}"
     
-    
+class ShippingCostType(models.Model):
+    code = models.CharField(max_length=50, unique=True)  # e.g. 'outside_dhaka'
+    name = models.CharField(max_length=100)              # e.g. 'Outside Dhaka Shipping'
+
+    def __str__(self):
+        return self.name
+
+
+class ShippingCost(models.Model):
+    shipping_type = models.ForeignKey(
+        ShippingCostType,
+        on_delete=models.CASCADE,
+        related_name='costs'
+    )
+    district = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text="Specify district name or leave blank for default cost"
+    )
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        unique_together = ('shipping_type', 'district')
+        verbose_name = "Shipping Cost"
+        verbose_name_plural = "Shipping Costs"
+
+    def __str__(self):
+        return f"{self.shipping_type.name} - {self.district or 'Default'}: ৳{self.cost}"
 
 
 class Order(models.Model):
@@ -506,17 +535,24 @@ class Order(models.Model):
         ('refunded', 'Refunded'),
     ]
 
-    customer = models.ForeignKey('CustomerInfo', on_delete=models.CASCADE)
+    customer = models.ForeignKey('CustomerInfo', on_delete=models.CASCADE, related_name='orders')
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
+    district = models.CharField(max_length=50, null=True, blank=True)
+    address = models.CharField(max_length=500, null=True, blank=True)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending',null=True,blank=True)
-    order_date = models.DateField(null=True, blank=True)  # NEW FIELD
-    notes = models.TextField(blank=True, null=True)  # ← Add this line
+    order_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True, null=True)
     invoice_id = models.CharField(max_length=20,unique=True, blank=True, null=True)
     
     # Order Financial Information
     subtotal = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
-    shipping_type = models.CharField(max_length=20, choices=SHIPPING_TYPE_CHOICES, default='flat_rate',null=True,blank=True)
+    
+    # Updated shipping fields to store both type and cost
+    shipping_type = models.CharField(max_length=20, choices=SHIPPING_TYPE_CHOICES, default='flat_rate',null=True,blank=True)  # Keep for backward compatibility
+    shipping_type_code = models.CharField(max_length=50, null=True, blank=True)  # NEW: Store shipping type code
+    shipping_type_name = models.CharField(max_length=100, null=True, blank=True)  # NEW: Store shipping type name
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=100.00,null=True,blank=True)
+    
     total_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -535,8 +571,6 @@ class Order(models.Model):
             self.invoice_id = self.generate_invoice_id()
         super().save(*args, **kwargs)
         
-    
-
     def __str__(self):
         return f"Order #{self.invoice_id} - {self.customer.CustomerName}"
     
@@ -767,6 +801,7 @@ class ContactUsBanner(models.Model):
                 resized_img.save(image_path, quality=90, optimize=True)
                 
                 
+# Conatct page branch locations
 # Conatct page branch locations
 class ContactLocation(models.Model):
     city = models.CharField(max_length=100)
@@ -1437,7 +1472,7 @@ class BlogBanner(models.Model):
             image_path = self.background_image.path
             with Image.open(image_path) as img:
                 # Force resize to 1920x570 (may distort if original ratio differs)
-                resized_img = img.resize((1920, 300), Image.LANCZOS)
+                resized_img = img.resize((1920, 570), Image.LANCZOS)
                 resized_img.save(image_path, quality=90, optimize=True)
                 
                 
@@ -1454,7 +1489,7 @@ class ProductBanner(models.Model):
             image_path = self.background_image.path
             with Image.open(image_path) as img:
                 # Force resize to 1920x570 (may distort if original ratio differs)
-                resized_img = img.resize((1920, 300), Image.LANCZOS)
+                resized_img = img.resize((1920, 570), Image.LANCZOS)
                 resized_img.save(image_path, quality=90, optimize=True)
                 
                 
@@ -1474,6 +1509,7 @@ class BlogPost(models.Model):
     help_text="Blog content with rich text editor")
 
     image = models.ImageField(upload_to='blog/', help_text="Blog thumbnail image")
+    video = models.FileField(upload_to='blog/videos/', blank=True, null=True)  # NEW VIDEO FIELD
     category = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True, 
                                related_name='blog_posts', help_text="Select product category")
     author = models.CharField(max_length=100, default="Admin")
@@ -1578,6 +1614,7 @@ class Visitor(models.Model):
 
 from decimal import Decimal
 class AddCart(models.Model):
+    session_key = models.CharField(max_length=40, null=True, blank=True) 
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1592,6 +1629,7 @@ class AddCart(models.Model):
         if price is None:
             price = getattr(self.product, 'base_price', 0)
         return price or Decimal('0.00')
+        
         
         
         
@@ -1736,6 +1774,8 @@ class OrderItemSummary(models.Model):
         
         
         
+        
+        
 #Search page banner
 class SearchViewBanner(models.Model):
     title = models.CharField(max_length=255)
@@ -1751,8 +1791,10 @@ class SearchViewBanner(models.Model):
                 # Force resize to 1920x570 (may distort if original ratio differs)
                 resized_img = img.resize((1920, 300), Image.LANCZOS)
                 resized_img.save(image_path, quality=90, optimize=True)  
-        
-        
+                
+                
+                
+                
 #Search page banner
 class ThankyouBanner(models.Model):
     title = models.CharField(max_length=255)
@@ -1767,5 +1809,155 @@ class ThankyouBanner(models.Model):
             with Image.open(image_path) as img:
                 # Force resize to 1920x570 (may distort if original ratio differs)
                 resized_img = img.resize((1920, 300), Image.LANCZOS)
-                resized_img.save(image_path, quality=90, optimize=True)      
+                resized_img.save(image_path, quality=90, optimize=True) 
+                
+                
+                
+# Machine model
+class Machine(models.Model):
+    m_name = models.CharField(max_length=100)
+    m_type = models.CharField(max_length=50)
+    m_brand = models.CharField(max_length=50)
+    m_model = models.CharField(max_length=50)
+    m_purchase_date = models.DateField()
+    m_status = models.BooleanField(default=True)  # True = active
+
+    def __str__(self):
+        return self.m_name
+
+
+# Machine details model
+class MachineDetails(models.Model):
+    md_machine = models.ForeignKey(Machine, on_delete=models.CASCADE, related_name='details')
+    md_description = models.TextField()
+    md_serial_number = models.CharField(max_length=100)
+    md_capacity = models.CharField(max_length=100)
+    md_location = models.CharField(max_length=100)
+    md_last_service_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Details for {self.md_machine.m_name}"
+
+
+class MachineImage(models.Model):
+    machine = models.ForeignKey(Machine, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='machine_images/')
+    thumbnail = models.ImageField(upload_to='machine_images/thumbnails/', blank=True, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        # First save the original image
+        super().save(*args, **kwargs)
+        
+        # Generate thumbnail if it doesn't exist
+        if self.image and not self.thumbnail:
+            self.generate_thumbnail()
+
+    def generate_thumbnail(self):
+        try:
+            img = Image.open(self.image)
+            if img.mode in ('RGBA', 'LA'):
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                background.paste(img, mask=img.split()[-1])
+                img = background
+            
+            img.thumbnail((300, 300))  # Set your desired thumbnail size
+
+            thumb_io = BytesIO()
+            img.save(thumb_io, format='JPEG', quality=85)
+            thumb_name = f"thumb_{os.path.basename(self.image.name)}"
+
+            self.thumbnail.save(
+                thumb_name,
+                ContentFile(thumb_io.getvalue()),
+                save=False
+            )
+            super().save()
+        except Exception as e:
+            print(f"Error generating thumbnail: {e}")
+
+    def delete(self, *args, **kwargs):
+        # Delete the image files when model is deleted
+        storage, path = self.image.storage, self.image.path
+        thumbnail_storage, thumbnail_path = self.thumbnail.storage, self.thumbnail.path
+        
+        super().delete(*args, **kwargs)
+        
+        # Delete files after model is deleted
+        storage.delete(path)
+        thumbnail_storage.delete(thumbnail_path)
+
+    def __str__(self):
+        return f"Image for {self.machine.m_name}"
+        
+        
+                
+class MachineBanner(models.Model):
+    page = models.CharField(max_length=50, unique=True, help_text="Use values like 'list' or 'detail'")
+    title = models.CharField(max_length=200)
+    subtitle = models.CharField(max_length=300, blank=True)
+    background_image = models.ImageField(upload_to='machine_banners/', blank=True, null=True)
+
+    def __str__(self):
+        return f"Machine Banner - {self.page.capitalize()}"
+                      
+                
+                
+                
+from django.urls import reverse
+User = get_user_model()
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('success', 'Success'),
+        ('info', 'Information'),
+        ('warning', 'Warning'),
+        ('danger', 'Error'),
+    )
+    
+    ICON_CHOICES = (
+        ('ri-notification-2-line', 'Default'),
+        ('ri-user-add-line', 'User'),
+        ('ri-shopping-cart-line', 'Order'),
+        ('ri-mail-line', 'Message'),
+        ('ri-check-line', 'Approval'),
+        ('ri-close-line', 'Rejection'),
+    )
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=100)
+    message = models.TextField()
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='info')
+    icon = models.CharField(max_length=50, choices=ICON_CHOICES, default='ri-notification-2-line')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    url = models.URLField(blank=True, null=True)
+    related_content_type = models.ForeignKey('contenttypes.ContentType', on_delete=models.SET_NULL, null=True, blank=True)
+    related_object_id = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Notification"
+        verbose_name_plural = "Notifications"
+
+    def __str__(self):
+        return f"{self.title} - {self.user.username}"
+
+    def get_related_object(self):
+        if self.related_content_type and self.related_object_id:
+            return self.related_content_type.get_object_for_this_type(pk=self.related_object_id)
+        return None
+
+    def get_absolute_url(self):
+        if self.url:
+            return self.url
+        obj = self.get_related_object()
+        if obj and hasattr(obj, 'get_absolute_url'):
+            return obj.get_absolute_url()
+        return reverse('notifications_all')
+
+        
+        
+
+        
         

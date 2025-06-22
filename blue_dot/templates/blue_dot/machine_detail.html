@@ -1,0 +1,414 @@
+{% extends "blue_dot/base.html" %}
+{% load static %}
+
+{% block breadcrumb %}
+<!-- Hero Banner Section -->
+<section class="machine-hero-banner" 
+         style="background-image: url('{% if banner.background_image %}{{ banner.background_image.url }}{% else %}{% static 'assets/img/breadcrumb/default-banner.jpg' %}{% endif %}');">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">{{ banner.title|default:"Machine Details" }}</h1>
+            <nav class="breadcrumb-nav">
+                <a href="{% url 'home' %}" class="breadcrumb-link">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-current">{{ machine.m_name }}</span>
+            </nav>
+        </div>
+    </div>
+</section>
+{% endblock breadcrumb %}
+
+{% block content %}
+<!-- Main Machine Details Section -->
+<section class="machine-details-section">
+    <div class="container">
+        <!-- Machine Gallery -->
+        <div class="machine-gallery-section">
+            <h2 class="section-title">Gallery</h2>
+            {% if images %}
+                <div class="gallery-grid">
+                    {% for img in images %}
+                        <div class="gallery-item">
+                            <img src="{{ img.image.url }}" alt="{{ machine.m_name }} image {{ forloop.counter }}" class="gallery-image">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-gallery">
+                    <i class="fas fa-image"></i>
+                    <p>No images available for this machine</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Basic Machine Information -->
+        <div class="machine-basic-info">
+            <h2 class="section-title">{{ machine.m_name }}</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Type</div>
+                    <div class="info-value">{{ machine.m_type }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Brand</div>
+                    <div class="info-value">{{ machine.m_brand }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Model</div>
+                    <div class="info-value">{{ machine.m_model }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Specifications -->
+{% if details %}
+<div class="technical-specs">
+    <h2 class="section-title">Technical Specifications</h2>
+    
+    <div class="specs-card-grid">
+        {% if details.md_serial_number %}
+        <div class="spec-card">
+            <div class="spec-card-icon">
+                <i class="fas fa-barcode"></i>
+            </div>
+            <div class="spec-card-content">
+                <h3 class="spec-card-title">Serial Number</h3>
+                <p class="spec-card-value">{{ details.md_serial_number }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if details.md_capacity %}
+        <div class="spec-card">
+            <div class="spec-card-icon">
+                <i class="fas fa-weight-hanging"></i>
+            </div>
+            <div class="spec-card-content">
+                <h3 class="spec-card-title">Capacity</h3>
+                <p class="spec-card-value">{{ details.md_capacity }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if details.md_location %}
+        <div class="spec-card">
+            <div class="spec-card-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="spec-card-content">
+                <h3 class="spec-card-title">Location</h3>
+                <p class="spec-card-value">{{ details.md_location }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if details.md_last_service_date %}
+        <div class="spec-card">
+            <div class="spec-card-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="spec-card-content">
+                <h3 class="spec-card-title">Last Service Date</h3>
+                <p class="spec-card-value">{{ details.md_last_service_date|date:"F j, Y" }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+        <!-- Description Section -->
+        {% if details.md_description %}
+        <div class="description-section">
+            <h2 class="section-title">Description</h2>
+          <div class="description-content">
+    {{ details.md_description|safe }}
+</div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+     .technical-specs {
+        margin: 40px 0;
+    }
+    
+    .specs-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+    }
+    
+    .spec-card {
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        padding: 25px;
+        display: flex;
+        align-items: flex-start;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid #eaeaea;
+    }
+    
+    .spec-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+    
+    .spec-card-icon {
+        background: #f0f7ff;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 20px;
+        flex-shrink: 0;
+        color: #3498db;
+        font-size: 1.2rem;
+    }
+    
+    .spec-card-content {
+        flex: 1;
+    }
+    
+    .spec-card-title {
+        font-size: 1rem;
+        color: #6c757d;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+    
+    .spec-card-value {
+        font-size: 1.1rem;
+        color: #2c3e50;
+        margin: 0;
+        font-weight: 500;
+        word-break: break-word;
+    }
+    
+    @media (max-width: 768px) {
+        .specs-card-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .spec-card {
+            padding: 20px;
+        }
+        
+        .spec-card-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 1rem;
+            margin-right: 15px;
+        }
+    }
+    /* Hero Banner Styles */
+    .machine-hero-banner {
+        height: 300px;
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: center;
+        position: relative;
+        color: #fff;
+    }
+    
+    .machine-hero-banner::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 0;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 800px;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+    
+    .breadcrumb-nav {
+        display: flex;
+        align-items: center;
+        font-size: 1rem;
+    }
+    
+    .breadcrumb-link {
+        color: #fff;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+    }
+    
+    .breadcrumb-link i {
+        margin-right: 8px;
+    }
+    
+    .breadcrumb-separator {
+        margin: 0 10px;
+        opacity: 0.7;
+    }
+    
+    .breadcrumb-current {
+        font-weight: 500;
+    }
+    
+    /* Main Content Styles */
+    .machine-details-section {
+        padding: 60px 0;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+        margin-bottom: 30px;
+        color: #2c3e50;
+        position: relative;
+        padding-bottom: 10px;
+    }
+    
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: #3498db;
+    }
+    
+    /* Gallery Styles */
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+    
+    .gallery-item {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .gallery-item:hover {
+        transform: translateY(-5px);
+    }
+    
+    .gallery-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        display: block;
+    }
+    
+    .empty-gallery {
+        text-align: center;
+        padding: 40px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        color: #6c757d;
+    }
+    
+    .empty-gallery i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        color: #adb5bd;
+    }
+    
+    /* Basic Info Styles */
+    .machine-basic-info {
+        margin-bottom: 40px;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    .info-item {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #3498db;
+    }
+    
+    .info-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+    
+    .info-value {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #2c3e50;
+    }
+    
+    /* Technical Specs Styles */
+    .technical-specs {
+        margin-bottom: 40px;
+    }
+    
+    .specs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    
+    .spec-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .spec-label {
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .spec-value {
+        color: #212529;
+    }
+    
+    /* Description Styles */
+    .description-content {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 8px;
+        line-height: 1.6;
+        color: #495057;
+    }
+    
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .gallery-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .info-grid, .specs-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock content %}

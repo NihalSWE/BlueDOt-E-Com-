@@ -468,7 +468,7 @@
                             <span><i class="fa-solid fa-star-sharp"></i></span>
                             <span><i class="fa-solid fa-star-sharp"></i></span>
                         </div>
-                        <div class="product__details-rating-count wow fadeInUp">
+                       <div class="product__details-rating-count wow fadeInUp">
                           <span>({{ reviews.count }} Customer Review{% if reviews.count != 1 %}s{% endif %})</span>
                       </div>
                     </div>
@@ -507,7 +507,7 @@
                     <div class="product__details-catagory wow fadeInUp">
                         <h5><span>Category:</span> {{ product.category }}</h5>
                     </div>
-                    <div class="product__details-catagory wow fadeInUp">
+<div class="product__details-catagory wow fadeInUp">
                       <h5 style="display: flex; align-items: center; gap: 12px;">
                           <span style="white-space: nowrap;">Any Query:</span>
                           <span style="color: #666; font-size: 14px;">01332-500075</span>
@@ -536,15 +536,46 @@
                           </div>
                       </h5> 
                   </div>
-                    <div class="product__details-socials d-flex align-items-center mt-40 wow fadeInUp">
-                        <span>Share:</span>
-                        <div class="product__details-social">
-                            <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
-                            <a href="#"><i class="fa-brands fa-instagram"></i></a>
-                            <a href="#"><i class="fa-brands fa-pinterest-p"></i></a>
-                            <a href="#"><i class="fa-brands fa-twitter"></i></a>
-                        </div>
-                    </div>
+                    <!-- Replace the existing social sharing section with this functional version -->
+<div class="product__details-socials d-flex align-items-center mt-40 wow fadeInUp">
+  <span>Share:</span>
+  <div class="product__details-social">
+      <!-- Facebook Share -->
+      <a href="#" 
+         onclick="shareOnFacebook('{{ request.build_absolute_uri }}', '{{ product.name|escapejs }}')" 
+         title="Share on Facebook">
+          <i class="fa-brands fa-facebook-f"></i>
+      </a>
+      
+      <!-- Twitter Share -->
+      <a href="#" 
+         onclick="shareOnTwitter('{{ request.build_absolute_uri }}', '{{ product.name|escapejs }}')" 
+         title="Share on Twitter">
+          <i class="fa-brands fa-twitter"></i>
+      </a>
+      
+      <!-- Pinterest Share -->
+      <a href="#" 
+         onclick="shareOnPinterest('{{ request.build_absolute_uri }}', '{{ product.name|escapejs }}', '{{ product.thumbnail.url }}')" 
+         title="Share on Pinterest">
+          <i class="fa-brands fa-pinterest-p"></i>
+      </a>
+      
+      <!-- WhatsApp Share -->
+      <a href="#" 
+         onclick="shareOnWhatsApp('{{ request.build_absolute_uri }}', '{{ product.name|escapejs }}')" 
+         title="Share on WhatsApp">
+          <i class="fa-brands fa-whatsapp"></i>
+      </a>
+      
+      <!-- Copy Link -->
+      <a href="#" 
+         onclick="copyToClipboard('{{ request.build_absolute_uri }}')" 
+         title="Copy Link">
+          <i class="fa-solid fa-link"></i>
+      </a>
+  </div>
+</div>
                 </div>
             </div>
         </div>
@@ -677,5 +708,79 @@
       });
     });
   </script>
+
+
+  <script>
+    // Facebook Share
+    function shareOnFacebook(url, title) {
+        const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(title)}`;
+        window.open(shareUrl, 'FacebookShare', 'width=600,height=400,scrollbars=yes,resizable=yes');
+    }
+    
+    // Twitter Share
+    function shareOnTwitter(url, title) {
+        const text = `Check out this amazing product: ${title}`;
+        const shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+        window.open(shareUrl, 'TwitterShare', 'width=600,height=400,scrollbars=yes,resizable=yes');
+    }
+    
+    // Pinterest Share
+    function shareOnPinterest(url, title, imageUrl) {
+        const description = `Amazing product: ${title}`;
+        const shareUrl = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&media=${encodeURIComponent(imageUrl)}&description=${encodeURIComponent(description)}`;
+        window.open(shareUrl, 'PinterestShare', 'width=600,height=400,scrollbars=yes,resizable=yes');
+    }
+    
+    // WhatsApp Share
+    function shareOnWhatsApp(url, title) {
+        const text = `Check out this amazing product: ${title} ${url}`;
+        const shareUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(shareUrl, 'WhatsAppShare', 'width=600,height=400,scrollbars=yes,resizable=yes');
+    }
+    
+    // Copy to Clipboard
+    function copyToClipboard(url) {
+        navigator.clipboard.writeText(url).then(function() {
+            // Show success message
+            showToast('Link copied to clipboard!');
+        }, function(err) {
+            console.error('Could not copy text: ', err);
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = url;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToast('Link copied to clipboard!');
+        });
+    }
+    
+    // Simple toast notification
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            z-index: 9999;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-10px)';
+            setTimeout(() => document.body.removeChild(toast), 300);
+        }, 3000);
+    }
+    </script>
 
 {% endblock custom_js %}

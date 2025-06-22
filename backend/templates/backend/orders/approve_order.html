@@ -141,9 +141,9 @@
                                         name="order_status"
                                         data-allow-clear="true"
                                     >
-                                    <option value="1">Approved</option>
-                                    <option value="2">Processing</option>
-                                    <option value="1">Completed</option>
+                                        <option value="1" {% if order.status == 1 %}selected{% endif %}>Approved</option>
+                                        <option value="2" {% if order.status == 2 %}selected{% endif %}>Processing</option>
+                                        <option value="1" {% if order.status == 3 %}selected{% endif %}>Completed</option>
                                     </select>
                                     <label for="productSelector">Product</label>
                                 </div>

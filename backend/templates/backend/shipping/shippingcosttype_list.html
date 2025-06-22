@@ -1,0 +1,86 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block custom_css %}
+<style>
+    .card {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+    .card-header {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    .table th {
+        border-top: none;
+        background-color: #f8f9fc;
+    }
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    .no-data {
+        text-align: center;
+        padding: 2rem;
+        color: #6c757d;
+    }
+    .action-buttons .btn {
+        margin-right: 0.3rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Shipping Cost Types</h6>
+            <a href="{% url 'shippingcosttype_add' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus fa-sm"></i> Add New
+            </a>
+        </div>
+        <div class="card-body">
+            {% if types %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="20%">Code</th>
+                            <th>Name</th>
+                            <th width="20%" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for type in types %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ type.code }}</td>
+                            <td>{{ type.name }}</td>
+                            <td class="action-buttons text-center">
+                                <a href="{% url 'shippingcosttype_edit' type.pk %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="{% url 'shippingcosttype_delete' type.pk %}" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-truck fa-3x mb-3 text-gray-400"></i>
+                <h5>No Shipping Cost Types Found</h5>
+                <p class="mb-4">Add your first shipping cost type to get started</p>
+                <a href="{% url 'shippingcosttype_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Shipping Cost Type
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

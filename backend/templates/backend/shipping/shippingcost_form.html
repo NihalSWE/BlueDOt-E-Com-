@@ -1,0 +1,168 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block custom_css %}
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .form-container {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+        padding: 30px;
+        margin-top: 20px;
+    }
+    .form-header {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+    }
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+    }
+    .select2-container--default .select2-selection--multiple {
+        min-height: 38px;
+        border: 1px solid #ced4da;
+    }
+    .btn-action-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 25px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+    .select-all-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    .select-all-btn {
+        padding: 3px 10px;
+        font-size: 0.8rem;
+    }
+    .form-control, .select2-selection {
+        border-radius: 4px !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="form-container">
+        <div class="form-header">
+            <h2 class="mb-0">
+                <i class="fas fa-shipping-fast me-2"></i>
+                {% if obj %}Edit{% else %}Add{% endif %} Shipping Cost
+            </h2>
+        </div>
+
+        <form method="post" id="shipping-cost-form">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="form-label">Shipping Type</label>
+                <select name="shipping_type" class="form-select select2" required>
+                    <option value="">-- Select Shipping Type --</option>
+                    {% for st in shipping_types %}
+                    <option value="{{ st.id }}" {% if obj and obj.shipping_type.id == st.id %}selected{% endif %}>
+                        {{ st.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <div class="select-all-container">
+                    <label class="form-label">Districts</label>
+                    <button type="button" id="select-all-btn" class="btn btn-outline-primary btn-sm select-all-btn">
+                        <i class="fas fa-check-circle me-1"></i> Select All
+                    </button>
+                </div>
+                <select name="district" class="form-select select2" multiple="multiple" style="width: 100%;">
+                    {% for district in enabled_districts %}
+                    <option value="{{ district }}" {% if district in preselected_districts %}selected{% endif %}>
+                        {{ district }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="form-text text-muted">Leave empty to apply to all districts</small>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Cost (৳)</label>
+                <div class="input-group">
+                    <span class="input-group-text">৳</span>
+                    <input type="number" step="0.01" name="cost" class="form-control" 
+                           value="{{ obj.cost|default:'' }}" required placeholder="0.00">
+                </div>
+            </div>
+            
+            <div class="btn-action-group">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-1"></i> Save
+                </button>
+                <button type="reset" class="btn btn-outline-secondary">
+                    <i class="fas fa-undo me-1"></i> Reset
+                </button>
+                <a href="{% url 'shippingcost_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i> Cancel
+                </a>
+                {% if obj %}
+                <a href="{% url 'shippingcost_delete' obj.pk %}" class="btn btn-outline-danger ms-auto"
+                   onclick="return confirm('Are you sure you want to delete this shipping cost?');">
+                    <i class="fas fa-trash-alt me-1"></i> Delete
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<!-- jQuery (required for Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Initialize Select2
+        $('.select2').select2({
+            width: '100%',
+            placeholder: "Select options",
+            allowClear: true,
+            closeOnSelect: false
+        });
+
+        // Select all districts functionality
+        $('#select-all-btn').click(function() {
+            const selectElement = $('select[name="district"]');
+            if (selectElement.find('option:selected').length === selectElement.find('option').length) {
+                // If all are selected, deselect all
+                selectElement.val([]);
+                $(this).html('<i class="fas fa-check-circle me-1"></i> Select All');
+            } else {
+                // Select all enabled districts
+                selectElement.find('option').prop('selected', true);
+                $(this).html('<i class="fas fa-times-circle me-1"></i> Deselect All');
+            }
+            selectElement.trigger('change');
+        });
+
+        // Update select all button text based on current selection
+        $('select[name="district"]').on('change', function() {
+            const btn = $('#select-all-btn');
+            if ($(this).find('option:selected').length === $(this).find('option').length) {
+                btn.html('<i class="fas fa-times-circle me-1"></i> Deselect All');
+            } else {
+                btn.html('<i class="fas fa-check-circle me-1"></i> Select All');
+            }
+        });
+    });
+</script>
+{% endblock %}

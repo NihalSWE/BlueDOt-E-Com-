@@ -223,10 +223,11 @@ class PricingCardForm(forms.ModelForm):
 class BlogPostForm(forms.ModelForm):
     class Meta:
         model = BlogPost
-        fields = ['title', 'image', 'category', 'description', 'author', 'is_active']
+        fields = ['title', 'image', 'video', 'category', 'description', 'author', 'is_active']  # Added 'video'
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'video': forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'video/*'}),  # NEW
             'category': forms.Select(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control'}),
             'author': forms.TextInput(attrs={'class': 'form-control'}),

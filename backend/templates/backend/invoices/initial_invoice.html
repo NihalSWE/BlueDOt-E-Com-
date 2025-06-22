@@ -1,0 +1,301 @@
+{% extends "backend/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block custom_css %}
+<style>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .invoice-print-area, .invoice-print-area * {
+        visibility: visible;
+    }
+
+    .invoice-print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: #fff;
+        padding: 0 20px;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .table th, .table td {
+        font-size: 12px !important;
+        padding: 6px 8px !important;
+    }
+
+    .text-end {
+        text-align: right !important;
+    }
+
+    .text-center {
+        text-align: center !important;
+    }
+
+    .text-heading {
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    h5, h6 {
+        margin-bottom: 5px;
+    }
+
+    img {
+        max-height: 60px;
+    }
+}
+
+/* Custom styles for initial order invoice */
+.initial-invoice-badge {
+    background: linear-gradient(45deg, #ff9f43, #ffa726);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.status-pending {
+    color: #ff9f43;
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="row invoice-preview">
+            <!-- Invoice -->
+            <div class="col-xl-9 col-md-8 col-12 mb-md-0 mb-6 invoice-print-area">
+                <div class="card invoice-preview-card p-sm-12 p-6">
+                    <div class="card-body invoice-preview-header rounded-4 p-6">
+                        <div class="d-flex justify-content-between flex-wrap text-heading align-items-center gap-6">
+                            <div>
+                                <div class="d-flex align-items-center gap-2 mb-6">
+                                    <span class="app-brand-logo demo">
+                                        <img src="{% static 'assets/img/logo.png' %}" width="100" alt="Logo">
+                                    </span>
+                                    <span class="mb-0 app-brand-text fw-semibold">BlueDots</span>
+                                </div>
+                                <p class="mb-1">35/4 Lake Circus, Kalabagan 1205 Dhaka</p>
+                                <p class="mb-1">Dhaka, Bangladesh</p>
+                                <p class="mb-0">01332-500075</p>
+                            </div>
+                            <div>
+                                <div class="initial-invoice-badge no-print">
+                                    <i class="ri-file-text-line me-1"></i>Initial Order Invoice
+                                </div>
+                                <h5 class="mb-2">Initial Invoice #{{ order.invoice_id|default:order.id }}</h5>
+                                <div class="mb-1"><strong>Date Issued:</strong> {{ current_date }}</div>
+                                
+                                <div><strong>Status:</strong> 
+                                    <span class="status-pending">
+                                        {% if order.status == 0 %}Pending Approval
+                                        {% elif order.status == 5 %}Not Viewed
+                                        {% else %}Initial Order{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body py-6 px-0">
+                        <div class="d-flex justify-content-between flex-wrap gap-6">
+                            <div>
+                                <h6 class="text-heading mb-2">Order From:</h6>
+                                {% if customer %}
+                                    <p class="mb-1"><strong>{{ customer.CustomerName }}</strong></p>
+                                    <p class="mb-1">{{ customer.CustomerAddress|default:"" }}</p>
+                                    {% if customer.district_name %}
+                                        <p class="mb-1">{{ customer.district_name }}{% if customer.thana_name %}, {{ customer.thana_name }}{% endif %}</p>
+                                    {% endif %}
+                                    <p class="mb-1">{{ customer.CustomerContact|default:"" }}</p>
+                                    <p class="mb-0">{{ customer.CustomerEmail|default:"" }}</p>
+                                {% else %}
+                                    <p>Customer details not available</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="text-heading mb-4 ms-5">Order Summary:</h6>
+                                <table class="table table-borderless">
+                                    <tbody>
+                                        <tr class="m-0">
+                                            <td class="pe-3 text-heading text-nowrap">Order Total:</td>
+                                            <td class="text-end text-nowrap">৳{{ total_amount|floatformat:2|intcomma }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pe-3 text-heading text-nowrap">Shipping Status:</td>
+                                            <td class="text-end text-nowrap">{{ order.shipping_type_name}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pe-3 text-heading text-nowrap">Shipping Cost:</td>
+                                            <td class="text-end text-nowrap">৳{{ shipping_cost|floatformat:2|intcomma }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pe-3 text-heading text-nowrap">Order ID:</td>
+                                            <td class="text-end text-nowrap">#{{ order.id }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive border rounded-4 border-bottom-0">
+                        <table class="table table-bordered table-striped m-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="text-end">Unit Price</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order_items %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ item.product.name }}</div>
+                                        {% if item.notes %}
+                                            <small class="text-muted">{{ item.notes }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">{{ item.quantity|floatformat:0 }}</td>
+                                    <td class="text-end">
+                                        {% if item.unit_price %}
+                                            ৳{{ item.unit_price|floatformat:2|intcomma }}
+                                        {% else %}
+                                            ৳0.00
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if item.total_price %}
+                                            ৳{{ item.total_price|floatformat:2|intcomma }}
+                                        {% else %}
+                                            ৳0.00
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No items found in this order</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table m-0 table-borderless">
+                            <tbody>
+                                <tr>
+                                    <td class="px-0 py-6">
+                                        <p class="mb-1"><strong class="text-heading">Order Notes:</strong></p>
+                                        <span>This is an initial order invoice. Final pricing and availability will be confirmed upon approval.</span>
+                                        <br><br>
+                                        <span><strong>Order Date:</strong> {{ order.created_at|date:"F d, Y" }}</span>
+                                    </td>
+                                    <td class="pe-0 py-6 w-px-100 text-end">
+                                        <p class="mb-1">Subtotal:</p>
+                                        <p class="mb-1">Shipping:</p>
+                                        <p class="mb-1">Discount:</p>
+                                        <p class="mb-1 border-bottom pb-2">Tax:</p>
+                                        <p class="mb-0 pt-2">Total:</p>
+                                    </td>
+                                    <td class="text-end px-0 py-6 w-px-100">
+                                        <p class="fw-medium mb-1">৳{{ subtotal|floatformat:2|intcomma }}</p>
+                                        <p class="fw-medium mb-1">৳{{ shipping_cost|floatformat:2|intcomma }}</p>
+                                        <p class="fw-medium mb-1">৳0.00</p>
+                                        <p class="fw-medium mb-1 border-bottom pb-2">৳0.00</p>
+                                        <p class="fw-medium mb-0 pt-2">৳{{ total_amount|floatformat:2|intcomma }}</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <hr class="mt-0 mb-6" />
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col-12">
+                                <span class="fw-medium text-heading">Important Note:</span>
+                                <span>This is an initial order invoice. Prices and availability are subject to confirmation. 
+                                Please wait for order approval before making payment.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Actions -->
+            <div class="col-xl-3 col-md-4 col-12 invoice-actions no-print">
+                <div class="card">
+                    <div class="card-body">
+                        {% if customer and customer.CustomerEmail %}
+                        <a href="mailto:{{ customer.CustomerEmail }}" class="btn btn-primary d-grid w-100 mb-4">
+                            <span class="d-flex align-items-center justify-content-center text-nowrap">
+                                <i class="icon-base ri ri-send-plane-line me-2"></i>Send Invoice
+                            </span>
+                        </a>
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-secondary d-grid w-100 mb-4 no-print" onclick="window.print()">
+                            🖨️ Print Invoice
+                        </button>
+                        
+                        <div class="d-flex mb-4">
+                            <a href="{% url 'print_initial_order_invoice' order.id %}" target="_blank" 
+                               class="btn btn-outline-secondary d-grid w-100 me-4">
+                                Print (New Tab)
+                            </a>
+                        </div>
+                        
+                        {% if order.status in '0,5'|make_list %}
+                        <a href="{% url 'initial_order_update' order.id %}" class="btn btn-warning d-grid w-100 mb-2">
+                            <span class="d-flex align-items-center justify-content-center text-nowrap">
+                                <i class="icon-base ri ri-pencil-line me-2"></i>Edit Order
+                            </span>
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'order_list' %}" class="btn btn-secondary d-grid w-100">
+                            <span class="d-flex align-items-center justify-content-center text-nowrap">
+                                <i class="icon-base ri ri-arrow-left-line me-2"></i>Back to Orders
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- /Invoice Actions -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+function printInvoice() {
+    window.print();
+}
+
+// Add any additional JavaScript for the initial order invoice
+$(document).ready(function() {
+    console.log('Initial Order Invoice loaded successfully');
+});
+</script>
+{% endblock %}

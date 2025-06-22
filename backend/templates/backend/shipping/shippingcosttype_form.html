@@ -1,0 +1,22 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block custom_css %}{% endblock %}
+
+{% block content %}
+<h2>{% if obj %}Edit{% else %}Add{% endif %} Shipping Cost Type</h2>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="mb-3">
+    <label class="form-label">Code</label>
+    <input type="text" name="code" class="form-control" value="{{ obj.code|default:'' }}" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Name</label>
+    <input type="text" name="name" class="form-control" value="{{ obj.name|default:'' }}" required>
+  </div>
+  <button type="submit" class="btn btn-success">Save</button>
+  <a href="{% url 'shippingcosttype_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

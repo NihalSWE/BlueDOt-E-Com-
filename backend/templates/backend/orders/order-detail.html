@@ -269,9 +269,17 @@
                       </div>
                       <div class="d-flex flex-column">
                         <a href="app-user-view-account.html">
-                          <h6 class="mb-0">Shamus Tuttle</h6>
+                          {% if customer.CustomerName %}
+                              <h6 class="mb-0">{{ customer.CustomerName }}</h6>
+                          {% else %}
+                              <h6 class="mb-0"></h6>
+                          {% endif %}
                         </a>
-                        <span>Customer ID: #58909</span>
+                        {% if customer.CustomerName %}
+                              <span>Customer ID: {{ customer.CustomerID }}</span>
+                        {% else %}
+                            <span>Customer ID: </span>
+                        {% endif %}
                       </div>
                     </div>
                     <div class="d-flex justify-content-start align-items-center mb-6">
@@ -279,7 +287,7 @@
                         class="avatar rounded-circle bg-label-success me-3 d-flex align-items-center justify-content-center"
                         ><i class="icon-base ri ri-shopping-cart-line icon-24px"></i
                       ></span>
-                      <h6 class="text-nowrap mb-0">12 Orders</h6>
+                      <h6 class="text-nowrap mb-0">{{ total_orders }} order{{ total_orders|pluralize }}</h6>
                     </div>
                     <div class="d-flex justify-content-between">
                       <h6 class="mb-1">Contact info</h6>
@@ -292,47 +300,68 @@
                         >
                       </h6>
                     </div>
-                    <p class="mb-1">Email: Shamus889@yahoo.com</p>
-                    <p class="mb-0">Mobile: +1 (609) 972-22-22</p>
+                    {% if customer.CustomerName %}
+                          <span>Email: {{ customer.CustomerEmail }}</span>
+                    {% else %}
+                        <span>Email: </span>
+                    {% endif %}
+
+                    {% if customer.CustomerName %}
+                          <span><p class="mb-0">Mobile: {{ customer.CustomerContact }}</p></span>
+                    {% else %}
+                        <p class="mb-0">Mobile: </p>
+                    {% endif %}
                   </div>
                 </div>
 
                 <div class="card mb-6">
                   <div class="card-header d-flex justify-content-between">
                     <h5 class="card-title mb-1">Shipping address</h5>
-                    <h6 class="m-0">
+                    {% comment %} <h6 class="m-0">
                       <a
                         href=" javascript:void(0)"
                         data-bs-toggle="modal"
                         data-bs-target="#addNewAddress"
                         >Edit</a
                       >
-                    </h6>
+                    </h6> {% endcomment %}
                   </div>
                   <div class="card-body">
-                    <p class="mb-0">
-                      45 Roker Terrace <br />Latheronwheel <br />KW5 8NW,London <br />UK
-                    </p>
+                    {% if order.address %}
+                        <p class="mb-0">
+                            {{ order.address }}
+                        </p>
+                    {% else %}
+                        <p class="mb-0">
+                            
+                        </p>
+                    {% endif %}
                   </div>
                 </div>
                 <div class="card mb-6">
                   <div class="card-header d-flex justify-content-between pb-0">
                     <h5 class="card-title mb-1">Billing address</h5>
-                    <h6 class="m-0">
+                    {% comment %} <h6 class="m-0">
                       <a
                         href=" javascript:void(0)"
                         data-bs-toggle="modal"
                         data-bs-target="#addNewAddress"
                         >Edit</a
                       >
-                    </h6>
+                    </h6> {% endcomment %}
                   </div>
                   <div class="card-body">
-                    <p class="mb-6">
-                      45 Roker Terrace <br />Latheronwheel <br />KW5 8NW,London <br />UK
-                    </p>
-                    <h5 class="mb-1">Mastercard</h5>
-                    <p class="mb-0">Card Number: ******4291</p>
+                    {% if order.address %}
+                        <p class="mb-0">
+                            {{ order.address }}
+                        </p>
+                    {% else %}
+                        <p class="mb-0">
+                            
+                        </p>
+                    {% endif %}
+                    {% comment %} <h5 class="mb-1">Mastercard</h5>
+                    <p class="mb-0">Card Number: ******4291</p> {% endcomment %}
                   </div>
                 </div>
             </div>

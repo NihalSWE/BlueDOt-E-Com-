@@ -26,7 +26,7 @@
 
 {% endblock custom_css %}
 
-<aside id="layout-menu" class="layout-menu menu-vertical menu" style="overflow-y: scroll;">
+<aside id="layout-menu" class="layout-menu menu-vertical menu" style="overflow-y: scroll; scroll-behavior: smooth;">
   <div class="app-brand demo">
     <a href="{% url 'dashboard' %}" class="app-brand-link">
       <span class="app-brand-logo demo">
@@ -66,7 +66,7 @@
 
   <ul class="menu-inner py-1">
     <!-- Dashboard (Independent item) -->
-    <li class="menu-item active">
+    <li class="menu-item {% if request.resolver_match.url_name == 'dashboard'  %}active{% endif %}">
       <a href="{% url 'dashboard' %}" class="menu-link">
         <i class="menu-icon ri ri-home-line"></i>
         <div data-i18n="Dashboard">Dashboard</div>
@@ -119,13 +119,13 @@
   </a>
 </li>
 <!--Cart Start-->
-<li class="menu-item">
+<li class="menu-item {% if request.resolver_match.url_name == 'cart_banner' %}active open{% endif %}">
   <a href="javascript:void(0);" class="menu-link menu-toggle">
     <i class="menu-icon ri ri-shopping-cart-line"></i>
     <div data-i18n="Cart">Cart</div>
   </a>
   <ul class="menu-sub">
-    <li class="menu-item">
+    <li class="menu-item {% if request.resolver_match.url_name == 'cart_banner' %}active open{% endif %}">
       <a href="{% url 'cart_banner' %}" class="menu-link">
         <div data-i18n="View Cart">Banner</div>
       </a>
@@ -134,13 +134,13 @@
 </li>
 <!--Cart Ends-->
 <!-- Checkout Start -->
-<li class="menu-item {% if request.resolver_match.url_name == 'cart_checkout' or request.resolver_match.url_name == 'order_summary' %}active open{% endif %}">
+<li class="menu-item {% if request.resolver_match.url_name == 'checkout_banner' or request.resolver_match.url_name == 'order_summary' %}active open{% endif %}">
   <a href="javascript:void(0);" class="menu-link menu-toggle">
     <i class="menu-icon ri ri-shopping-cart-line"></i>
     <div data-i18n="Checkout">Checkout</div>
   </a>
   <ul class="menu-sub">
-    <li class="menu-item {% if request.resolver_match.url_name == 'cart_checkout' %}active open{% endif %}">
+    <li class="menu-item {% if request.resolver_match.url_name == 'checkout_banner' %}active open{% endif %}">
       <a href="{% url 'checkout_banner' %}" class="menu-link">
         <div data-i18n="Cart Checkout">Banner</div>
       </a>
@@ -209,9 +209,9 @@
 
 
 <!--Users-->
-    <li class="menu-item">
+    <li class="menu-item {% if request.resolver_match.url_name == 'user_list'  %}active open{% endif %}">
       <a href="{% url 'user_list' %}" class="menu-link">
-        <i class="menu-icon ri ri-home-line"></i>
+        <i class="menu-icon ri ri-home-line {% if request.resolver_match.url_name == 'user_list'  %}active open{% endif %}"></i>
         <div data-i18n="User">Users</div>
       </a>
     </li>
@@ -248,7 +248,7 @@
     </li>
 
     <!--Product Menu -->
-    <li class="menu-item  {% if request.resolver_match.url_name == 'product_list' or request.resolver_match.url_name == 'product_create' or request.resolver_match.url_name == 'product_banner' or request.resolver_match.url_name == 'product_review' %}active open{% endif %}">
+    <li class="menu-item  {% if request.resolver_match.url_name == 'product_list' or request.resolver_match.url_name == 'product_create' or request.resolver_match.url_name == 'product_banner' or request.resolver_match.url_name == 'product_review' or request.resolver_match.url_name == 'discount_category_list' or request.resolver_match.url_name == 'discount_list' %}active open{% endif %}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon ri ri-home-line"></i>
         <div data-i18n="Home">Products</div>
@@ -317,8 +317,33 @@
       </ul>
     </li>
     <!--Blog Ends-->
+    <!-- Machines Start -->
+<li class="menu-item {% if 'machine' in request.resolver_match.url_name %}active open{% endif %}">
+  <a href="javascript:void(0);" class="menu-link menu-toggle">
+    <i class="menu-icon ri ri-cpu-line"></i>
+    <div data-i18n="Machines">Machines</div>
+  </a>
+  <ul class="menu-sub">
+    <li class="menu-item {% if request.resolver_match.url_name == 'machine_list' %}active{% endif %}">
+      <a href="{% url 'machine_list' %}" class="menu-link">
+        <div data-i18n="All Machines">All Machines</div>
+      </a>
+    </li>
+    <li class="menu-item {% if request.resolver_match.url_name == 'machine_create' %}active{% endif %}">
+      <a href="{% url 'machine_create' %}" class="menu-link">
+        <div data-i18n="Add Machine">Add Machine</div>
+      </a>
+    </li>
+     <li class="menu-item {% if request.resolver_match.url_name == 'machine_banner_list' %}active{% endif %}">
+      <a href="{% url 'machine_banner_list' %}" class="menu-link">
+        <div data-i18n="Add Machine">Banner Machine</div>
+      </a>
+    </li>
+
+  </ul>
+</li>
     <!-- Customers Dropdown -->
-    <li class="menu-item {% if request.resolver_match.url_name == 'customer_list' or request.resolver_match.url_name == 'customer_overview' or request.resolver_match.url_name == 'security' or request.resolver_match.url_name == 'billing' or request.resolver_match.url_name == 'billing' or request.resolver_match.url_name == 'notification'    %}active open{% endif %} ">
+    <li class="menu-item {% if request.resolver_match.url_name == 'customer_list' or request.resolver_match.url_name == 'customer_overview' or request.resolver_match.url_name == 'security' or request.resolver_match.url_name == 'billing' or request.resolver_match.url_name == 'billing' or request.resolver_match.url_name == 'notification' or request.resolver_match.url_name == 'customer_payment' %}active open{% endif %} ">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon ri ri-user-3-line"></i>
         <div data-i18n="Customers">Customers</div>
@@ -337,6 +362,11 @@
             <li class="menu-item  {% if request.resolver_match.url_name == 'customer_overview'  %}active open{% endif %}">
               <a href="{% url 'customer_overview' %}" class="menu-link">
                 <div data-i18n="Overview">Overview</div>
+              </a>
+            </li>
+            <li class="menu-item  {% if request.resolver_match.url_name == 'customer_payment'  %}active open{% endif %}">
+              <a href="{% url 'customer_payment' %}" class="menu-link">
+                <div data-i18n="Overview">Customer Payment</div>
               </a>
             </li>
             <li class="menu-item {% if request.resolver_match.url_name == 'security'  %}active open{% endif %}">
@@ -376,43 +406,13 @@
             <div data-i18n="Initial Order">Initial Orders</div>
           </a>
         </li>
+      </ul>
+    </li>
 
-        <li class="menu-item {% if request.resolver_match.url_name == 'order_detail'  %}active open{% endif %}">
-          <a href="{% url 'order_detail' %}" class="menu-link">
-            <div data-i18n="Order Details">Order Details</div>
-          </a>
-        </li>
-      </ul>
-    </li>
- <!--Blog Start-->
-    <li class="menu-item">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon ri ri-article-line"></i>
-        <div data-i18n="Blog">Blog</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item">
-          <a href="{% url 'blog_banner' %}" class="menu-link">
-            <div data-i18n="All Blogs">Banner</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="{% url 'blog_post' %}" class="menu-link">
-            <div data-i18n="Create Blog">Create Blog</div>
-          </a>
-        </li>
-        <li class="menu-item">
-          <a href="{% url 'blog_comments' %}" class="menu-link">
-            <div data-i18n="Comments">Comments</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-    <!--Blog Ends-->
 
 
     <!--Report-->
-    <li class="menu-item {% if request.resolver_match.url_name == 'daily_sell_report' or request.resolver_match.url_name == 'material_transactions_report' or request.resolver_match.url_name == 'inventory_stock_report'  or request.resolver_match.url_name == 'material_transactions_report' or request.resolver_match.url_name == 'sales_report'  or request.resolver_match.url_name == 'customer_report' or request.resolver_match.url_name == 'profit_loss_report' %}active open{% endif %}">
+    <li class="menu-item {% if request.resolver_match.url_name == 'daily_sell_report' or request.resolver_match.url_name == 'material_transactions_report' or request.resolver_match.url_name == 'inventory_stock_report'  or request.resolver_match.url_name == 'material_transactions_report' or request.resolver_match.url_name == 'sales_report'  or request.resolver_match.url_name == 'customer_report' or request.resolver_match.url_name == 'profit_loss_report' or request.resolver_match.url_name == 'low_stock_report' or request.resolver_match.url_name == 'daily_purchase_report' %}active open{% endif %}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon ri ri-contacts-book-line"></i>
         <div data-i18n="Contact">Report</div>
@@ -462,27 +462,25 @@
       </ul>
     </li>
 
-    
-
 
     <!--COntact Us-->
-    <li class="menu-item">
+    <li class="menu-item {% if request.resolver_match.url_name == 'contactUs' or request.resolver_match.url_name == 'contactUs_location' or request.resolver_match.url_name == 'contactUs_msg' %}active open{% endif %}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon ri ri-contacts-book-line"></i>
         <div data-i18n="Contact">Contact</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item">
+        <li class="menu-item {% if request.resolver_match.url_name == 'contactUs'  %}active open{% endif %}">
           <a href="{% url 'contactUs' %}" class="menu-link">
             <div data-i18n="Contact Us">Banner</div>
           </a>
         </li>
-        <li class="menu-item">
+        <li class="menu-item {% if request.resolver_match.url_name == 'contactUs_location'  %}active open{% endif %}">
           <a href="{% url 'contactUs_location' %}" class="menu-link">
             <div data-i18n="Branch/WareHouse Locations">Warehouse Locations</div>
           </a>
         </li>
-        <li class="menu-item">
+        <li class="menu-item {% if request.resolver_match.url_name == 'contactUs_msg'  %}active open{% endif %}">
           <a href="{% url 'contactUs_msg' %}" class="menu-link">
             <div data-i18n="Messages">Messages</div>
           </a>
@@ -490,14 +488,87 @@
       </ul>
     </li>
     
-<!-- Search -->
-<li class="menu-item">
+<!-- About Us -->
+<li class="menu-item {% if request.resolver_match.url_name == 'aboutUs_banner' or request.resolver_match.url_name == 'aboutUs_aboutarea' or request.resolver_match.url_name == 'aboutUs_callToaction' or request.resolver_match.url_name == 'aboutUs_chooseUs' or request.resolver_match.url_name == 'aboutus_faq' %}active open{% endif %}">
+  <a href="javascript:void(0);" class="menu-link menu-toggle">
+    <i class="menu-icon ri ri-information-line"></i>
+    <div data-i18n="About">About</div>
+  </a>
+  <ul class="menu-sub">
+    <li class="menu-item {% if request.resolver_match.url_name == 'aboutUs_banner'  %}active open{% endif %}">
+      <a href="{% url 'aboutUs_banner' %}" class="menu-link">
+        <div data-i18n="Banner">Banner</div>
+      </a>
+    </li>
+    <li class="menu-item {% if request.resolver_match.url_name == 'aboutUs_aboutarea'  %}active open{% endif %}">
+      <a href="{% url 'aboutUs_aboutarea' %}" class="menu-link">
+        <div data-i18n="Banner">About Area</div>
+      </a>
+    </li>
+    <li class="menu-item {% if request.resolver_match.url_name == 'aboutUs_callToaction'  %}active open{% endif %}">
+      <a href="{% url 'aboutUs_callToaction' %}" class="menu-link">
+        <div data-i18n="Banner">Call To Action</div>
+      </a>
+    </li>
+    <li class="menu-item {% if request.resolver_match.url_name == 'aboutUs_chooseUs'  %}active open{% endif %}">
+      <a href="{% url 'aboutUs_chooseUs' %}" class="menu-link">
+        <div data-i18n="Banner">Why Choose Us</div>
+      </a>
+    </li>
+    <li class="menu-item {% if request.resolver_match.url_name == 'aboutus_faq'  %}active open{% endif %}">
+      <a href="{% url 'aboutus_faq' %}" class="menu-link">
+        <div data-i18n="Banner">Faq's</div>
+      </a>
+    </li>
+  </ul>
+</li>
+
+    <!-- Our FAQ -->
+<li class="menu-item {% if request.resolver_match.url_name == 'Ourfaq_banner' or request.resolver_match.url_name == 'Ourfaq_faqs' %}active open{% endif %}">
+  <a href="javascript:void(0);" class="menu-link menu-toggle">
+    <i class="menu-icon ri ri-question-answer-line"></i>
+    <div data-i18n="Our FAQ">Our FAQ</div>
+  </a>
+  <ul class="menu-sub">
+    <li class="menu-item {% if request.resolver_match.url_name == 'Ourfaq_banner'  %}active open{% endif %}">
+      <a href="{% url 'Ourfaq_banner' %}" class="menu-link">
+        <div data-i18n="FAQ">Faq's Banner</div>
+      </a>
+    </li>
+    <li class="menu-item {% if request.resolver_match.url_name == 'Ourfaq_faqs'  %}active open{% endif %}">
+      <a href="{% url 'Ourfaq_faqs' %}" class="menu-link">
+        <div data-i18n="FAQ">Faq's</div>
+      </a>
+    </li>
+  </ul>
+</li>
+<!-- Shipping -->
+<li class="menu-item {% if request.resolver_match.url_name in 'shippingcost_list shippingcost_add shippingcost_edit shippingcosttype_list shippingcosttype_add shippingcosttype_edit' %}active open{% endif %}">
+  <a href="javascript:void(0);" class="menu-link menu-toggle">
+    <i class="menu-icon ri ri-truck-line"></i>
+    <div data-i18n="Shipping">Shipping</div>
+  </a>
+  <ul class="menu-sub">
+    <li class="menu-item {% if request.resolver_match.url_name == 'shippingcosttype_list' %}active{% endif %}">
+      <a href="{% url 'shippingcosttype_list' %}" class="menu-link">
+        <div data-i18n="Shipping Cost Type">Shipping Cost Type</div>
+      </a>
+    </li>
+    <li class="menu-item {% if request.resolver_match.url_name == 'shippingcost_list' %}active{% endif %}">
+      <a href="{% url 'shippingcost_list' %}" class="menu-link">
+        <div data-i18n="Shipping Cost">Shipping Cost</div>
+      </a>
+    </li>
+  </ul>
+</li>
+ <!-- Search -->
+<li class="menu-item {% if request.resolver_match.url_name == 'search_banner' %}active open{% endif %}">
   <a href="javascript:void(0);" class="menu-link menu-toggle">
     <i class="menu-icon ri ri-search-line"></i>
     <div data-i18n="Search">Search View</div>
   </a>
   <ul class="menu-sub">
-    <li class="menu-item">
+    <li class="menu-item {% if request.resolver_match.url_name == 'search_banner' %}active open{% endif %}">
       <a href="{% url 'search_banner' %}" class="menu-link">
         <div data-i18n="Search Page">Banner</div>
       </a>
@@ -507,13 +578,13 @@
 </li>
 
 <!-- Thankyou -->
-<li class="menu-item">
+<li class="menu-item {% if request.resolver_match.url_name == 'thankyou_banner' %}active open{% endif %}">
   <a href="javascript:void(0);" class="menu-link menu-toggle">
     <i class="menu-icon ri ri-search-line"></i>
     <div data-i18n="Search">Thankyou Page</div>
   </a>
   <ul class="menu-sub">
-    <li class="menu-item">
+    <li class="menu-item {% if request.resolver_match.url_name == 'thankyou_banner' %}active open{% endif %}">
       <a href="{% url 'thankyou_banner' %}" class="menu-link">
         <div data-i18n="Search Page">Banner</div>
       </a>
@@ -521,67 +592,6 @@
    
   </ul>
 </li>
-
-
-
-<!-- About Us -->
-<li class="menu-item">
-  <a href="javascript:void(0);" class="menu-link menu-toggle">
-    <i class="menu-icon ri ri-information-line"></i>
-    <div data-i18n="About">About</div>
-  </a>
-  <ul class="menu-sub">
-    <li class="menu-item">
-      <a href="{% url 'aboutUs_banner' %}" class="menu-link">
-        <div data-i18n="Banner">Banner</div>
-      </a>
-    </li>
-    <li class="menu-item">
-      <a href="{% url 'aboutUs_aboutarea' %}" class="menu-link">
-        <div data-i18n="Banner">About Area</div>
-      </a>
-    </li>
-    <li class="menu-item">
-      <a href="{% url 'aboutUs_callToaction' %}" class="menu-link">
-        <div data-i18n="Banner">Call To Action</div>
-      </a>
-    </li>
-    <li class="menu-item">
-      <a href="{% url 'aboutUs_chooseUs' %}" class="menu-link">
-        <div data-i18n="Banner">Why Choose Us</div>
-      </a>
-    </li>
-    <li class="menu-item">
-      <a href="{% url 'aboutus_faq' %}" class="menu-link">
-        <div data-i18n="Banner">Faq's</div>
-      </a>
-    </li>
-  </ul>
-</li>
-
-    <!-- Our FAQ -->
-<li class="menu-item">
-  <a href="javascript:void(0);" class="menu-link menu-toggle">
-    <i class="menu-icon ri ri-question-answer-line"></i>
-    <div data-i18n="Our FAQ">Our FAQ</div>
-  </a>
-  <ul class="menu-sub">
-    <li class="menu-item">
-      <a href="{% url 'Ourfaq_banner' %}" class="menu-link">
-        <div data-i18n="FAQ">Faq's Banner</div>
-      </a>
-    </li>
-    <li class="menu-item">
-      <a href="{% url 'Ourfaq_faqs' %}" class="menu-link">
-        <div data-i18n="FAQ">Faq's</div>
-      </a>
-    </li>
-  </ul>
-</li>
-
- 
-
-   
 
   
 
@@ -708,4 +718,21 @@
   });
 </script>
 
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('layout-menu');
+    const activeItem = sidebar.querySelector('.menu-item.active');
+
+    if (activeItem) {
+        // Get item position relative to sidebar
+        const itemOffsetTop = activeItem.offsetTop;
+        const sidebarHeight = sidebar.clientHeight;
+
+        // Scroll so it's ~20% from bottom
+        const scrollTop = itemOffsetTop - (sidebarHeight * 0.6);
+        sidebar.scrollTop = scrollTop > 0 ? scrollTop : 0;
+    }
+});
+</script>
 {% endblock custom_js %}

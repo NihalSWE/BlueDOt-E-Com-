@@ -99,15 +99,35 @@
                     <form id="orderForm" method="POST">
                         {% csrf_token %}
                         <div class="row g-6">
-                            <div class="col-md-6">
+                            <div class="col-md-4 col-12">
                                 <div class="form-floating form-floating-outline">
                                     <select id="customer" class="select2 form-select" name="customer" data-allow-clear="true">
                                         <option value="">Select Customer</option>
                                         {% for customer in customers %}
-                                            <option value="{{ customer.id }}">{{ customer.CustomerName }} - </option>
+                                            <option value="{{ customer.id }}">{{ customer.CustomerName }} </option>
                                         {% endfor %}
                                     </select>
                                     <label for="multicol-country">Customer</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 col-12">
+                                <div class="form-floating form-floating-outline">
+                                    <select id="district" class="select2 form-select" name="district" data-allow-clear="true">
+                                        <option value="">Select District</option>
+                                            {% for district in districts %}
+                                                <option value="{{ district }}">{{ district }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </select>
+                                    <label for="district">District</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 col-12">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" id="address" name="address" class="form-control" placeholder="Address">
+                                    <label for="address">Address</label>
                                 </div>
                             </div>
                         </div>

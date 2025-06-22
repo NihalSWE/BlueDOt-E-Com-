@@ -52,8 +52,10 @@ urlpatterns = [
     
     #search
     path('search/', views.search_view, name='search'),
+        path('machine_front_list/', views.machine_list, name='machine_front_list'),
+    path('machines_details/<int:pk>/', views.machine_detail, name='machines_details'),
     #search
-    
+        path('get-shipping-options/', views.get_shipping_options, name='get_shipping_options')
 ]
 
 

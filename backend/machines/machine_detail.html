@@ -1,0 +1,233 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .machine-details-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .machine-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .machine-title {
+        font-size: 2rem;
+        color: #2c3e50;
+        font-weight: 600;
+    }
+    
+    .btn-action {
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-weight: 500;
+        margin-left: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-edit {
+        background-color: #f39c12;
+        border-color: #f39c12;
+        color: white;
+    }
+    
+    .btn-edit:hover {
+        background-color: #e67e22;
+        border-color: #e67e22;
+    }
+    
+    .btn-back {
+        background-color: #7f8c8d;
+        border-color: #7f8c8d;
+        color: white;
+    }
+    
+    .btn-back:hover {
+        background-color: #95a5a6;
+        border-color: #95a5a6;
+    }
+    
+    .card-machine {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+        transition: transform 0.3s ease;
+    }
+    
+    .card-machine:hover {
+        transform: translateY(-5px);
+    }
+    
+    .card-header {
+        background-color: #3498db;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 10px 10px 0 0 !important;
+        padding: 15px 20px;
+    }
+    
+    .card-body {
+        padding: 25px;
+    }
+    
+    .detail-item {
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .detail-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #34495e;
+        display: inline-block;
+        width: 150px;
+    }
+    
+    .detail-value {
+        color: #2c3e50;
+    }
+    
+    .image-thumbnail {
+        border-radius: 8px;
+        object-fit: cover;
+        height: 180px;
+        width: 100%;
+        transition: transform 0.3s ease;
+    }
+    
+    .image-thumbnail:hover {
+        transform: scale(1.05);
+    }
+    
+    .no-images {
+        color: #7f8c8d;
+        font-style: italic;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .status-active {
+        color: #27ae60;
+        font-weight: 600;
+    }
+    
+    .status-inactive {
+        color: #e74c3c;
+        font-weight: 600;
+    }
+</style>
+
+<div class="machine-details-container">
+    <div class="machine-header">
+        <h1 class="machine-title">Machine: {{ machine.m_name }}</h1>
+        <div>
+            <a href="{% url 'machine_edit' machine.pk %}" class="btn btn-action btn-edit">
+                <i class="fas fa-edit"></i> Edit Machine
+            </a>
+            <a href="{% url 'machine_list' %}" class="btn btn-action btn-back">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="card card-machine">
+        <div class="card-header">
+            <i class="fas fa-info-circle"></i> Machine Information
+        </div>
+        <div class="card-body">
+            <div class="detail-item">
+                <span class="detail-label">Type:</span>
+                <span class="detail-value">{{ machine.m_type }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Brand:</span>
+                <span class="detail-value">{{ machine.m_brand }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Model:</span>
+                <span class="detail-value">{{ machine.m_model }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Purchase Date:</span>
+                <span class="detail-value">{{ machine.m_purchase_date }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value {% if machine.m_status %}status-active{% else %}status-inactive{% endif %}">
+                    {{ machine.m_status|yesno:"Active,Inactive" }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    {% if details %}
+    <div class="card card-machine">
+        <div class="card-header">
+            <i class="fas fa-cogs"></i> Technical Details
+        </div>
+        <div class="card-body">
+            <div class="detail-item">
+                <span class="detail-label">Description:</span>
+                <span class="detail-value">{{ details.md_description }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Serial Number:</span>
+                <span class="detail-value">{{ details.md_serial_number }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Capacity:</span>
+                <span class="detail-value">{{ details.md_capacity }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Location:</span>
+                <span class="detail-value">{{ details.md_location }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Last Service:</span>
+                <span class="detail-value">{{ details.md_last_service_date }}</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card card-machine">
+        <div class="card-header">
+            <i class="fas fa-images"></i> Machine Images
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for img in images %}
+                    <div class="col-md-3 mb-4">
+                        <img src="{{ img.thumbnail.url }}" class="image-thumbnail" alt="Machine Image">
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <p class="no-images">
+                            <i class="far fa-images fa-2x mb-2"></i><br>
+                            No images available for this machine
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}

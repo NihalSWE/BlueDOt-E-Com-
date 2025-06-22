@@ -1,0 +1,148 @@
+{% extends 'backend/base.html' %}
+{% load static humanize %}
+
+{% block content %}
+<div class="container-xxl flex-grow-1 container-p-y">
+  <!-- Header with bulk actions -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold mb-0">
+        <span class="text-muted fw-light">Account /</span> Notifications
+      </h4>
+    </div>
+    <div>
+      <a href="{% url 'notification_mark_all_as_read' %}" class="btn btn-outline-secondary">
+        <i class="ri-mail-open-line me-1"></i> Mark all as read
+      </a>
+    </div>
+  </div>
+
+  <!-- Notifications card -->
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center border-bottom">
+      <h5 class="mb-0">
+        <i class="ri-notification-3-line me-2 text-primary"></i>Your Notifications
+      </h5>
+      <small class="text-muted">{{ notifications.count }} total</small>
+    </div>
+    
+    <div class="card-body p-0">
+      {% if notifications %}
+        <div class="list-group list-group-flush">
+          {% for n in notifications %}
+          <div class="list-group-item list-group-item-action {% if n.is_read %}bg-light{% endif %}">
+            <div class="d-flex gap-3 py-2">
+              <!-- Notification icon -->
+              <div class="flex-shrink-0">
+                <div class="avatar avatar-sm">
+                  <span class="avatar-initial rounded-circle bg-label-{{ n.notification_type }}">
+                    <i class="{{ n.icon }} fs-5"></i>
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Notification content -->
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between mb-1">
+                  <h6 class="mb-0">{{ n.title }}</h6>
+                  <small class="text-muted">{{ n.created_at|naturaltime }}</small>
+                </div>
+                <p class="mb-1">{{ n.message|truncatechars:120 }}</p>
+                
+                <!-- Actions -->
+                <div class="d-flex justify-content-between mt-2">
+                  <div>
+                    {% if n.url %}
+                    <a href="{{ n.url }}" class="btn btn-xs btn-outline-secondary me-2">
+                      View details <i class="ri-arrow-right-line ms-1"></i>
+                    </a>
+                    {% endif %}
+                  </div>
+                  <div>
+                    {% if not n.is_read %}
+                    <a href="{% url 'notification_mark_as_read' n.pk %}" class="btn btn-xs btn-outline-primary">
+                      <i class="ri-check-line me-1"></i> Mark as read
+                    </a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <!-- Empty state -->
+        <div class="text-center py-5">
+          <div class="avatar avatar-xl mb-3">
+            <span class="avatar-initial rounded-circle bg-label-secondary">
+              <i class="ri-notification-off-line fs-4"></i>
+            </span>
+          </div>
+          <h5 class="mb-1">No notifications yet</h5>
+          <p class="text-muted mb-4">We'll notify you when something arrives</p>
+          <a href="/" class="btn btn-primary">
+            <i class="ri-home-4-line me-1"></i> Go to dashboard
+          </a>
+        </div>
+      {% endif %}
+    </div>
+    
+    <!-- Pagination (if needed) -->
+    {% if is_paginated %}
+    <div class="card-footer border-top">
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center mb-0">
+          {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          {% endif %}
+          
+          {% for num in page_obj.paginator.page_range %}
+          <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+          </li>
+          {% endfor %}
+          
+          {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .list-group-item {
+    transition: all 0.2s ease;
+  }
+  .list-group-item:hover {
+    background-color: rgba(105, 108, 255, 0.05);
+  }
+  .avatar-initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .bg-label-primary { background-color: rgba(105, 108, 255, 0.16); color: #696cff; }
+  .bg-label-success { background-color: rgba(40, 199, 111, 0.16); color: #28c76f; }
+  .bg-label-info { background-color: rgba(0, 207, 232, 0.16); color: #00cfe8; }
+  .bg-label-warning { background-color: rgba(255, 159, 67, 0.16); color: #ff9f43; }
+  .bg-label-danger { background-color: rgba(234, 84, 85, 0.16); color: #ea5455; }
+  .btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+  }
+</style>
+{% endblock %}

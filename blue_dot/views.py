@@ -93,21 +93,38 @@ def add_to_cart(request, slug):
     product = get_object_or_404(Product, slug=slug)
     quantity = int(request.POST.get('quantity', 1))
 
-    cart_item, created = AddCart.objects.get_or_create(product=product)
+    # Ensure session key exists
+    session_key = request.session.session_key
+    if not session_key:
+        request.session.create()
+        session_key = request.session.session_key
+
+    # Get or create cart item filtered by product & session_key
+    cart_item, created = AddCart.objects.get_or_create(
+        product=product,
+        session_key=session_key
+    )
     if not created:
         cart_item.quantity += quantity
     else:
         cart_item.quantity = quantity
+
     cart_item.save()
 
     return redirect('cart')
 
 
+from django.http import Http404
+
 def remove_from_cart(request, slug):
-    """Remove item completely from cart"""
+    """Remove all items for a product from cart"""
     product = get_object_or_404(Product, slug=slug)
-    cart_item = get_object_or_404(AddCart, product=product)
-    cart_item.delete()
+    cart_items = AddCart.objects.filter(product=product)
+
+    if not cart_items.exists():
+        raise Http404("Cart item not found")
+
+    cart_items.delete()
     return redirect('cart')
 
 
@@ -313,7 +330,12 @@ def shop(request):
 def product_detail(request, slug):
     banner=ProductBanner.objects.last()
     product = get_object_or_404(Product, slug=slug)
-    return render(request, 'blue_dot/shop-details.html', {'product': product,'banner':banner})
+    
+    # Get the full URL for sharing
+    product_url = request.build_absolute_uri()
+    
+    
+    return render(request, 'blue_dot/shop-details.html', {'product': product,'banner':banner,'product_url': product_url,})
 
 def ourteam(request):
     return render(request, 'blue_dot/team.html')
@@ -361,19 +383,94 @@ def promotion(request):
         'banner':banner
     })
 
+
 def category_products(request, slug):
     # Get the selected category by slug
     category = get_object_or_404(Category, slug=slug)
+    category_obj=Category.objects.all()
+    banner = ProductBanner.objects.last()
 
     # Include this category and all its subcategories
     categories = Category.objects.filter(Q(id=category.id) | Q(parent_category=category))
 
     # Get all products in these categories
     products = Product.objects.filter(category__in=categories).select_related('category', 'brand')
+    
+    recent_products = Product.objects.order_by('-created_at')[:3]
+
+    
+
+    # Category filter
+    category_slug = request.GET.get('category')
+    if category_slug:
+        products = products.filter(category__slug=category_slug)
+
+    # Search filter
+    search_query = request.GET.get('search')
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    prices = Product.objects.aggregate(min_price=Min('base_price'), max_price=Max('base_price'))
+    # Price range filter
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+
+    if min_price and max_price:
+        try:
+            min_price = Decimal(min_price)
+            max_price = Decimal(max_price)
+        except:
+            min_price = 0
+            max_price = 999999
+
+        # Annotate with product-level discount only
+        products = products.annotate(
+            calculated_final_price=Case(
+                When(discount_type='flat', discount_value__isnull=False,
+                     then=F('base_price') - F('discount_value')),
+                When(discount_type='percent', discount_value__isnull=False,
+                     then=F('base_price') * (1 - F('discount_value') / 100)),
+                default=F('base_price'),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            )
+        ).filter(
+            calculated_final_price__gte=min_price,
+            calculated_final_price__lte=max_price
+        )
+
+    # Sort options
+    sort_option = request.GET.get('sort')
+    if sort_option == 'price_asc':
+        products = products.order_by('base_price')
+    elif sort_option == 'price_desc':
+        products = products.order_by('-base_price')
+    elif sort_option == 'newest':
+        products = products.order_by('-created_at')
+    elif sort_option == 'sale':
+        products = products.filter(
+            Q(discount_type__isnull=False)
+        )
+
+    # Pagination
+    paginator = Paginator(products.distinct(), 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
 
     return render(request, 'blue_dot/category_products.html', {
         'category': category,
         'products': products,
+        'category_obj':category_obj,
+        'recent_products': recent_products,
+        'banner': banner,
+        'selected_category': category_slug,
+        'search_query': search_query or '',
+        'min_price': prices['min_price'] or 0,
+        'max_price': prices['max_price'] or 10000,
+        'sort_option': sort_option or 'default',
+              
     })
     
 
@@ -455,26 +552,34 @@ from datetime import date
 
 def cart_checkout(request):
     banner = CheckoutBanner.objects.last()
-    
-    # Check if this is a buy now checkout
+
+    # 1. Build cart items
     if 'buy_now_product' in request.session:
         buy_now_data = request.session['buy_now_product']
-        
-        # Create a fake cart item for buy now
         from types import SimpleNamespace
         fake_cart_item = SimpleNamespace()
         fake_cart_item.product = get_object_or_404(Product, id=buy_now_data['product_id'])
         fake_cart_item.quantity = buy_now_data['quantity']
         fake_cart_item.final_price = Decimal(str(buy_now_data['unit_price']))
-        
         cart_items = [fake_cart_item]
         is_buy_now = True
     else:
         cart_items = AddCart.objects.select_related('product').all()
         is_buy_now = False
 
+    # 2. Fetch shipping options (district=None = default rates)
+    shipping_options = []
+    shipping_costs = ShippingCost.objects.filter().select_related('shipping_type')
+    for cost in shipping_costs:
+        shipping_options.append({
+            'id': f"shipping_type_{cost.shipping_type.id}",
+            'code': cost.shipping_type.code,
+            'name': cost.shipping_type.name,
+            'value': cost.cost,
+        })
+
+    # 3. Handle form POST
     if request.method == 'POST':
-        # Step 1: Extract form data
         phone = request.POST.get('phone')
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
@@ -483,21 +588,25 @@ def cart_checkout(request):
         address = request.POST.get('address')
         order_notes = request.POST.get('order_notes', '')
 
-        # Extract district and thana
+        # Extract district/thana names
         district_id, district_name = district_value.split('-', 1) if district_value else ("", "")
         thana_id, thana_name = thana_value.split('-', 1) if thana_value else ("", "")
 
-        # Calculate order costs
-        shipping_type = 'flat_rate' if request.POST.get('shipping') == '100' else 'free_shipping'
-        shipping_cost = Decimal('100.00') if shipping_type == 'flat_rate' else Decimal('0.00')
+        # Determine selected shipping
+        shipping_cost = Decimal(request.POST.get('shipping_method', '0'))  # Changed from 'shipping' to 'shipping_method'
+        selected_option = next((opt for opt in shipping_options if str(opt['value']) == str(shipping_cost)), None)
+        shipping_type_code = selected_option['code'] if selected_option else 'unknown'
+        shipping_type_name = selected_option['name'] if selected_option else 'Unknown'
+
+        # Calculate totals
         subtotal = sum((item.final_price or 0) * item.quantity for item in cart_items)
         total_amount = subtotal + shipping_cost
 
-        # Step 2: Save CustomerInfo
+        # Save customer
         customer = CustomerInfo.objects.create(
-            CustomerID=f"CUST{phone[-4:]}{CustomerInfo.objects.count()+1}",  # basic auto-id logic
+            CustomerID=f"CUST{phone[-4:]}{CustomerInfo.objects.count() + 1}",
             CustomerName=f"{first_name} {last_name}",
-            CustomerAddress=f"{district_name} | {thana_name} | {address} ",
+            CustomerAddress=f"{district_name} | {thana_name} | {address}",
             CustomerEmail=None,
             CustomerContact=phone,
             district_id=district_id,
@@ -505,14 +614,10 @@ def cart_checkout(request):
             thana_id=thana_id,
             thana_name=thana_name,
             RegDate=date.today(),
-            dabite="0",
-            cradit="0",
-            adminid=None,
-            type="general",
-            open_due="0"
+            dabite="0", cradit="0", adminid=None, type="general", open_due="0"
         )
 
-        # Step 3: Save Order
+        # Save order
         order = Order.objects.create(
             customer=customer,
             status=5,
@@ -520,12 +625,13 @@ def cart_checkout(request):
             order_date=date.today(),
             notes=order_notes,
             subtotal=subtotal,
-            shipping_type=shipping_type,
+            shipping_type_code=shipping_type_code,  # Store shipping type code
+            shipping_type_name=shipping_type_name,  # Store shipping type name
             shipping_cost=shipping_cost,
             total_amount=total_amount
         )
 
-        # Step 4: Save OrderItems
+        # Save items
         for item in cart_items:
             product = item.product
             OrderItem.objects.create(
@@ -538,23 +644,20 @@ def cart_checkout(request):
                 notes=""
             )
 
-        # Step 5: Clear the cart OR buy now session
+        # Clear cart
         if is_buy_now:
             del request.session['buy_now_product']
         else:
             AddCart.objects.all().delete()
 
-        return redirect('thank_you')  # Update with your URL name
+        return redirect('thank_you')
 
-    # GET request
+    # 4. Render cart page (GET)
     cart_data = []
     total = 0
     for item in cart_items:
         item_total = (item.final_price or 0) * item.quantity
-        cart_data.append({
-            'item': item,
-            'total_cost': item_total
-        })
+        cart_data.append({'item': item, 'total_cost': item_total})
         total += item_total
 
     context = {
@@ -562,10 +665,51 @@ def cart_checkout(request):
         'cart_data': cart_data,
         'cart_items': cart_items,
         'subtotal': total,
-        'total': total + Decimal('100.00'),
-        'is_buy_now': is_buy_now,  # Added this line
+        'total': total + (shipping_options[0]['value'] if shipping_options else Decimal('0.00')),
+        'shipping_options': shipping_options,
+        'is_buy_now': is_buy_now,
     }
     return render(request, 'blue_dot/checkout.html', context)
+
+def get_shipping_options(request):
+    district_name = request.GET.get('district', '').strip()
+    
+    print(f"Received district: '{district_name}'")  # Debug line - remove in production
+    
+    shipping_costs = ShippingCost.objects.none()
+
+    if district_name:
+        # Try multiple approaches to find shipping costs
+        # 1. Exact match (case-insensitive)
+        shipping_costs = ShippingCost.objects.filter(district__iexact=district_name).select_related('shipping_type')
+        
+        # 2. If no exact match, try partial match
+        if not shipping_costs.exists():
+            shipping_costs = ShippingCost.objects.filter(district__icontains=district_name).select_related('shipping_type')
+        
+        # 3. If still no match, try removing common variations
+        if not shipping_costs.exists():
+            # Remove common suffixes/prefixes
+            clean_name = district_name.replace(' District', '').replace('District', '').strip()
+            shipping_costs = ShippingCost.objects.filter(district__icontains=clean_name).select_related('shipping_type')
+
+    # Fallback: get default shipping cost (where district is NULL)
+    if not shipping_costs.exists():
+        shipping_costs = ShippingCost.objects.filter(district__isnull=True).select_related('shipping_type')
+        print("Using default shipping costs")  # Debug line - remove in production
+
+    data = []
+    for sc in shipping_costs:
+        data.append({
+            "id": f"shipping_type_{sc.shipping_type.id}",
+            "name": sc.shipping_type.name,
+            "code": sc.shipping_type.code,
+            "cost": str(sc.cost),
+        })
+    
+    print(f"Returning {len(data)} shipping options")  # Debug line - remove in production
+    return JsonResponse({"shipping_options": data})
+
 
 
 
@@ -579,7 +723,6 @@ def thank_you(request):
 
 
 from django.db.models import Q
-
 
 def search_view(request):
     banner = SearchViewBanner.objects.last()
@@ -708,3 +851,28 @@ def buy_now(request, slug):
     
     # If GET request, redirect to product detail
     return redirect('product_detail', slug=slug)
+    
+    
+    
+def machine_list(request):
+    machines = Machine.objects.filter(m_status=True)
+    banner = MachineBanner.objects.first()  # Get the first banner without is_active filter
+    
+    return render(request, 'blue_dot/machine_list.html', {
+        'machines': machines,
+        'banner': banner
+    })
+
+
+def machine_detail(request, pk):
+    machine = get_object_or_404(Machine, pk=pk)
+    details = machine.details.first()  # Related details, if any
+    images = machine.images.all()      # Related images
+    banner = MachineBanner.objects.first()  # Get the first banner without is_active filter
+    
+    return render(request, 'blue_dot/machine_detail.html', {
+        'machine': machine,
+        'details': details,
+        'images': images,
+        'banner': banner
+    })
