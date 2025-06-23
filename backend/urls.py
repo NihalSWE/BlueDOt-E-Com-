@@ -208,12 +208,7 @@ urlpatterns = [
     path('purchase/<int:purchase_id>/invoice/', views.invoice_purchase, name='invoice_purchase'),
     path('purchase/<int:purchase_id>/invoice/print/', views.print_invoice_purchase, name='print_invoice_purchase'),
     
- # Main invoice router
-    path('order-invoice/<int:order_id>/', views.view_order_invoice, name='view_order_invoice'),
     
-    # Specific initial invoice views
-    path('initial-order-invoice/<int:order_id>/', views.view_initial_order_invoice, name='view_initial_order_invoice'),
-    path('print-initial-order-invoice/<int:order_id>/', views.print_initial_order_invoice, name='print_initial_order_invoice'),
     
     
         #search banner
@@ -259,5 +254,19 @@ urlpatterns = [
     path('costs/add/', views.shippingcost_create, name='shippingcost_add'),
     path('costs/<int:pk>/edit/', views.shippingcost_edit, name='shippingcost_edit'),
     path('costs/<int:pk>/delete/', views.shippingcost_delete, name='shippingcost_delete'),
+    
+    # Permission Assign
+    path('assign-permissions/<int:user_id>/', views.assign_permissions, name='assign_permissions'), 
+    
+    
+    
+     # Main invoice router
+    path('order-invoice/<int:order_id>/', views.view_order_invoice, name='view_order_invoice'),
+    
+    # Specific initial invoice views
+    path('initial-order-invoice/<int:order_id>/', views.view_initial_order_invoice, name='view_initial_order_invoice'),
+    path('print-initial-order-invoice/<int:order_id>/', views.print_initial_order_invoice, name='print_initial_order_invoice'),
+    
+    
     
 ]

@@ -139,6 +139,22 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+        
+
+
+class PermissionCategory(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class CustomPermission(models.Model):
+    category = models.ForeignKey(PermissionCategory, on_delete=models.CASCADE)
+    permissions = models.ManyToManyField(Permission)  
+
+    def __str__(self):
+        return self.category.name
     
     
 class Customer(models.Model):
@@ -364,15 +380,32 @@ class DiscountCategory(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
+
         super().save(*args, **kwargs)
+
+        # Resize image after saving
+        if self.image:
+            try:
+                img_path = self.image.path
+                with Image.open(img_path) as img:
+                    if img.mode not in ("RGB", "RGBA"):
+                        img = img.convert("RGBA")
+
+                    img = img.resize((350, 350), Image.LANCZOS)
+                    img.save(img_path, format='PNG')
+            except Exception as e:
+                print(f"Error resizing image: {e}")
+
     def __str__(self):
         return self.name
+
     def is_active(self):
         now = timezone.now()
         return (
             self.status == 1 and
             self.start_date <= now <= self.end_date
         )
+        
 class Discount(models.Model):
     STATUS_CHOICES = (
         (1, 'Active'),
@@ -513,6 +546,7 @@ class ShippingCost(models.Model):
 
     def __str__(self):
         return f"{self.shipping_type.name} - {self.district or 'Default'}: ৳{self.cost}"
+
 
 
 class Order(models.Model):
@@ -1064,9 +1098,6 @@ class FAQSection(models.Model):
         except:
             pass
         return ''
-
-    def __str__(self):
-        return f"FAQ Section - {self.section_title or 'Untitled'}"
     
     
     

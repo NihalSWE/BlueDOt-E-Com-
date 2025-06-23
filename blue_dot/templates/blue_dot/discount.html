@@ -42,34 +42,38 @@
     <div class="container">
         <div class="row g-4">
             {% if categories %}
-             {% for category in categories %}
-            <div class="col-xl-4 col-lg-4 col-md-6">
-                <div 
-                    class="tp-service-2-rt-wrapper glass-effect-wrapper p-relative z-index-1 wow fadeInUp"
-                    data-wow-delay=".{{ forloop.counter }}s" data-wow-duration="1s"
-                    style="
-                        {% if category.image %}
-                            background-image: url('{{ category.image.url }}');
-                        {% else %}
-                            background-image: url('{% static 'assets/img/service/service-2-box-shape.png' %}');
-                        {% endif %}
-                    "
-                >
-                    <div class="glass-content">
-                        <h4 class="tp-service-2-rt-title" style="color:#ffffff">
-                            {{ category.name }}<br>
-                            <small style="font-size: 60%;">
-                                {{ category.start_date|date:"d M" }} - {{ category.end_date|date:"d M" }}
-                            </small>
-                        </h4>
-                       <div class="tp-service-2-ri-button mt-3">
-                        <a class="tp-btn-border" href="{% url 'category_products' category.slug %}">
-                            <span>Explore Offer</span>
-                        </a>
-                    </div>
-                </div>
+            {% for category in categories %}
+<div class="col-xl-4 col-lg-4 col-md-6">
+    <div 
+        class="tp-service-2-rt-wrapper glass-effect-wrapper p-relative z-index-1 wow fadeInUp"
+        data-wow-delay=".{{ forloop.counter }}s" data-wow-duration="1s"
+        style="
+            background-repeat: no-repeat;
+            {% if category.image %}
+                background-image: url('{{ category.image.url }}');
+            {% else %}
+                background-image: url('{% static 'assets/img/service/service-2-box-shape.png' %}');
+            {% endif %}
+        "
+    >
+        <div class="glass-content p-4">
+            <h4 class="tp-service-2-rt-title text-white">
+                {{ category.name }}<br>
+                <small style="font-size: 60%;">
+                    {{ category.start_date|date:"d M" }} - {{ category.end_date|date:"d M" }}
+                </small>
+            </h4>
+            <div class="tp-service-2-ri-button mt-3">
+                <a class="tp-btn-border text-nowrap" href="{% url 'category_products' category.slug %}">
+                    <span>Explore Offer</span>
+                </a>
+                
             </div>
-            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+
 
             {% else %}
                 <div class="col-12">

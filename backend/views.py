@@ -30,7 +30,7 @@ from datetime import timedelta
 from django.db.models import Sum, Count, Avg
 from django.utils import timezone
 from datetime import timedelta
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from collections import defaultdict
 from decimal import Decimal
 from django.db.models import Sum, Value, DecimalField, Q
@@ -714,6 +714,178 @@ def aboutus_faq(request):
 
 
 
+
+@login_required
+def view_initial_order_invoice(request, order_id):
+    """View for initial order invoice (for pending and not viewed orders)"""
+    try:
+        order = get_object_or_404(Order, id=order_id)
+        
+        # Debug print to check order status
+        print(f"Order ID: {order_id}, Status: {order.status}")
+        
+        # Check if order status allows initial invoice (0=Pending, 5=Not Viewed)
+        if order.status not in [0, 5]:
+            messages.warning(request, 'This order has been processed. Redirecting to sales invoice.')
+            # Only redirect if sales invoice exists
+            if hasattr(order, 'invoice_id') and order.invoice_id:
+                return redirect('view_sales_invoice', order.invoice_id)
+            else:
+                messages.error(request, 'No sales invoice found for this processed order.')
+                return redirect('order_list')
+        
+        # Get customer details - handle if customer doesn't exist
+        customer = getattr(order, 'customer', None)
+        if not customer:
+            messages.error(request, 'Customer information not found for this order.')
+            return redirect('order_list')
+        
+        # Get order items
+        order_items = order.items.all()
+        
+        # Calculate totals with proper null handling
+        subtotal = float(order.subtotal or 0)
+        shipping_cost = float(order.shipping_cost or 0)
+        total_amount = float(order.total_amount or 0)
+        
+        # If total_amount is 0, calculate from items
+        if total_amount == 0:
+            total_amount = sum(float(item.total_price or 0) for item in order_items) + shipping_cost
+        
+        context = {
+            'order': order,
+            'customer': customer,
+            'order_items': order_items,
+            'subtotal': subtotal,
+            'shipping_cost': shipping_cost,
+            'total_amount': total_amount,
+            'current_date': datetime.now().strftime("%B %d, %Y"),
+            'due_date': (order.created_at + timedelta(days=7)).strftime("%B %d, %Y"),
+            'is_initial_order': True,
+            'print_mode': False,
+        }
+        
+        # Make sure to use the correct template path based on your file structure
+        # Based on your paste.txt, the template should be in backend/invoices/
+        return render(request, 'backend/invoices/initial_invoice.html', context)
+        
+    except Exception as e:
+        print(f"Error in view_initial_order_invoice: {str(e)}")
+        messages.error(request, f'Error loading initial invoice: {str(e)}')
+        return redirect('order_list')
+
+@login_required
+def print_initial_order_invoice(request, order_id):
+    """Print view for initial order invoice"""
+    try:
+        order = get_object_or_404(Order, id=order_id)
+        
+        # Check if order status allows initial invoice
+        if order.status not in [0, 5]:
+            messages.warning(request, 'This order has been processed and cannot show initial invoice.')
+            return redirect('order_list')
+        
+        customer = getattr(order, 'customer', None)
+        if not customer:
+            messages.error(request, 'Customer information not found.')
+            return redirect('order_list')
+            
+        order_items = order.items.all()
+        
+        subtotal = float(order.subtotal or 0)
+        shipping_cost = float(order.shipping_cost or 0)
+        total_amount = float(order.total_amount or 0)
+        
+        # Calculate total if not set
+        if total_amount == 0:
+            total_amount = sum(float(item.total_price or 0) for item in order_items) + shipping_cost
+        
+        context = {
+            'order': order,
+            'customer': customer,
+            'order_items': order_items,
+            'subtotal': subtotal,
+            'shipping_cost': shipping_cost,
+            'total_amount': total_amount,
+            'current_date': datetime.now().strftime("%B %d, %Y"),
+            'due_date': (order.created_at + timedelta(days=7)).strftime("%B %d, %Y"),
+            'is_initial_order': True,
+            'print_mode': True,
+        }
+        
+        return render(request, 'backend/invoices/initial_invoice.html', context)
+        
+    except Exception as e:
+        print(f"Error in print_initial_order_invoice: {str(e)}")
+        messages.error(request, f'Error loading invoice for printing: {str(e)}')
+        return redirect('order_list')
+
+@login_required
+def view_order_invoice(request, order_id):
+    """Main router for order invoices - SIMPLIFIED VERSION"""
+    try:
+        order = get_object_or_404(Order, id=order_id)
+        
+        print(f"Routing invoice for Order ID: {order_id}, Status: {order.status}")
+        
+        # CORRECTED LOGIC: 
+        # Status 0 (Pending) and 5 (Not Viewed) = Show Initial Invoice
+        # All other statuses = Try to show Sales Invoice
+        
+        if order.status in [0, 5]:  # Pending or Not Viewed - Show Initial Invoice
+            return view_initial_order_invoice(request, order_id)
+        else:  # Other statuses - Try Sales Invoice
+            # Check if sales invoice exists
+            if hasattr(order, 'invoice_id') and order.invoice_id:
+                try:
+                    # Try to find sales invoice by invoice_id
+                    # Adjust this based on your actual sales invoice model
+                    return redirect('view_sales_invoice', order.invoice_id)
+                except:
+                    # If sales invoice not found, fallback to initial invoice
+                    messages.warning(request, 'Sales invoice not found. Showing initial invoice.')
+                    return view_initial_order_invoice(request, order_id)
+            else:
+                # No sales invoice, show initial invoice
+                return view_initial_order_invoice(request, order_id)
+                
+    except Order.DoesNotExist:
+        messages.error(request, 'Order not found.')
+        return redirect('order_list')
+    except Exception as e:
+        print(f"Error in view_order_invoice: {str(e)}")
+        messages.error(request, f'Error loading invoice: {str(e)}')
+        return redirect('order_list')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @login_required
 def contactUs(request):
     banner = ContactUsBanner.objects.last()  # Get the most recently added banner
@@ -843,6 +1015,8 @@ def order_list(request):
     
 #     return render(request, 'backend/orders/create.html', context)
 
+
+# @permission_required('backend.view_order', raise_exception=True)
 @login_required
 def initial_orders(request):
     customers = CustomerInfo.objects.all()
@@ -1513,6 +1687,190 @@ def get_customer_invoice_details(request):
             'total_due': float(total_due)
         }
     })
+    
+    
+
+def assign_permissions(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    # staff_types = StaffType.objects.all()
+    # custom_permissions = Permission.objects.filter(content_type__app_label='backend')
+    permission_backend = Permission.objects.filter(content_type__app_label='backend')      # get all the permissions associated with 'proxy_api` app.`
+
+    # all_permissions = Permission.objects.all()
+
+    # for single_permission in all_permissions:
+    #     print('single_permission: ', single_permission.content_type.model)
+
+
+    permission_model_list = []
+    content_permissions = [
+        'aboutus',
+        'blog',
+        'home',
+        'contact',
+        'ourservice',
+        'ourfaqbanner',
+        'pricingcard',
+        'practicearea',
+        'portfolio',
+        'whoweare',
+        'thankyoubanner',
+        'searchviewbanner',
+        'cartbanner',
+        'checkoutbanner',
+        'productbanner'
+    ]
+    inventory_permissions = ['inventory', 'inventorylog', 'invwarehouse', 'materialinventorydetail']
+    material_permissions = ['materialregistration', 'materialtype', 'materialusage', 'measurement', 'measurementtype', 'measurementunit', 'unit']
+    product_permissions = ['discount', 'discountcategory', 'product', 'productimage', 'productreview']
+    order_permissions = ['order', 'orderitem']
+    machine_permissions = ['machine', 'machinebanner', 'machinedetails', 'machineimage']
+    user_permissions = ['users', 'customuser', 'rootuser', 'staffs', 'stafftype', 'profile']
+    
+    for permission in permission_backend:
+        # print the app name of the permission
+        # print('permission_content_type_model: ', permission.content_type.model)
+        permission_model = permission.content_type.model          # get the model name that the permission is associated with
+        if permission_model not in permission_model_list:
+            permission_model_list.append(permission_model)
+
+    print('permission_model_list: ', permission_model_list)
+
+    for permission_model_name in permission_model_list:
+        # if there is a string `route` in the model name (permission_model_name)
+        if permission_model_name in content_permissions:
+            # print('route words: ', permission_model_name)
+            permission_category, created_at = PermissionCategory.objects.get_or_create(name='Content')        # create a new PermissionCategory if doesn't have one already
+            custom_permisssion, created_at = CustomPermission.objects.get_or_create(category=permission_category)     # create a CustomPermissioninstance if doesn't have one already
+            route_perms = Permission.objects.filter(content_type__model=permission_model_name)   # getting all the permissions with the model name
+            print('permissions filter: ', route_perms)
+            custom_permisssion.permissions.add(*route_perms)
+            custom_permisssion.save()
+
+        # create coach permissions
+        elif permission_model_name in inventory_permissions:
+            permission_category, created_at = PermissionCategory.objects.get_or_create(name='Inventory')
+            custom_permisssion, created_at = CustomPermission.objects.get_or_create(category=permission_category)
+            coach_perms = Permission.objects.filter(content_type__model=permission_model_name)
+            custom_permisssion.permissions.add(*coach_perms)
+            custom_permisssion.save()
+
+        # counter coach permissions
+        elif permission_model_name in material_permissions:
+            permission_category, created_at = PermissionCategory.objects.get_or_create(name='Material')
+            custom_permisssion, created_at = CustomPermission.objects.get_or_create(category=permission_category)
+            counter_perms = Permission.objects.filter(content_type__model=permission_model_name)
+            custom_permisssion.permissions.add(*counter_perms)
+            custom_permisssion.save()
+
+        # booking coach permissions
+        elif permission_model_name in product_permissions:
+            permission_category, created_at = PermissionCategory.objects.get_or_create(name='Product')
+            custom_permisssion, created_at = CustomPermission.objects.get_or_create(category=permission_category)
+            booking_perms = Permission.objects.filter(content_type__model=permission_model_name)
+            custom_permisssion.permissions.add(*booking_perms)
+            custom_permisssion.save()
+
+        # payment coach permissions
+        elif permission_model_name in order_permissions:
+            permission_category, created_at = PermissionCategory.objects.get_or_create(name='Order')
+            custom_permisssion, created_at = CustomPermission.objects.get_or_create(category=permission_category)
+            payment_perms = Permission.objects.filter(content_type__model=permission_model_name)
+            custom_permisssion.permissions.add(*payment_perms)
+            custom_permisssion.save()
+            
+        elif permission_model_name in machine_permissions:
+            permission_category, created_at = PermissionCategory.objects.get_or_create(name='Machines')
+            custom_permisssion, created_at = CustomPermission.objects.get_or_create(category=permission_category)
+            payment_perms = Permission.objects.filter(content_type__model=permission_model_name)
+            custom_permisssion.permissions.add(*payment_perms)
+            custom_permisssion.save()
+
+
+        # user coach permissions
+        elif permission_model_name in user_permissions:
+            permission_category, created_at = PermissionCategory.objects.get_or_create(name='Users')
+            custom_permisssion, created_at = CustomPermission.objects.get_or_create(category=permission_category)
+            user_perms = Permission.objects.filter(content_type__model=permission_model_name)
+            custom_permisssion.permissions.add(*user_perms)
+            custom_permisssion.save()
+
+        # else:
+        #     permission_category, created_at = PermissionCategory.objects.get_or_create(name='Miscelleneous')
+        #     custom_permisssion, created_at = CustomPermission.objects.get_or_create(category=permission_category)
+        #     miscelleneous_perms = Permission.objects.filter(content_type__model=permission_model_name)
+        #     custom_permisssion.permissions.add(*miscelleneous_perms)
+        #     custom_permisssion.save()
+
+    user_permissions = user.user_permissions.all()
+    permission_list_of_user = []
+    assigned_persmissions_list = []
+    for perm in user_permissions:
+        permission_list_of_user.append(perm.name)
+        assigned_persmissions_list.append(perm.id)
+
+    for user_permission in  user.user_permissions.all():
+        print('user_permission name: ', user_permission.content_type)
+
+    if request.method == 'POST':
+        selected_permissions = request.POST.getlist('selected_permissions')
+        department_permissions_list = request.POST.getlist('department_permissions')
+        department_permissions = [item.lower() for item in department_permissions_list]
+        print('selected_permissions: ', selected_permissions)
+        print('department_permissions: ', department_permissions)
+        try:
+            user.user_permissions.clear()  # Clear existing permissions
+            for permission_id in selected_permissions:
+                print('permission_id: ', permission_id)
+                permission = Permission.objects.get(id=permission_id)
+                user.user_permissions.add(permission)
+
+            messages.success(
+                request, f'Permissions assigned to user "{user.username}" successfully.')
+            try:
+                # staff_department_permissions = []
+                # if department_permissions_list:
+                #     for department_name in department_permissions_list:
+                #         staff_types = StaffType.objects.get(name=department_name)
+                #         user.staff_type = staff_types
+                #         user.save()
+                for department_permission in department_permissions:
+                    inventory_permissions = Permission.objects.filter(content_type__app_label=department_permission)
+                    for inventory_permission in inventory_permissions:
+                        print('permission id-------------------------------------------------------------: ', inventory_permission.id)
+                        department_permission_id = inventory_permission.id
+                        department_perms = Permission.objects.get(id=department_permission_id)
+                        user.user_permissions.add(department_perms)
+                # for staff_department_permission in staff_department_permissions:
+                #     print('staff_department_permission: ', staff_department_permission)00
+                # for inventory_permission in inventory_permissions:
+                #     print('permission id: ', inventory_permission.id)
+            except Exception as e:
+                messages.error(request, f'Error assigning permissions: {e}')
+        except Exception as e:
+            messages.error(request, f'Error assigning permissions: {e}')
+        # Redirect to user list page after assigning permissions
+        return redirect('user_list')
+    permission_categories = PermissionCategory.objects.all()
+
+    print('permission categories end: ', permission_categories)
+    
+    permissions_by_category = {}
+    for category in permission_categories:
+        permissions = Permission.objects.filter(
+            custompermission__category=category)
+        permissions_by_category[category] = permissions
+
+    print('permissions_by_category: ', permissions_by_category)
+
+    context = {
+        'user': user,
+        'permission_categories': permission_categories,
+        'permissions_by_category': permissions_by_category,
+        'assigned_persmissions_list': assigned_persmissions_list,
+        # 'staff_types': staff_types
+    }
+    return render(request, 'backend/user_permissions/assign_permissions.html', context)
 
 
 @login_required
@@ -4493,171 +4851,6 @@ def print_sales_invoice(request, sales_id):
     
     return render(request, 'backend/invoices/sales_invoice.html', context) 
     
-
-
-
-
-
-# Add these views to your existing views.py
-
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from datetime import datetime, timedelta
-from django.db.models import Sum
-from .models import Order, OrderItem, CustomerInfo, MaterialInventoryDetail
-
-@login_required
-def view_initial_order_invoice(request, order_id):
-    """View for initial order invoice (for pending and not viewed orders)"""
-    try:
-        order = get_object_or_404(Order, id=order_id)
-        
-        # Debug print to check order status
-        print(f"Order ID: {order_id}, Status: {order.status}")
-        
-        # Check if order status allows initial invoice (0=Pending, 5=Not Viewed)
-        if order.status not in [0, 5]:
-            messages.warning(request, 'This order has been processed. Redirecting to sales invoice.')
-            # Only redirect if sales invoice exists
-            if hasattr(order, 'invoice_id') and order.invoice_id:
-                return redirect('view_sales_invoice', order.invoice_id)
-            else:
-                messages.error(request, 'No sales invoice found for this processed order.')
-                return redirect('order_list')
-        
-        # Get customer details - handle if customer doesn't exist
-        customer = getattr(order, 'customer', None)
-        if not customer:
-            messages.error(request, 'Customer information not found for this order.')
-            return redirect('order_list')
-        
-        # Get order items
-        order_items = order.items.all()
-        
-        # Calculate totals with proper null handling
-        subtotal = float(order.subtotal or 0)
-        shipping_cost = float(order.shipping_cost or 0)
-        total_amount = float(order.total_amount or 0)
-        
-        # If total_amount is 0, calculate from items
-        if total_amount == 0:
-            total_amount = sum(float(item.total_price or 0) for item in order_items) + shipping_cost
-        
-        context = {
-            'order': order,
-            'customer': customer,
-            'order_items': order_items,
-            'subtotal': subtotal,
-            'shipping_cost': shipping_cost,
-            'total_amount': total_amount,
-            'current_date': datetime.now().strftime("%B %d, %Y"),
-            'due_date': (order.created_at + timedelta(days=7)).strftime("%B %d, %Y"),
-            'is_initial_order': True,
-            'print_mode': False,
-        }
-        
-        # Make sure to use the correct template path based on your file structure
-        # Based on your paste.txt, the template should be in backend/invoices/
-        return render(request, 'backend/invoices/initial_invoice.html', context)
-        
-    except Exception as e:
-        print(f"Error in view_initial_order_invoice: {str(e)}")
-        messages.error(request, f'Error loading initial invoice: {str(e)}')
-        return redirect('order_list')
-
-@login_required
-def print_initial_order_invoice(request, order_id):
-    """Print view for initial order invoice"""
-    try:
-        order = get_object_or_404(Order, id=order_id)
-        
-        # Check if order status allows initial invoice
-        if order.status not in [0, 5]:
-            messages.warning(request, 'This order has been processed and cannot show initial invoice.')
-            return redirect('order_list')
-        
-        customer = getattr(order, 'customer', None)
-        if not customer:
-            messages.error(request, 'Customer information not found.')
-            return redirect('order_list')
-            
-        order_items = order.items.all()
-        
-        subtotal = float(order.subtotal or 0)
-        shipping_cost = float(order.shipping_cost or 0)
-        total_amount = float(order.total_amount or 0)
-        
-        # Calculate total if not set
-        if total_amount == 0:
-            total_amount = sum(float(item.total_price or 0) for item in order_items) + shipping_cost
-        
-        context = {
-            'order': order,
-            'customer': customer,
-            'order_items': order_items,
-            'subtotal': subtotal,
-            'shipping_cost': shipping_cost,
-            'total_amount': total_amount,
-            'current_date': datetime.now().strftime("%B %d, %Y"),
-            'due_date': (order.created_at + timedelta(days=7)).strftime("%B %d, %Y"),
-            'is_initial_order': True,
-            'print_mode': True,
-        }
-        
-        return render(request, 'backend/invoices/initial_invoice.html', context)
-        
-    except Exception as e:
-        print(f"Error in print_initial_order_invoice: {str(e)}")
-        messages.error(request, f'Error loading invoice for printing: {str(e)}')
-        return redirect('order_list')
-
-@login_required
-def view_order_invoice(request, order_id):
-    """Main router for order invoices - SIMPLIFIED VERSION"""
-    try:
-        order = get_object_or_404(Order, id=order_id)
-        
-        print(f"Routing invoice for Order ID: {order_id}, Status: {order.status}")
-        
-        # CORRECTED LOGIC: 
-        # Status 0 (Pending) and 5 (Not Viewed) = Show Initial Invoice
-        # All other statuses = Try to show Sales Invoice
-        
-        if order.status in [0, 5]:  # Pending or Not Viewed - Show Initial Invoice
-            return view_initial_order_invoice(request, order_id)
-        else:  # Other statuses - Try Sales Invoice
-            # Check if sales invoice exists
-            if hasattr(order, 'invoice_id') and order.invoice_id:
-                try:
-                    # Try to find sales invoice by invoice_id
-                    # Adjust this based on your actual sales invoice model
-                    return redirect('view_sales_invoice', order.invoice_id)
-                except:
-                    # If sales invoice not found, fallback to initial invoice
-                    messages.warning(request, 'Sales invoice not found. Showing initial invoice.')
-                    return view_initial_order_invoice(request, order_id)
-            else:
-                # No sales invoice, show initial invoice
-                return view_initial_order_invoice(request, order_id)
-                
-    except Order.DoesNotExist:
-        messages.error(request, 'Order not found.')
-        return redirect('order_list')
-    except Exception as e:
-        print(f"Error in view_order_invoice: {str(e)}")
-        messages.error(request, f'Error loading invoice: {str(e)}')
-        return redirect('order_list')
-
-
-
-
-
-
-
-
-
-
 
 
 

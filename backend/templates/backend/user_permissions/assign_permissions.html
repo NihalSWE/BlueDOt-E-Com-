@@ -1,0 +1,160 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+
+{% block custom_css %}
+    <link rel="stylesheet" href="{% static "assets/css/assign_permissions.css" %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.css">
+{% endblock custom_css %}
+{% block page_title %}Seat Views{% endblock page_title %}
+{% block content %}
+
+
+<div class="card h-100 p-0 radius-12">
+    <div class="card-body p-24">
+        {% if messages %}
+            <div class="alert alert-success" style="margin-top: 10px">
+                {% for message in messages %}
+                {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="row justify-content-center">
+                <div class="image-div">
+                    {% if user.profile_picture %}
+                        <img id="wizardPicturePreview" class="img-account-profile picture-src mb-2" src="{{ user.profile_picture.url }}" alt="http://bootdey.com/img/Content/avatar/avatar1.png">
+                    {% else %}
+                        <img id="wizardPicturePreview" class="img-account-profile picture-src mb-2" src="http://bootdey.com/img/Content/avatar/avatar1.png" alt="">
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row user-image-name justify-content-center">
+                <p class="w-auto">{{ user.username }}</p>
+            </div>
+            <div class="p-4">
+                <div class="row">
+                    {% for category in permission_categories %}
+                        <div class="category-item col-lg-4 col-md-6 col-12 p-md-3 p-3">
+                            <div class="row each-category-item">
+                                <div class="d-flex">
+                                    <div class="input-check-box-div">
+                                        <input class="form-check-input mark-all-check" type="checkbox" id="main-permission-checkbox-{{category.id}}" data-category="{{ category.id }}">
+                                    </div>
+                                    <div class="label-check-box-div">
+                                        <label class="form-check-label mark-all-check-label" for="main-permission-checkbox-{{category.id}}">{{ category.name }}</label>
+                                    </div>
+                                </div>
+                                
+                                <!--<p class="category-name"><span>{{ category.name }}</span></p>-->
+                                <div class="permissions-sublist mt-2" id="permissions-sublist-{{category.id}}">
+                                    {% for custom_permission in category.custompermission_set.all %}
+                                        {% for permission in custom_permission.permissions.all %}
+                                            {% with permission_value=category.name|lower|add:" | "|add:permission.codename|add:" | "|add:permission.name %}
+                                                <div class="permissions-item">
+                                                    <input type="checkbox" class="form-check-input permission-checkbox" id="permission-{{ permission.id }}" name="selected_permissions" value="{{ permission.id }}" data-category="{{ category.id }}">
+                                                    <!--<input type="checkbox" class="form-check-input permission-checkbox" id="permission-{{ permission.id }}" name="selected_permissions" value="{{ permission.id }}" data-category="{{ category.id }}" {% if permission.id in assigned_persmissions_list %} checked {% endif %}>-->
+                                                    <label class="form-check-label subpermissions-label" for="permission-{{ permission.id }}">{{ permission.name }}</label>
+                                                </div>
+                                            {% endwith %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% for staff_type in staff_types %}
+                        <div class="category-item col-lg-4 col-md-6 col-12 p-md-3 p-3">
+                            <div class="row each-category-item">
+                                <input class="form-check-input mark-all-check" type="checkbox" id="{{ staff_type.name }}" value="{{ staff_type.name }}" name="department_permissions" data-category="{{ staff_type.name }}">
+                                <label class="form-check-label mark-all-check-label" for="{{ staff_type.name }}">{{ staff_type.name }}</label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="d-flex justify-content-center">
+                <button type="submit" class="btn save-btn">Assign Permissions</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+{% endblock content %}
+{% block custom_js %}
+    <script>
+        $(document).ready(function(){
+            var assigned_persmissions_list = '{{ assigned_persmissions_list }}';
+
+            // Remove leading and trailing whitespace and split the string into an array
+            //assigned_persmissions_list = assigned_persmissions_list.trim().split(',');
+            console.log('assigned_persmissions_list: ', assigned_persmissions_list)
+
+            $('.permission-checkbox').each(function() {
+                var permissionId = $(this).val();
+                if (assigned_persmissions_list.includes(permissionId)) {
+                    $(this).prop('checked', true);
+                }
+
+                const categoryID = $(this).data('category');
+                const categoryCheckboxes = $('.permission-checkbox[data-category="' + categoryID + '"]');
+                const allChecked = categoryCheckboxes.filter(':checked').length === categoryCheckboxes.length;
+                $(`#main-permission-checkbox-${categoryID}`).prop('checked', allChecked);
+                // Toggle permissions-sublist visibility based on checked state
+                const permissionsSublist = $('#permissions-sublist-' + categoryID);
+                if (categoryCheckboxes.is(':checked')) {
+                    permissionsSublist.addClass('open');
+                } else {
+                    permissionsSublist.removeClass('open');
+                }
+            });
+
+            $('.mark-all-check').on('change', function () {
+                const categoryID = $(this).data('category');
+                const categoryCheckboxes = $('.permission-checkbox[data-category="' + categoryID + '"]');
+                categoryCheckboxes.prop('checked', $(this).prop('checked'));
+                // Toggle permissions-sublist visibility based on checked state
+                const permissionsSublist = $('#permissions-sublist-' + categoryID);
+                if (categoryCheckboxes.is(':checked')) {
+                    permissionsSublist.addClass('open');
+                } else {
+                    permissionsSublist.removeClass('open');
+                }
+            });
+
+            // Handle individual permission checkbox click event
+            $('.permission-checkbox').on('change', function () {
+                const categoryID = $(this).data('category');
+                const categoryCheckboxes = $('.permission-checkbox[data-category="' + categoryID + '"]');
+                const allChecked = categoryCheckboxes.filter(':checked').length === categoryCheckboxes.length;
+                $(`#main-permission-checkbox-${categoryID}`).prop('checked', allChecked);
+                // Toggle permissions-sublist visibility based on checked state
+                const permissionsSublist = $('#permissions-sublist-' + categoryID);
+                if (categoryCheckboxes.is(':checked')) {
+                    permissionsSublist.addClass('open');
+                } else {
+                    permissionsSublist.removeClass('open');
+                }
+            });
+
+            var permissions_by_category = '{{ permission_names_list }}'
+            console.log('permission_names_list: ', permissions_by_category)
+            //var permissions_by_category = JSON.parse('{{ permissions_by_category_json|escapejs }}');
+            // Iterate over each category in permissions_by_category
+            /*for (var category in permissions_by_category) {
+                // Get the permissions for the current category
+                var permissions = permissions_by_category[category];
+                
+                // Iterate over each permission in the permissions array
+                permissions.forEach(function(permission) {
+                    // Log the permission name to the console
+                    console.log(permission.name);
+                });
+            }*/
+        })
+    </script>
+{% endblock custom_js %}

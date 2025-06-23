@@ -115,7 +115,6 @@ def add_to_cart(request, slug):
 
 
 from django.http import Http404
-
 def remove_from_cart(request, slug):
     """Remove all items for a product from cart"""
     product = get_object_or_404(Product, slug=slug)
@@ -383,40 +382,36 @@ def promotion(request):
         'banner':banner
     })
 
-
 def category_products(request, slug):
-    # Get the selected category by slug
-    category = get_object_or_404(Category, slug=slug)
-    category_obj=Category.objects.all()
+    # Get the DiscountCategory by slug
+    discount_category = get_object_or_404(DiscountCategory, slug=slug)
+    category_obj = Category.objects.all()
     banner = ProductBanner.objects.last()
 
-    # Include this category and all its subcategories
-    categories = Category.objects.filter(Q(id=category.id) | Q(parent_category=category))
+    # Get all discounts for this category
+    discounts = Discount.objects.filter(category=discount_category, status=1).prefetch_related('products')
 
-    # Get all products in these categories
-    products = Product.objects.filter(category__in=categories).select_related('category', 'brand')
+    # Collect products from all related discounts
+    products = Product.objects.filter(discounts__in=discounts).distinct().select_related('category', 'brand')
     
     recent_products = Product.objects.order_by('-created_at')[:3]
 
-    
-
-    # Category filter
+    # -- Filters below (keep as is or adjust accordingly) --
     category_slug = request.GET.get('category')
     if category_slug:
         products = products.filter(category__slug=category_slug)
 
-    # Search filter
     search_query = request.GET.get('search')
     if search_query:
         products = products.filter(
             Q(name__icontains=search_query) |
             Q(description__icontains=search_query)
         )
-    prices = Product.objects.aggregate(min_price=Min('base_price'), max_price=Max('base_price'))
-    # Price range filter
+
+    prices = products.aggregate(min_price=Min('base_price'), max_price=Max('base_price'))
+
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
-
     if min_price and max_price:
         try:
             min_price = Decimal(min_price)
@@ -425,7 +420,6 @@ def category_products(request, slug):
             min_price = 0
             max_price = 999999
 
-        # Annotate with product-level discount only
         products = products.annotate(
             calculated_final_price=Case(
                 When(discount_type='flat', discount_value__isnull=False,
@@ -440,7 +434,6 @@ def category_products(request, slug):
             calculated_final_price__lte=max_price
         )
 
-    # Sort options
     sort_option = request.GET.get('sort')
     if sort_option == 'price_asc':
         products = products.order_by('base_price')
@@ -449,20 +442,16 @@ def category_products(request, slug):
     elif sort_option == 'newest':
         products = products.order_by('-created_at')
     elif sort_option == 'sale':
-        products = products.filter(
-            Q(discount_type__isnull=False)
-        )
+        products = products.filter(Q(discount_type__isnull=False))
 
-    # Pagination
     paginator = Paginator(products.distinct(), 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-
     return render(request, 'blue_dot/category_products.html', {
-        'category': category,
-        'products': products,
-        'category_obj':category_obj,
+        'category': discount_category,
+        'products': page_obj,
+        'category_obj': category_obj,
         'recent_products': recent_products,
         'banner': banner,
         'selected_category': category_slug,
@@ -470,7 +459,6 @@ def category_products(request, slug):
         'min_price': prices['min_price'] or 0,
         'max_price': prices['max_price'] or 10000,
         'sort_option': sort_option or 'default',
-              
     })
     
 

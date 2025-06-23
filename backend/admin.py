@@ -115,9 +115,3 @@ admin.site.register(MaterialInventoryDetail)
 admin.site.register(PartyRegSupplier)
 # admin.site.register(Material)
 # admin.site.register(ProductMaterial)
-
-
-@admin.register(FAQSection)
-class FAQSectionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'video_url', 'video_thumbnail', 'stat_title', 'section_subtitle', 'stat_count']
-    
