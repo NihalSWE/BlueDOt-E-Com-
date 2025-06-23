@@ -1050,20 +1050,21 @@ class FAQSection(models.Model):
                 img.save(self.video_thumbnail.path)
             except Exception as e:
                 print(f"Error resizing image: {e}")
-    def get_embed_video_url(self):
-        """Return embed-friendly video URL for YouTube"""
+    def get_watch_video_url(self):
+        """Return YouTube watch URL for popup plugins"""
         try:
             parsed = urlparse(self.video_url)
             if 'youtube.com' in parsed.netloc:
                 video_id = parse_qs(parsed.query).get('v', [None])[0]
                 if video_id:
-                    return f'https://www.youtube.com/embed/{video_id}'
+                    return f'https://www.youtube.com/watch?v={video_id}'
             elif 'youtu.be' in parsed.netloc:
                 video_id = parsed.path.lstrip('/')
-                return f'https://www.youtube.com/embed/{video_id}'
+                return f'https://www.youtube.com/watch?v={video_id}'
         except:
             pass
         return ''
+
     def __str__(self):
         return f"FAQ Section - {self.section_title or 'Untitled'}"
     

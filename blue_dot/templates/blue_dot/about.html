@@ -561,7 +561,7 @@
                                             <img src="{% static 'assets/img/faq/faq-2-thumb.jpg'%}" alt="Default FAQ Thumbnail">
                                         {% endif %}
                                         <div class="tp-faq-2-thumb-video">
-                                            <a class="popup-video" href="{{ faq_section.video_url }}">
+                                            <a class="popup-video" href="{{ faq_section.get_watch_video_url  }}">
                                                 <i class="fa-solid fa-play"></i>
                                             </a>
                                         </div>
