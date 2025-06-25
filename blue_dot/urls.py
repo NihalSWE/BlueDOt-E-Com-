@@ -55,7 +55,12 @@ urlpatterns = [
         path('machine_front_list/', views.machine_list, name='machine_front_list'),
     path('machines_details/<int:pk>/', views.machine_detail, name='machines_details'),
     #search
-        path('get-shipping-options/', views.get_shipping_options, name='get_shipping_options')
+        path('get-shipping-options/', views.get_shipping_options, name='get_shipping_options'),
+        
+        
+    #blog search
+    path('blog_search_view/', views.blog_search_view, name='blog_search_view'),    
+        
 ]
 
 

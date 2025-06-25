@@ -1,0 +1,42 @@
+{% extends "blue_dot/base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="tp-postbox-area pt-50 pb-120">
+  <div class="container">
+    <h3 class="mb-4">Search Results for "{{ query }}"</h3>
+
+    {% if results %}
+      <div class="row">
+        {% for blog in results %}
+        <div class=" col-lg-4 col-md-6">
+            <div class="tp-blog-wrapper wow fadeInUp" style="border: 1px solid #00000026;">
+                <div class="tp-blog-thumb">
+                    <a href="{{ blog.get_absolute_url }}">
+                        <img src="{{ blog.image.url }}" alt="{{ blog.title }}">
+                    </a>
+                </div>
+                <div class="tp-blog-4-content">
+                    <div class="tp-blog-4-meta">
+                        <span>{{ blog.get_category_name }}</span>
+                        <span>{{ blog.date }}</span>
+                    </div>
+                    <h4 class="tp-blog-4-title" style="height: 55px;">
+                      <a href="{{ blog.get_absolute_url }}" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">{{ blog.title }}</a>
+                  </h4>
+                  
+                    {% comment %} <p>{{ blog.get_short_description }}</p> {% endcomment %}
+                    <div class="tp-blog-4-btn">
+                        <a href="{{ blog.get_absolute_url }}">Read More <i class="fa-regular fa-plus"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No results found.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -864,3 +864,13 @@ def machine_detail(request, pk):
         'images': images,
         'banner': banner
     })
+
+
+
+def blog_search_view(request):
+    query = request.GET.get('q', '')
+    results = BlogPost.objects.filter(title__icontains=query) if query else []
+    return render(request, 'blue_dot/blog_search_result.html', {
+        'query': query,
+        'results': results
+    })

@@ -151,6 +151,36 @@
                         {% endif %}
                     </div>
 
+
+                    
+<!-- Add this right before the materials table -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="d-flex align-items-center">
+            <label class="form-label me-2">Show</label>
+            <select class="form-select" style="width: auto;" id="perPageSelect" onchange="changePerPage()">
+                <option value="5" {% if per_page == 5 %}selected{% endif %}>5</option>
+                <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+                <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+            </select>
+            <span class="form-label ms-2">entries</span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="text-end">
+            <small class="text-muted">
+                Showing {{ materials.start_index }} to {{ materials.end_index }} of {{ materials.paginator.count }} entries
+            </small>
+        </div>
+    </div>
+</div>
+
+
+
+
+
                     <!-- MATERIALS TABLE (unchanged) -->
                     <div class="table-responsive mt-4">
                         <table class="table table-bordered table-hover" id="materialsTable">
@@ -169,18 +199,18 @@
                             <tbody>
                                 {% for material in materials %}
                                     <tr>
-                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ materials.start_index|add:forloop.counter0 }}</td>
                                         <td class="material-name">{{ material.mr_material_name }}</td>
-                                            <td>
-                                                <select
-                                                class="form-control unit-select"
-                                                data-material="{{ material.id }}"
-                                                >
-                                                {% for unit in units %}
-                                                <option value="{{ unit.id }}">{{ unit.name }}</option>
-                                                {% endfor %}
-                                                </select>
-                                            </td>
+                                        <td>
+                                            <select
+                                            class="form-control unit-select"
+                                            data-material="{{ material.id }}"
+                                            >
+                                            {% for unit in units %}
+                                            <option value="{{ unit.id }}">{{ unit.name }}</option>
+                                            {% endfor %}
+                                            </select>
+                                        </td>
                                         <td class="available-qty">{{ material.quantity }}</td>
                                         <td>
                                             <input
@@ -200,9 +230,57 @@
                                             </button>
                                         </td>
                                     </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="8" class="text-center">No materials found.</td>
+                                    </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <!-- Add pagination controls after the table -->
+{% if materials.has_other_pages %}
+<nav aria-label="Materials pagination" class="mt-3">
+    <ul class="pagination justify-content-center">
+        {% if materials.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1&per_page={{ per_page }}" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ materials.previous_page_number }}&per_page={{ per_page }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        {% endif %}
+
+        {% for num in materials.paginator.page_range %}
+            {% if materials.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num > materials.number|add:'-3' and num < materials.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}&per_page={{ per_page }}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if materials.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ materials.next_page_number }}&per_page={{ per_page }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ materials.paginator.num_pages }}&per_page={{ per_page }}" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
                     </div>
 
                     <!-- SELECTED ITEMS FOR EACH PRODUCT: use product.id instead of item.id -->
@@ -567,4 +645,15 @@
             $selector.change(refreshBadges);
         });
     </script>
+
+    <script>
+        function changePerPage() {
+            const perPage = document.getElementById('perPageSelect').value;
+            const url = new URL(window.location);
+            url.searchParams.set('per_page', perPage);
+            url.searchParams.set('page', '1'); // Reset to first page
+            window.location.href = url.toString();
+        }
+        </script>
+
 {% endblock %}

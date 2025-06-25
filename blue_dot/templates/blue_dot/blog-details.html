@@ -480,7 +480,8 @@
                     
                     <div class="tp-postbox-content">
                         <h3 class="tp-postbox-title">{{ blog.title }}</h3>
-                        <h5>{{ blog.date }} _ {{ blog.get_category_name }} _ BY {{ blog.author }}</h5>
+                        <h5>{{ blog.date }} | {{ blog.get_category_name }} | By {{ blog.author }}</h5>
+
                         <div class="tp-postbox-paragraph">
                             {{ blog.description|safe }}
                         </div>
@@ -584,12 +585,13 @@
                         <div class="sidebar__widget-content">
                             <h3 class="sidebar__widget-title">Search</h3>
                             <div class="sidebar__search">
-                                <form action="#">
-                                    <div class="sidebar__search-input-2">
-                                        <input type="text" placeholder="Keywords here....">
-                                        <button type="submit"><i class="far fa-search"></i></button>
-                                    </div>
-                                </form>
+                              <form method="GET" action="{% url 'blog_search_view' %}">
+                                <div class="sidebar__search-input-2">
+                                    <input type="text" name="q" placeholder="Search blog...">
+                                    <button type="submit"><i class="far fa-search"></i></button>
+                                </div>
+                              </form>
+                              
                             </div>
                         </div>
                     </div>

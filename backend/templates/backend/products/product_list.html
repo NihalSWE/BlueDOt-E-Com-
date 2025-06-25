@@ -201,15 +201,16 @@
                             <span 
                                 class="icon-park--edit-two me-2"
                                 data-bs-toggle="modal"
-                                data-bs-target="#editCategory"
+                                data-bs-target="#editProduct"
                                 data-id="{{ product.id }}"
                                 data-name="{{ product.name }}"
                                 data-description="{{ product.description|escapejs }}"
-                                data-parent-id="{{ product.parent_category.id }}"
-                                {% if product.image %}
-                                    data-image-url="{{ product.image.url }}"
+                                data-category-id="{{ product.category.id }}"
+                                data-price="{{ product.base_price }}"
+                                {% if product.thumbnail %}
+                                  data-thumbnail-url="{{ product.thumbnail.url }}"
                                 {% else %}
-                                    data-image-url=""
+                                  data-thumbnail-url=""
                                 {% endif %}>
                             </span>
                             <span 
@@ -243,59 +244,65 @@
   </div>
   <!-- / DataTable with Buttons -->
 
-  <!--Edit Modal-->
-  <div
-  class="modal fade animate__animated fadeIn"
-  id="animationModal"
-  tabindex="-1"
-  aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
+   <!--Edit Modal-->
+  <div class="modal fade" id="editProduct" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-simple modal-edit-user">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel5">Modal title</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col mb-6 mt-2">
-            <div class="form-floating form-floating-outline">
-              <input
-                type="text"
-                id="nameAnimation"
-                class="form-control"
-                placeholder="Enter Name" />
-              <label for="nameAnimation">Name</label>
-            </div>
-          </div>
+      <div class="modal-body p-0">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="text-center mb-6">
+          <h4 class="mb-2">Edit Product Information</h4>
         </div>
-        <div class="row g-4">
-          <div class="col mb-2">
-            <div class="form-floating form-floating-outline">
-              <input
-                type="email"
-                id="emailAnimation"
-                class="form-control"
-                placeholder="xxxx@xxx.xx" />
-              <label for="emailAnimation">Email</label>
+
+        <form id="editProductForm" method="POST" enctype="multipart/form-data" action="{% url 'update_product' %}">
+          {% csrf_token %}
+          <input type="hidden" name="product_id" id="edit-product-id">
+
+          <!-- Product Name -->
+          <div class="col-md-12 mb-3">
+            <label for="edit-product-name">Product Name</label>
+            <input type="text" id="edit-product-name" name="name" class="form-control" />
+          </div>
+
+          <!-- Category -->
+          <div class="col-md-12 mb-3">
+            <label for="edit-product-category">Category</label>
+            <select id="edit-product-category" name="category" class="form-select select2">
+              <option value="">Select Category</option>
+              {% for parent_category in parent_categories %}
+              <option value="{{ parent_category.id }}">{{ parent_category.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Description -->
+          <div class="col-md-12 mb-3">
+            <label for="edit-product-description">Description</label>
+            <textarea id="edit-product-description" name="description" class="form-control" rows="4"></textarea>
+          </div>
+
+          <!-- Base Price -->
+          <div class="col-md-12 mb-3">
+            <label for="edit-product-price">Base Price</label>
+            <input type="number" step="0.01" id="edit-product-price" name="base_price" class="form-control" />
+          </div>
+
+          <!-- Thumbnail Image -->
+          <div class="col-md-12 mb-3">
+            <label for="edit-thumbnail">Thumbnail Image</label>
+            <input type="file" id="edit-thumbnail" name="thumbnail" class="form-control" accept="image/*" />
+            <div class="mt-2">
+              <img id="thumbnail-preview" src="https://via.placeholder.com/300x200?text=Thumbnail" class="img-thumbnail" style="max-height: 200px;" />
+              <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeImagePreview('thumbnail-preview')">Remove</button>
             </div>
           </div>
-          <div class="col mb-2">
-            <div class="form-floating form-floating-outline">
-              <input type="date" id="dobAnimation" class="form-control" />
-              <label for="dobAnimation">DOB</label>
-            </div>
+
+          <!-- Submit -->
+          <div class="col-12 text-center">
+            <button type="submit" class="btn btn-primary me-3">Submit</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
           </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-          Close
-        </button>
-        <button type="button" class="btn btn-primary">Save changes</button>
+        </form>
       </div>
     </div>
   </div>
@@ -331,100 +338,6 @@
   </div>
   <!-- Delete Confirmation Modal -->
 
-
-  <!-- Edit  Modal -->
-  <div class="modal fade" id="editCategory" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-simple modal-edit-user">
-    <div class="modal-content">
-      <div class="modal-body p-0">
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        <div class="text-center mb-6">
-          <h4 class="mb-2">Edit User Information</h4>
-          <p class="mb-6">Updating user details will receive a privacy audit.</p>
-        </div>
-
-        <form id="editUserForm" class="row g-5" onsubmit="return false" method="POST" enctype="multipart/form-data" >
-            {% csrf_token %}
-          <!-- Category Name -->
-          <div class="col-md-6">
-            <div class="form-floating form-floating-outline">
-              <input type="text" id="multicol-first-name" name="name" class="form-control" placeholder="John"
-                value="{{ category.name }}" />
-              <label for="multicol-first-name">Category Name</label>
-            </div>
-          </div>
-
-          <!-- Parent Category -->
-          <div class="col-md-6">
-            <div class="form-floating form-floating-outline">
-              <select id="multicol-country" class="select2 form-select" name="parent_category" data-allow-clear="true">
-                <option value="">Select Parent Category</option>
-                {% for category in categories %}
-                  <option value="{{ category.id }}" {% if category.parent_category and category.parent_category.id == category.id %}selected{% endif %}>
-                    {{ category.name }}
-                  </option>
-                {% endfor %}
-              </select>
-              <label for="multicol-country">Parent Category</label>
-            </div>
-          </div>
-
-          <!-- Description -->
-          <div class="form-floating form-floating-outline mb-6">
-            <div>
-              <label for="description">Category Description</label>
-            </div>
-            <textarea class="form-control h-px-100" id="description" name="description" placeholder="Comments here..."
-              style="min-height: 400px">{{ category.description }}</textarea>
-          </div>
-
-            <!-- Category Image -->
-            <div class="col-md-6">
-            <div class="form-floating form-floating-outline">
-                <input type="file" id="image-upload" name="image" class="form-control" accept="image/*" />
-                <label for="image-upload">Category Image</label>
-            </div>
-            <div class="image-preview mt-3" id="image-preview-wrapper">
-                {% if category.image %}
-                <img id="category-image-preview" src="{{ category.image.url }}" alt="Category Image"
-                    class="img-thumbnail" style="width: 100%; height: 200px; object-fit: contain; background-color: #f8f9fa;" />
-                {% else %}
-                <img id="category-image-preview" src="https://via.placeholder.com/300x200?text=Category+Image" alt="Category Image"
-                    class="img-thumbnail" style="width: 100%; height: 200px; object-fit: contain; background-color: #f8f9fa;" />
-                {% endif %}
-                <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeImagePreview('category-image-preview')">Remove</button>
-            </div>
-            </div>
-
-            <!-- Banner Image -->
-            <div class="col-md-6">
-            <div class="form-floating form-floating-outline">
-                <input type="file" id="banner-upload" name="banner_image" class="form-control" accept="image/*" />
-                <label for="banner-upload">Banner Image</label>
-            </div>
-            <div class="image-preview mt-3" id="banner-preview-wrapper">
-                {% if category.banner_image %}
-                <img id="banner-image-preview" src="{{ category.banner_image.url }}" alt="Banner Image"
-                    class="img-thumbnail" style="width: 100%; height: 200px; object-fit: contain; background-color: #f8f9fa;" />
-                {% else %}
-                <img id="banner-image-preview" src="https://via.placeholder.com/300x200?text=Banner+Image" alt="Banner Image"
-                    class="img-thumbnail" style="width: 100%; height: 200px; object-fit: contain; background-color: #f8f9fa;" />
-                {% endif %}
-                <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="removeImagePreview('banner-image-preview')">Remove</button>
-            </div>
-            </div>
-
-          <!-- Submit and Cancel Buttons -->
-          <div class="col-12 text-center">
-            <button type="submit" class="btn btn-primary me-3">Submit</button>
-            <button type="reset" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-  <!--/ Edit Modal -->
 {% endblock content %}
 
 {% block custom_js %}
@@ -463,49 +376,32 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById('editUserForm').addEventListener('submit', function (e) {
-          e.preventDefault(); // Prevent form from submitting the traditional way
+        const editModal = document.getElementById('editProduct');
+        editModal.addEventListener('show.bs.modal', function (event) {
+          const button = event.relatedTarget;
 
-          const form = e.target;
-          const formData = new FormData(form);
-          const categoryId = document.querySelector('[data-id]').getAttribute('data-id'); // Or pass it in another way
-          const url = `/admin-dashboard/category-update/${categoryId}/`; // Adjust to your actual Django URL
+          // Set form values
+          document.getElementById('edit-product-id').value = button.getAttribute('data-id');
+          document.getElementById('edit-product-name').value = button.getAttribute('data-name');
+          document.getElementById('edit-product-description').value = button.getAttribute('data-description');
+          document.getElementById('edit-product-price').value = button.getAttribute('data-price');
 
-          fetch(url, {
-              method: "POST",
-              headers: {
-                  'X-CSRFToken': '{{ csrf_token }}'
-              },
-              body: formData
-          })
-          .then(function(response) {
-              if (!response.ok) {
-                  throw new Error("Network response was not ok");
-              }
-              return response.json();
-          })
-          .then(function(result) {
-              alert(result.message || "Category updated successfully.");
-              location.reload(); // Reload to show updated data
-          })
-          .catch(function(error) {
-              console.error("Error submitting form:", error);
-              alert("An error occurred while submitting the form.");
-          });
-      });
+          // Select the category
+          const categoryId = button.getAttribute('data-category-id');
+          const categorySelect = document.getElementById('edit-product-category');
+          if (categorySelect) {
+            categorySelect.value = categoryId;
+            // If you're using Select2:
+            if ($(categorySelect).hasClass('select2')) {
+              $(categorySelect).trigger('change');
+            }
+          }
 
-      const deleteModal = document.getElementById('deleteModal');
-      deleteModal.addEventListener('show.bs.modal', function (event) {
-        const trigger = event.relatedTarget;
-        const productName = trigger.getAttribute('data-name');
-        const deleteUrl = trigger.getAttribute('data-url');
-
-        const namePlaceholder = deleteModal.querySelector('#delete-product-name');
-        const form = deleteModal.querySelector('#delete-form');
-
-        namePlaceholder.textContent = productName;
-        form.setAttribute('action', deleteUrl);
-      });
+          // Set thumbnail preview
+          const imageUrl = button.getAttribute('data-thumbnail-url');
+          const thumbnailPreview = document.getElementById('thumbnail-preview');
+          thumbnailPreview.src = imageUrl || "https://via.placeholder.com/300x200?text=Thumbnail";
+        });
     });
 </script>
 

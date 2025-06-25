@@ -1280,12 +1280,35 @@ def initial_order_update(request, id):
 
 
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 # Approve Order Starts
 @login_required
 def approve_order(request, id):
     order = get_object_or_404(Order, id=id)
     customers = CustomerInfo.objects.all()
-    materials = MaterialRegistration.objects.all()
+    
+    # Add pagination for materials
+    materials_list = MaterialRegistration.objects.all()
+    page = request.GET.get('page', 1)
+    per_page = request.GET.get('per_page', 10)  # Default 10 items per page
+    
+    # Validate per_page value
+    try:
+        per_page = int(per_page)
+        if per_page not in [5, 10, 25, 50, 100]:
+            per_page = 10
+    except (ValueError, TypeError):
+        per_page = 10
+    
+    paginator = Paginator(materials_list, per_page)
+    
+    try:
+        materials = paginator.page(page)
+    except PageNotAnInteger:
+        materials = paginator.page(1)
+    except EmptyPage:
+        materials = paginator.page(paginator.num_pages)
+    
     units = Unit.objects.all()
     order_items = order.items.all()
 
@@ -1293,19 +1316,19 @@ def approve_order(request, id):
         try:
             with transaction.atomic():
                 _update_order_fields(order, request)
-                print( 'order status before entering: ', order.status)
-
+                print('order status before entering: ', order.status)
+                
                 for item in order_items:
                     _process_material_usages(order, item, request)
-                    print( 'order status after saving materials: ', order.status)
-
-                if int(order.status) == 2:
+                print('order status after saving materials: ', order.status)
+                
+                if int(order.status) == 2 or int(order.status) == 3:
                     print('got order_status------------------------: ', order.status)
                     _update_inventory_details(order, request.user)
-
+                
                 messages.success(request, "Order approved and materials saved.")
-                return redirect('initial_orders')
-
+                return redirect('warehouse_orders')
+        
         except Exception as exc:
             messages.error(request, f"Error: {exc}")
             raise
@@ -1334,14 +1357,14 @@ def approve_order(request, id):
     return render(request, 'backend/orders/approve_order.html', {
         'order': order,
         'customers': customers,
-        'materials': materials,
+        'materials': materials,  # This is now paginated
         'units': units,
         'order_items': order_items,
         'added_materials_dict': added_materials_dict,
         'user_type': user_type,
         'product_material_map': dict(product_material_map),
+        'per_page': per_page,  # Pass current per_page value to template
     })
-
 
 def _update_order_fields(order, request):
     customer_id = request.POST.get('customer')
@@ -1874,9 +1897,6 @@ def assign_permissions(request, user_id):
 
 
 @login_required
-def product_list(request):
-    return render(request, 'backend/product-list.html')
-@login_required
 def add_product(request):
     return render(request, 'backend/product-add.html')
 
@@ -2128,10 +2148,12 @@ def brand_delete(request, pk):
     
 @login_required
 def product_list(request):
+    parent_categories = Category.objects.filter(parent_category__isnull=True)
     products = Product.objects.all().order_by('-created_at')
     
     context = {
         'products': products,
+        'parent_categories': parent_categories,
     }
     return render(request, 'backend/products/product_list.html', context)
 @login_required
@@ -2166,6 +2188,33 @@ def product_create(request):
     categories = Category.objects.all()
     brands = Brand.objects.all()
     return render(request, 'backend/products/create.html', {'categories': categories, 'brands': brands})
+    
+
+def update_product(request):
+    if request.method == "POST":
+        product_id = request.POST.get('product_id')
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        base_price = request.POST.get('base_price')
+        category_id = request.POST.get('category')
+        thumbnail = request.FILES.get('thumbnail')
+
+        product = get_object_or_404(Product, id=product_id)
+
+        product.name = name
+        product.description = description
+        product.base_price = base_price or 0
+        product.category_id = category_id or None
+
+        if thumbnail:
+            product.thumbnail = thumbnail
+
+        product.save()
+
+        messages.success(request, "Product updated successfully.")
+        return redirect('product_list')  # Replace with your product list view name
+
+    return redirect('product_list')
     
 @login_required
 def delete_product(request, pk):
@@ -4499,7 +4548,8 @@ def machine_create(request):
                 m_type=request.POST.get('m_type'),
                 m_brand=request.POST.get('m_brand'),
                 m_model=request.POST.get('m_model'),
-                m_purchase_date=request.POST.get('m_purchase_date'),
+                m_purchase_date=request.POST.get("m_purchase_date") or None,
+
                 m_status=request.POST.get('m_status') == 'on'
             )
 
@@ -4510,7 +4560,7 @@ def machine_create(request):
                 md_serial_number=request.POST.get('md_serial_number'),
                 md_capacity=request.POST.get('md_capacity'),
                 md_location=request.POST.get('md_location'),
-                md_last_service_date=request.POST.get('md_last_service_date')
+                md_last_service_date=request.POST.get('md_last_service_date') or None,
             )
 
             # Handle image uploads
@@ -4538,7 +4588,7 @@ def machine_edit(request, pk):
             machine.m_type = request.POST.get('m_type')
             machine.m_brand = request.POST.get('m_brand')
             machine.m_model = request.POST.get('m_model')
-            machine.m_purchase_date = request.POST.get('m_purchase_date')
+            machine.m_purchase_date = request.POST.get('m_purchase_date') or None
             machine.m_status = request.POST.get('m_status') == 'on'
             machine.save()
 
@@ -4548,7 +4598,7 @@ def machine_edit(request, pk):
                 details.md_serial_number = request.POST.get('md_serial_number')
                 details.md_capacity = request.POST.get('md_capacity')
                 details.md_location = request.POST.get('md_location')
-                details.md_last_service_date = request.POST.get('md_last_service_date')
+                details.md_last_service_date = request.POST.get('md_last_service_date') or None
                 details.save()
             else:
                 MachineDetails.objects.create(
@@ -4557,7 +4607,7 @@ def machine_edit(request, pk):
                     md_serial_number=request.POST.get('md_serial_number'),
                     md_capacity=request.POST.get('md_capacity'),
                     md_location=request.POST.get('md_location'),
-                    md_last_service_date=request.POST.get('md_last_service_date')
+                    md_last_service_date=request.POST.get('md_last_service_date') or None
                 )
 
             # Add new images
@@ -5010,3 +5060,66 @@ def shippingcost_delete(request, pk):
         obj.delete()
         return redirect('shippingcost_list')
     return render(request, 'backend/shipping/shippingcost_confirm_delete.html', {'obj': obj})
+    
+    
+    
+    
+    
+    
+    
+
+@login_required
+def warehouse_orders(request):
+    customers = CustomerInfo.objects.all()
+    products = Product.objects.all()
+    
+    # Filter orders to show only Approved (1), Processing (2), and Completed (3)
+    orders = Order.objects.filter(
+        status__in=[1, 2, 3]
+    ).select_related('customer').prefetch_related('items__product')
+    
+    user_type = None  # <-- define it early to avoid UnboundLocalError
+
+    if request.user.is_authenticated:
+        print('The user is authenticated')
+        user = request.user
+        user_type = user.user_type
+        
+    print('user in warehouse orders: ', user)
+    
+    context = {
+        'customers': customers,
+        'products': products,
+        'orders': orders,
+        'user_type': user_type,
+    }
+    return render(request, 'backend/orders/warehouse_orders.html', context)    
+   
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

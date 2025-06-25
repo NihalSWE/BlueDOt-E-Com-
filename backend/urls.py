@@ -57,6 +57,7 @@ urlpatterns = [
     # Products urls
     path('product-list/', views.product_list, name='product_list'),
     path('product-create/',views.product_create,name='product_create'),
+    path('update-product/',views.update_product,name='update_product'),
     path('category-update/<int:pk>/',views.update_category,name='update_category'),
     path('delete-product/<int:pk>/', views.delete_product, name='delete_product'),
     path('product_banner',views.product_banner,name='product_banner'),
@@ -268,5 +269,7 @@ urlpatterns = [
     path('print-initial-order-invoice/<int:order_id>/', views.print_initial_order_invoice, name='print_initial_order_invoice'),
     
     
-    
+     #warehouse_orders
+    path('warehouse_orders/', views.warehouse_orders, name='warehouse_orders'),
+    #warehouse_orders
 ]

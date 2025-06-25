@@ -1,0 +1,150 @@
+
+
+.image-div{
+    width: 250px;
+    height: 250px;
+}
+
+.img-account-profile{
+    width: 100%;
+    border-radius: 50%;
+}
+
+.user-image-name p{
+    color: rgb(54, 54, 54) !important;
+}
+
+.permissions-sublist{
+    max-height: 0;
+    width: 100%;
+    padding-left: 2.5rem;
+    overflow: hidden;
+    /* background-color: rgb(237, 239, 243); */
+    transition: max-height 1s ease-in-out;
+}
+
+.permissions-sublist.open {
+    max-height: 300px;
+    overflow-y: scroll;
+}
+
+/* scroll bar design starts */
+.permissions-sublist.open::-webkit-scrollbar {
+    width: 6px; /* adjust the width to your liking */
+}
+
+.permissions-sublist.open::-webkit-scrollbar-thumb {
+    background-color: #ccc; /* optional: change the thumb color */
+    border-radius: 10px;
+}
+
+.permissions-sublist.open::-webkit-scrollbar-track {
+    background-color: #f0f0f0; /* optional: change the track color */
+}
+/* scroll bar design ends */
+
+.input-check-box-div{
+    /* position: absolute;
+    cursor: pointer;
+    top: 25px;
+    left: 2.5rem; */
+    width: 20px;
+    padding: 0 !important;
+    margin-top: 3px;
+}
+
+.mark-all-check{
+    /* position: absolute; */
+    cursor: pointer;
+    top: 25px;
+    left: 2.5rem;
+}
+
+.mark-all-check:checked{
+    background-color: rgb(124, 8, 85);
+    border-color: rgb(85, 6, 92);
+}
+
+.permission-checkbox{
+    margin-top: 8px;
+    cursor: pointer;
+}
+
+.label-check-box-div{
+    width: 100%;
+}
+
+.permission-checkbox:checked{
+    background-color: rgb(53, 6, 92);
+    border-color: rgb(53, 6, 92);
+}
+
+/* .category-item{
+    margin-bottom: 1.5rem;
+} */
+
+.each-category-item{
+    /* background-color: rgb(231, 215, 245); */
+    /* background-color: rgba(3, 119, 18, 0.2); */
+    position: relative;
+    background: rgb(114,17,143);
+    background: linear-gradient(140deg, rgba(114,17,143,0.15) 0%, rgba(40,11,128,0.15) 100%);
+    border-radius: 15px;
+    padding: 0.5rem;
+}
+
+.category-item .category-name span{
+    color: rgb(57, 5, 61) !important;
+    font-size: 18px;
+    font-weight: 600 !important;
+}
+
+.permissions-item{
+    position: relative;
+    line-height: 30px;
+}
+
+.subpermissions-label{
+    font-size: 14px;
+    font-weight: 500 !important;
+    color: rgb(54, 54, 54);
+    cursor: pointer;
+}
+
+
+.mark-all-check-label{
+    cursor: pointer;
+    color: rgb(64, 3, 70);
+    font-weight: 600 !important;
+    position: relative;
+    width: 100%;
+    top: 3px;
+    left: 1rem;
+}
+
+.save-btn {
+    width: auto !important;
+    border: none !important;
+    color: rgb(206, 206, 206);
+    border-radius: 10px;
+    padding: 0.875em 2em;
+    background: linear-gradient(90deg, #0f0566, transparent) #0a15b4;
+    transition: background-color 0.3s;
+}
+
+.save-btn:hover, .save-btn:focus, .save-btn:active {
+    background-color: #031b46;
+    color: rgb(206, 206, 206);
+}
+
+@media(max-width:767px){
+    .container-xl{
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+    }
+    .staff-card{
+        padding-right: 2px;
+        padding-left: 2px;
+    }
+}
+

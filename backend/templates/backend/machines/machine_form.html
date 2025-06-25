@@ -213,7 +213,19 @@
 
 <div class="form-container">
     <h2 class="mb-4">{{ edit|yesno:"Edit Machine,Add Machine" }}</h2>
-
+    {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  
     <form method="POST" enctype="multipart/form-data" class="form">
         {% csrf_token %}
 
@@ -222,14 +234,14 @@
                 <strong>Machine Information</strong>
             </div>
             <div class="card-body">
-                <div class="form-group">
-                    <label>Machine Name</label>
-                    <input type="text" name="m_name" class="form-control" value="{{ machine.m_name|default:'' }}" required>
-                </div>
+              <div class="form-group">
+    <label>Machine Name <span style="color: red;">*</span></label>
+    <input type="text" name="m_name" class="form-control" value="{{ machine.m_name|default:'' }}" required>
+</div>
 
                 <div class="form-group">
                     <label>Machine Type</label>
-                    <input type="text" name="m_type" class="form-control" value="{{ machine.m_type|default:'' }}" required>
+                    <input type="text" name="m_type" class="form-control" value="{{ machine.m_type|default:'' }}" >
                 </div>
 
                 <div class="form-group">
@@ -244,7 +256,12 @@
 
                 <div class="form-group">
                     <label>Purchase Date</label>
-                    <input type="date" name="m_purchase_date" class="form-control" value="{{ machine.m_purchase_date|date:'Y-m-d' }}">
+                    <input type="date" name="m_purchase_date" class="form-control"
+                    {% if machine.m_purchase_date %}
+                        value="{{ machine.m_purchase_date|date:'Y-m-d' }}"
+                    {% endif %}>
+             
+
                 </div>
 
             </div>
@@ -257,7 +274,7 @@
             <div class="card-body">
               <div class="form-group">
                     <label>Description</label>
-                    <textarea name="md_description" id="md_description" class="form-control" required>{{ details.md_description|default:'' }}</textarea>
+                    <textarea name="md_description" id="md_description" class="form-control" >{{ details.md_description|default:'' }}</textarea>
                 </div>
                 <div class="form-group">
                     <label>Serial Number</label>

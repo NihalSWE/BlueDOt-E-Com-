@@ -411,9 +411,9 @@
                             <span>{{ blog.get_category_name }}</span>
                             <span>{{ blog.date }}</span>
                         </div>
-                        <h4 class="tp-blog-4-title">
-                            <a href="{{ blog.get_absolute_url }}">{{ blog.title }}</a>
-                        </h4>
+                       <h4 class="tp-blog-4-title" style="height: 55px;">
+                          <a href="{{ blog.get_absolute_url }}" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">{{ blog.title }}</a>
+                      </h4>
                         {% comment %} <p>{{ blog.get_short_description }}</p> {% endcomment %}
                         <div class="tp-blog-4-btn">
                             <a href="{{ blog.get_absolute_url }}">Read More <i class="fa-regular fa-plus"></i></a>

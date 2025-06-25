@@ -89,11 +89,11 @@
         <div data-i18n="home/practice_area Locations">Practice Area</div>
       </a>
     </li>
-    <li class="menu-item {% if request.resolver_match.url_name == 'contactUs_msg' %}active{% endif %}">
-      <a href="{% url 'contactUs_msg' %}" class="menu-link">
-        <div data-i18n="Messages">Messages</div>
-      </a>
-    </li>
+    <!--<li class="menu-item {% if request.resolver_match.url_name == 'contactUs_msg' %}active{% endif %}">-->
+    <!--  <a href="{% url 'contactUs_msg' %}" class="menu-link">-->
+    <!--    <div data-i18n="Messages">Messages</div>-->
+    <!--  </a>-->
+    <!--</li>-->
     <li class="menu-item {% if request.resolver_match.url_name == 'home_centerCard' %}active{% endif %}">
       <a href="{% url 'home_centerCard' %}" class="menu-link">
         <div data-i18n="Messages">Center Area Cards</div>
@@ -404,6 +404,11 @@
         <li class="menu-item {% if request.resolver_match.url_name == 'initial_orders'  %}active open{% endif %}">
           <a href="{% url 'initial_orders' %}" class="menu-link">
             <div data-i18n="Initial Order">Initial Orders</div>
+          </a>
+        </li>
+        <li class="menu-item {% if request.resolver_match.url_name == 'warehouse_orders'  %}active open{% endif %}">
+          <a href="{% url 'warehouse_orders' %}" class="menu-link">
+            <div data-i18n="Initial Order">Warehouse Orders</div>
           </a>
         </li>
       </ul>

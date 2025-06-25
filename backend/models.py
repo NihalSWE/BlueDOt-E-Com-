@@ -348,6 +348,20 @@ class Product(models.Model):
         if not self.slug:
             self.slug = self.generate_unique_slug(Product)
         super().save(*args, **kwargs)
+
+        # Resize thumbnail to 800x800
+        if self.thumbnail:
+            from PIL import Image
+            try:
+                img_path = self.thumbnail.path
+                with Image.open(img_path) as img:
+                    if img.mode not in ("RGB", "RGBA"):
+                        img = img.convert("RGB")
+                    img = img.resize((800, 800), Image.LANCZOS)
+                    img.save(img_path, format='JPEG', quality=90)
+            except Exception as e:
+                print(f"Error resizing thumbnail: {e}")
+
         
     def generate_unique_slug(self, model_class, slug_field_name='slug'):
         from django.utils.text import slugify
@@ -405,7 +419,6 @@ class DiscountCategory(models.Model):
             self.status == 1 and
             self.start_date <= now <= self.end_date
         )
-        
 class Discount(models.Model):
     STATUS_CHOICES = (
         (1, 'Active'),
@@ -441,7 +454,7 @@ class ProductImage(models.Model):
                 img_path = self.image.path
                 with Image.open(img_path) as img:
                     # Resize image to 800x600
-                    img = img.resize((800, 600), Image.LANCZOS)
+                    img = img.resize((800, 800), Image.LANCZOS)
 
                     # Handle transparency if present
                     if img.mode in ('RGBA', 'LA'):
@@ -1384,7 +1397,7 @@ class MaterialUsage(models.Model):
     quantity_used = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
-        unique_together = ('order', 'material')
+        unique_together = ('order_item', 'material')
         verbose_name = "Inv Material Usage "
         verbose_name_plural = "Inv Material Usage"
 
@@ -1536,7 +1549,7 @@ class BlogPost(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True)
     description = RichTextField(
-    max_length=5000,
+    
     blank=True,
     help_text="Blog content with rich text editor")
 
@@ -1848,11 +1861,11 @@ class ThankyouBanner(models.Model):
 # Machine model
 class Machine(models.Model):
     m_name = models.CharField(max_length=100)
-    m_type = models.CharField(max_length=50)
-    m_brand = models.CharField(max_length=50)
-    m_model = models.CharField(max_length=50)
-    m_purchase_date = models.DateField()
-    m_status = models.BooleanField(default=True)  # True = active
+    m_type = models.CharField(max_length=50,null=True)
+    m_brand = models.CharField(max_length=50,null=True)
+    m_model = models.CharField(max_length=50,null=True)
+    m_purchase_date = models.DateField(null=True, blank=True)
+    m_status = models.BooleanField(default=True,null=True)  # True = active
 
     def __str__(self):
         return self.m_name
@@ -1861,10 +1874,10 @@ class Machine(models.Model):
 # Machine details model
 class MachineDetails(models.Model):
     md_machine = models.ForeignKey(Machine, on_delete=models.CASCADE, related_name='details')
-    md_description = models.TextField()
-    md_serial_number = models.CharField(max_length=100)
-    md_capacity = models.CharField(max_length=100)
-    md_location = models.CharField(max_length=100)
+    md_description = models.TextField(null=True)
+    md_serial_number = models.CharField(max_length=100,null=True)
+    md_capacity = models.CharField(max_length=100,null=True)
+    md_location = models.CharField(max_length=100,null=True)
     md_last_service_date = models.DateField(null=True, blank=True)
 
     def __str__(self):
