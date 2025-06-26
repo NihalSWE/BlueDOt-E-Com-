@@ -222,7 +222,7 @@
                                                 placeholder="Qty"
                                             >
                                         </td>
-                                        <td class="price">${{ material.mr_sell_price }}</td>
+                                        <td class="price">৳{{ material.mr_sell_price }}</td>
                                         <td id="selected-material-{{ material.id }}"></td>
                                         <td>
                                             <button type="button" class="btn btn-sm btn-primary add-btn" data-material="{{ material.id }}">
@@ -315,8 +315,8 @@
                                             <td>{{ usage.material.mr_material_name }}</td>
                                             <td data-unit-id="{{ usage.unit.id }}">{{ usage.unit.name }}</td>
                                             <td>{{ usage.quantity_used|div:usage.order_item.quantity|floatformat:2 }}</td>
-                                            <td>${{ usage.material.mr_sell_price }}</td>
-                                            <td>${{ usage.quantity_used|div:usage.order_item.quantity|multiply:usage.material.mr_sell_price|floatformat:2 }}</td>
+                                            <td>৳{{ usage.material.mr_sell_price }}</td>
+                                            <td>৳{{ usage.quantity_used|div:usage.order_item.quantity|multiply:usage.material.mr_sell_price|floatformat:2 }}</td>
                                             <td>
                                                 <button type="button"
                                                     class="btn btn-sm btn-danger remove-btn"
@@ -361,7 +361,7 @@
                                     id="product-total-{{ item.product.id }}"
                                     style="font-weight: 600;"
                                     >
-                                    $0.00
+                                    ৳0.00
                                     </td>
                                     <td></td>
                                 </tr>
@@ -374,7 +374,7 @@
                     <div class="mt-4 text-end pe-12">
                         <h5>
                         <strong>Grand Total:</strong>
-                        <span id="grandTotalAll">$0.00</span>
+                        <span id="grandTotalAll">৳0.00</span>
                         </h5>
                     </div>
 
@@ -558,7 +558,7 @@
                 parseFloat($(this).text().replace('$', '')) || 0;
                 grandTotal += amt;
             });
-            $('#grandTotalAll').text(`$${grandTotal.toFixed(2)}`);
+            $('#grandTotalAll').text(`৳${grandTotal.toFixed(2)}`);
         }
 
         // 5) WHEN USER CHOOSES A PRODUCT, SHOW THAT PRODUCT’S SECTION

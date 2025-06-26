@@ -40,23 +40,20 @@
     <link rel="stylesheet" href="{% static 'assets/css/demo.css' %}" />
 
     <!-- Vendors CSS -->
-
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css' %}" />
-
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css' %}" />
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css' %}" />
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/apex-charts/apex-charts.css' %}" />
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/swiper/swiper.css' %}" />
 
-
+    <!-- Flatpickr Calendar CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     {% block custom_css %}{% endblock custom_css %}
 
     <script src="{% static 'assets/vendor/js/helpers.js' %}"></script>
     <script src="{% static 'assets/vendor/js/template-customizer.js' %}"></script>
-
     <script src="{% static 'assets/js/config.js' %}"></script>
-
 
   </head>
 
@@ -112,9 +109,7 @@
     <!-- / Layout wrapper -->
 
     <!-- Core JS -->
-
     <!-- build:js assets/vendor/js/theme.js  -->
-
     <script src="{% static 'assets/vendor/libs/jquery/jquery.js' %}"></script>
     <script src="{% static 'assets/vendor/libs/popper/popper.js' %}"></script>
     <script src="{% static 'assets/vendor/js/bootstrap.js' %}"></script>
@@ -126,19 +121,63 @@
     <script src="{% static 'assets/vendor/libs/i18n/i18n.js' %}"></script>
     <script src="{% static 'assets/vendor/js/menu.js' %}"></script>
 
-    <!-- endbuild -->
-
     <!-- Vendors JS -->
     <script src="{% static 'assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js' %}"></script>
     <script src="{% static 'assets/vendor/libs/apex-charts/apexcharts.js' %}"></script>
     <script src="{% static 'assets/vendor/libs/swiper/swiper.js' %}"></script>
 
-    <!-- Main JS -->
+    <!-- Flatpickr Calendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+    <!-- Main JS -->
     <script src="{% static 'assets/js/main.js' %}"></script>
 
     <!-- Page JS -->
     <script src="{% static 'assets/js/app-ecommerce-dashboard.js' %}"></script>
+
+    <!-- Global Calendar Initialization Script -->
+    <script>
+        // Global calendar initialization function
+        function initializeCalendars() {
+            // Initialize all elements with .project-calendar class
+            const calendarElements = document.querySelectorAll('.project-calendar');
+            
+            calendarElements.forEach(function(element) {
+                if (!element._flatpickr) { // Prevent duplicate initialization
+                    flatpickr(element, {
+                        inline: true,
+                        dateFormat: "Y-m-d",
+                        defaultDate: "today",
+                        // You can add more options here as needed
+                        locale: "default",
+                        showMonths: 1,
+                    });
+                }
+            });
+
+            // Initialize date picker inputs with .project-datepicker class
+            const datePickerElements = document.querySelectorAll('.project-datepicker');
+            
+            datePickerElements.forEach(function(element) {
+                if (!element._flatpickr) { // Prevent duplicate initialization
+                    flatpickr(element, {
+                        dateFormat: "Y-m-d",
+                        // You can add more options here as needed
+                        allowInput: true,
+                    });
+                }
+            });
+        }
+
+        // Initialize calendars when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCalendars();
+        });
+
+        // Re-initialize calendars after AJAX calls or dynamic content loading
+        // Call this function after adding new calendar elements dynamically
+        window.reinitializeCalendars = initializeCalendars;
+    </script>
 
     {% block custom_js %}{% endblock custom_js %}
   </body>

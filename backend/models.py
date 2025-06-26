@@ -251,12 +251,19 @@ class Brand(models.Model):
         (0, 'Inactive'),
     )
     name = models.CharField(max_length=255, null=True, blank=True, db_index=True)
-    image = models.ImageField(upload_to='brands/', null=True, blank=True)  # <-- changed here
+    image = models.ImageField(upload_to='brands/', null=True, blank=True)
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=1)
     created_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return self.name or "Unnamed Brand"
+
+    def save(self, *args, **kwargs):
+        # First save to get access to self.image.path
+        super().save(*args, **kwargs)
+
+        
     
     
 class Product(models.Model):
@@ -818,7 +825,7 @@ class HomeSlider(models.Model):
     subtitle = models.CharField(max_length=200, blank=True)
     image = models.ImageField(upload_to='slider/')
     button_text = models.CharField(max_length=50, default="Start Your Projects")
-    button_link = models.CharField(max_length=200, default="#")
+    button_link = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)  # track creation time
 
     class Meta:

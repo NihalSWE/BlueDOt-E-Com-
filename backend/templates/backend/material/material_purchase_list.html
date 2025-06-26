@@ -196,7 +196,7 @@
             </div>
             <div class="col-md-6">
               <label class="form-label">Expiry Date</label>
-              <input type="date" name="mid_exp_date" class="form-control">
+              <input type="date" name="mid_exp_date" class="form-control project-datepicker">
             </div>
             <input type="hidden" name="mid_deal_type" value="buy">
           </div>
@@ -266,7 +266,7 @@
             </div>
             <div class="col-md-6">
               <label class="form-label">Expiry Date</label>
-              <input type="date" name="mid_exp_date" class="form-control" value="{{ purchase.mid_exp_date|date:'Y-m-d' }}">
+              <input type="date" name="mid_exp_date" class="form-control project-datepicker" value="{{ purchase.mid_exp_date|date:'Y-m-d' }}">
             </div>
             <div class="col-md-6">
               <label class="form-label">Deal Type</label>

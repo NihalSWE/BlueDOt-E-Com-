@@ -351,7 +351,7 @@
                             data-bs-target="#editBrandModal"
                             data-brand-id="{{ brand.id }}"
                             data-brand-name="{{ brand.name }}"
-                            data-brand-image="{{ brand.image.url }}"
+                            data-brand-image="{% if brand.image %}{{ brand.image.url }}{% endif %}"
                             data-brand-status="{{ brand.status }}"></span>
                       <span class="weui--delete-filled" 
                             data-bs-toggle="tooltip"
@@ -448,21 +448,28 @@
               </div>
             </div>
             
-            <div class="col-12">
-              <div class="image-upload-wrapper">
-                <div class="form-floating form-floating-outline">
-                  <input type="file" id="brandImage" name="image" class="image-upload-input" accept="image/*" />
-                  <label for="brandImage" class="image-upload-label">
-                    <i class="ti ti-cloud-upload me-2"></i>
-                    <span class="d-block fw-semibold">Upload Brand Logo</span>
-                    <span class="d-block text-muted">PNG, JPG or JPEG (Max 2MB)</span>
-                  </label>
-                </div>
-                <div class="image-preview-container text-center mt-3">
-                  <img id="createImagePreview" class="image-preview rounded" src="#" alt="Image preview" />
-                </div>
-              </div>
-            </div>
+            <!-- Improved Image Upload Section for Create Brand Modal -->
+<div class="col-12">
+  <label class="form-label">Brand Logo</label>
+  <div class="image-upload-wrapper">
+    <div class="form-control d-flex align-items-center justify-content-center" style="min-height: 120px; border: 2px dashed #d9dee3; cursor: pointer; position: relative;">
+      <input type="file" id="brandImage" name="image" class="position-absolute w-100 h-100 opacity-0" accept="image/*" style="cursor: pointer;" />
+      <div class="text-center">
+        <i class="ti ti-cloud-upload mb-2" style="font-size: 2rem; color: #8592a3;"></i>
+        <div class="fw-semibold text-dark">Click to upload brand logo</div>
+        <div class="text-muted small">PNG, JPG or JPEG (Max 2MB)</div>
+      </div>
+    </div>
+    <div class="image-preview-container text-center mt-3" style="display: none;">
+      <img id="createImagePreview" class="rounded border" src="#" alt="Image preview" style="max-height: 100px; max-width: 150px; object-fit: contain;" />
+      <div class="mt-2">
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearImagePreview('create')">
+          <i class="ti ti-trash me-1"></i> Remove
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
             
             <div class="col-12">
               <div class="form-floating form-floating-outline">
@@ -509,22 +516,30 @@
               </div>
             </div>
             
-            <div class="col-12">
-              <div class="image-upload-wrapper">
-                <div class="form-floating form-floating-outline">
-                  <input type="file" id="editBrandImage" name="image" class="image-upload-input" accept="image/*" />
-                  <label for="editBrandImage" class="image-upload-label">
-                    <i class="ti ti-cloud-upload me-2"></i>
-                    <span class="d-block fw-semibold">Change Brand Logo</span>
-                    <span class="d-block text-muted">PNG, JPG or JPEG (Max 2MB)</span>
-                  </label>
-                </div>
-                <div class="image-preview-container text-center mt-3">
-                  <img id="editImagePreview" class="image-preview rounded" src="#" alt="Current image" />
-                  <input type="hidden" id="currentImage" name="current_image" value="" />
-                </div>
-              </div>
-            </div>
+            <!-- Improved Image Upload Section for Edit Brand Modal -->
+<div class="col-12">
+  <label class="form-label">Brand Logo</label>
+  <div class="image-upload-wrapper">
+    <div class="form-control d-flex align-items-center justify-content-center" style="min-height: 120px; border: 2px dashed #d9dee3; cursor: pointer; position: relative;">
+      <input type="file" id="editBrandImage" name="image" class="position-absolute w-100 h-100 opacity-0" accept="image/*" style="cursor: pointer;" />
+      <div class="text-center">
+        <i class="ti ti-cloud-upload mb-2" style="font-size: 2rem; color: #8592a3;"></i>
+        <div class="fw-semibold text-dark">Click to change brand logo</div>
+        <div class="text-muted small">PNG, JPG or JPEG (Max 2MB)</div>
+      </div>
+    </div>
+    <div class="image-preview-container text-center mt-3">
+      <img id="editImagePreview" class="rounded border" src="#" alt="Current image" style="max-height: 100px; max-width: 150px; object-fit: contain; display: none;" />
+      <input type="hidden" id="currentImage" name="current_image" value="" />
+      <div class="mt-2" id="editImageActions" style="display: none;">
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearImagePreview('edit')">
+          <i class="ti ti-trash me-1"></i> Remove
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
             
             <div class="col-12">
               <div class="form-floating form-floating-outline">
@@ -785,5 +800,68 @@
         });
       });
     });
+  </script>
+
+  <!-- Additional JavaScript for better image handling -->
+<script>
+  // Improved image preview handling
+  function clearImagePreview(type) {
+    if (type === 'create') {
+      $('#brandImage').val('');
+      $('#createImagePreview').hide();
+      $('.image-preview-container').hide();
+    } else if (type === 'edit') {
+      $('#editBrandImage').val('');
+      $('#editImagePreview').hide();
+      $('#editImageActions').hide();
+    }
+  }
+  
+  // Enhanced image preview for create form
+  $('#brandImage').change(function() {
+    if (this.files && this.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        $('#createImagePreview').attr('src', e.target.result).show();
+        $('.image-preview-container').show();
+      }
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
+  
+  // Enhanced image preview for edit form
+  $('#editBrandImage').change(function() {
+    if (this.files && this.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        $('#editImagePreview').attr('src', e.target.result).show();
+        $('#editImageActions').show();
+      }
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
+  
+  // Show existing image in edit modal
+  $('.icon-park--edit-two').click(function () {
+    const brandId = $(this).data('brand-id');
+    const brandName = $(this).data('brand-name');
+    const brandImage = $(this).data('brand-image');
+    const brandStatus = $(this).data('brand-status');
+  
+    $('#editBrandId').val(brandId);
+    $('#editBrandName').val(brandName);
+    $('#editBrandStatus').val(brandStatus);
+    
+    if (brandImage && brandImage.trim() !== '') {
+      $('#editImagePreview').attr('src', brandImage).show();
+      $('#currentImage').val(brandImage);
+      $('#editImageActions').show();
+    } else {
+      $('#editImagePreview').hide();
+      $('#editImageActions').hide();
+    }
+  
+    $('#editBrandModal').modal('show');
+  });
   </script>
 {% endblock %}

@@ -186,7 +186,7 @@
             </div>
             <div class="col-md-6">
               <label for="RegDate" class="form-label">Registration Date</label>
-              <input type="date" id="RegDate" name="RegDate" class="form-control">
+              <input type="date" id="RegDate" name="RegDate" class="form-control project-datepicker">
             </div>
             <div class="col-md-6">
               <label for="type" class="form-label">Customer Type <span class="text-danger">*</span></label>
@@ -249,7 +249,7 @@
             </div>
             <div class="col-md-6">
               <label for="RegDate_{{ customer.id }}" class="form-label">Registration Date</label>
-              <input type="date" id="RegDate_{{ customer.id }}" name="RegDate" class="form-control" value="{{ customer.RegDate|date:'Y-m-d' }}">
+              <input type="date" id="RegDate_{{ customer.id }}" name="RegDate" class="form-control project-datepicker" value="{{ customer.RegDate|date:'Y-m-d' }}">
             </div>
             <div class="col-md-6">
               <label for="type_{{ customer.id }}" class="form-label">Customer Type <span class="text-danger">*</span></label>

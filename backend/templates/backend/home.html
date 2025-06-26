@@ -345,7 +345,7 @@
                         <h5 class="form-section-title"><i class="bi bi-textarea-t"></i>Content</h5>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="id_title" class="form-label">Title*</label>
+                                <label for="id_title" class="form-label" required>Title<span style="color: red;">*</span></label>
                                 {{ form.title }}
                             </div>
                             <div class="col-md-6 mb-3">
@@ -355,11 +355,11 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="id_button_text" class="form-label">Button Text*</label>
+                                <label for="id_button_text" class="form-label">Button Text</label>
                                 {{ form.button_text }}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="id_button_link" class="form-label">Button Link*</label>
+                                <label for="id_button_link" class="form-label" required>Button Link<span style="color: red;">*</span></label>
                                 {{ form.button_link }}
                             </div>
                         </div>
@@ -368,7 +368,7 @@
                     <div class="form-section">
                         <h5 class="form-section-title"><i class="bi bi-image"></i>Image</h5>
                         <div class="mb-3">
-                            <label for="id_image" class="form-label">Slide Image*</label>
+                            <label for="id_image" class="form-label">Slide Image<span style="color: red;">*</span></label>
                             {{ form.image }}
                             <small class="text-muted">Recommended size: 1920x1080 pixels (16:9 ratio)</small>
                         </div>
@@ -404,7 +404,7 @@
                         <h5 class="form-section-title"><i class="bi bi-textarea-t"></i>Content</h5>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Title*</label>
+                                <label class="form-label">Title<span style="color: red;">*</span></label>
                                 <input type="text" name="title" id="edit_title" class="form-control modern-input" required>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -418,7 +418,7 @@
                                 <input type="text" name="button_text" id="edit_button_text" class="form-control modern-input" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Button Link*</label>
+                                <label class="form-label">Button Link<span style="color: red;">*</span></label>
                                 <input type="text" name="button_link" id="edit_button_link" class="form-control modern-input" required>
                             </div>
                         </div>

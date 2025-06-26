@@ -491,7 +491,7 @@ def home_banner(request):
             else:
                 messages.error(request, "Error adding new slider. Please check the form.")
         
-        return redirect('home')
+        return redirect('home_banner')
     
     # For GET requests or if no form submission
     form = HomeSliderForm()
@@ -2069,7 +2069,10 @@ def units(request):
 @require_http_methods(["GET"])
 def brand_list(request):
     brands = Brand.objects.filter(status=1)  # Only active brands
-    return render(request, 'backend/brand/index.html', {'brands': brands})
+    context={
+        'brands': brands
+    }
+    return render(request, 'backend/brand/index.html',context)
 
 # Create brand (returns JSON)
 

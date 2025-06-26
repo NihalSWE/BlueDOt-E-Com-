@@ -58,7 +58,7 @@
                     </div>
                 </div>
                 <div class="card-info">
-                    <h5 class="mb-0">${{ total_profit|floatformat:2 }}</h5>
+                    <h5 class="mb-0">৳{{ total_profit|floatformat:2 }}</h5>
                     <p class="mb-0">Total Profit</p>
                 </div>
             </div>
@@ -147,7 +147,7 @@
                     <div class="col-12">
                         <h5 class="text-white mb-0">Weekly Sales</h5>
                         <div class="d-flex align-items-center gap-2">
-                            <div>Total ${{ category.total_earnings|floatformat:2 }} Earnings</div>
+                            <div>Total ৳{{ category.total_earnings|floatformat:2 }} Earnings</div>
                             <div class="d-flex align-items-center text-success">
                                 <p class="mb-0 fw-medium">Week {{ start_of_week }} - {{ end_of_week }}</p>
                             </div>
